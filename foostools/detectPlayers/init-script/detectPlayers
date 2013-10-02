@@ -1,0 +1,34 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:             sshd
+# Required-Start:       $remote_fs $syslog
+# Required-Stop:        $remote_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:
+# Short-Description:    Read FoosQR Service
+### END INIT INFO
+
+set -e
+FOOS_PATH=/home/foos/foostools
+
+case "$1" in
+  start)
+	cd $FOOS_PATH/detectPlayers
+        $FOOS_PATH/detectPlayers/detectPlayers 2>/dev/null &
+        ;;
+  stop)
+        pkill -f $FOOS_PATH/detectPlayers/detectPlayers || true
+	rm -f /tmp/players.json
+        ;;
+  restart)
+        pkill -f $FOOS_PATH/detectPlayers/detectPlayers || true
+	rm -f /tmp/players.json
+	cd $FOOS_PATH/detectPlayers
+	$FOOS_PATH/detectPlayers/detectPlayers 2>/dev/null &
+        ;;
+  *)
+        exit 1
+esac
+
+exit 0
