@@ -79,9 +79,8 @@ class Score(Resource):
 
     def get(self):
         gw = GameWatch()
-        #TODO: fix this json output, integers are being sent without quotes
         red_score, blue_score = gw.GetScore()
-        return {'team': {'red': red_score, 'blue': blue_score}}
+        return {'score': {'red': red_score, 'blue': blue_score}}
 
     def post(self):
         args = self.reqparse.parse_args()
