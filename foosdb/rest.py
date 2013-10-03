@@ -104,7 +104,9 @@ class Players(Resource):
         super(Players, self).__init__()
 
     def get(self):
-        pass
+        gw = GameWatch()
+        return gw.GetNames()
+        #red_off
 
     def post(self):
         args = self.reqparse.parse_args()
@@ -140,7 +142,7 @@ class GameWatch():
         self.game_state.blue_off = players['bo']
         self.game_state.blue_def = players['bd']
         self.game_state.red_off = players['ro']
-        self.game_state.red_off = players['rd']
+        self.game_state.red_def = players['rd']
 
         self.session.add(self.game_state)
         self.session.commit()
@@ -158,9 +160,14 @@ class GameWatch():
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
 
-    def GetFriendlyJSON(self, ids):
-        for id in ids:
-            pass
+    def GetNames(self):
+        player_names = {}
+        player_names['bo'] = self.game_state.blue_off
+        player_names['bd'] = self.game_state.blue_def
+        player_names['ro'] = self.game_state.red_off
+        player_names['rd'] = self.game_state.red_def
+
+        return player_names
 
 app = Flask(__name__)
 api = Api(app)
