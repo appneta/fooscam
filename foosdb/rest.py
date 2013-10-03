@@ -11,7 +11,6 @@ import json
 
 import pdb
 
-
 ORMBase = declarative_base()
 
 class GameState(ORMBase):
@@ -44,9 +43,6 @@ class Player(ORMBase):
     def __init__(self, name):
         self.name = name
 
-    """def __repr__(self):
-        return "<Player('%s', '%s)" % (self.id, self.name)"""
-
 class Game(ORMBase):
     """
     game database class
@@ -71,8 +67,6 @@ class Game(ORMBase):
         self.blue_score = blue_score
         self.red_score = red_score
 
-app = Flask(__name__)
-api = Api(app)
 
 class Score(Resource):
     """
@@ -84,7 +78,10 @@ class Score(Resource):
         super(Score, self).__init__()
 
     def get(self):
-        pass
+        gw = GameWatch()
+        #TODO: fix this json output, integers are being sent without quotes
+        red_score, blue_score = gw.GetScore()
+        return {'team': {'red': red_score, 'blue': blue_score}}
 
     def post(self):
         args = self.reqparse.parse_args()
@@ -94,6 +91,8 @@ class Score(Resource):
         except KeyError:
             return {'status': 'invalid JSON data'}, 400
 
+        gw = GameWatch()
+        gw.UpdateScore({'red': red_score, 'blue': blue_score})
         return {'status': 'accepted'}, 201
 
 class Players(Resource):
@@ -132,12 +131,12 @@ class GameWatch():
         Session = sessionmaker()
         Session.configure(bind=db)
         self.session = Session()
-        #self.game_state = GameState()
+        #persist current game state by maintaining only 1 row in there
         self.game_state = self.session.query(GameState).filter_by(id=1).first()
 
     def UpdatePlayers(self, players):
         """
-        do something constructive with the state json we receive
+        do something constructive with the incoming player ID's
         """
         self.game_state.blue_off = players['bo']
         self.game_state.blue_def = players['bd']
@@ -147,12 +146,32 @@ class GameWatch():
         self.session.add(self.game_state)
         self.session.commit()
 
+    def UpdateScore(self, score):
+        """
+        do something useful with the score
+        """
+        self.game_state.red_score = score['red']
+        self.game_state.blue_score = score['blue']
+
+        self.session.add(self.game_state)
+        self.session.commit()
+
+    def GetScore(self):
+        return self.game_state.red_score,  self.game_state.blue_score
+
     def GetFriendlyJSON(self, ids):
         for id in ids:
             pass
 
+app = Flask(__name__)
+api = Api(app)
 api.add_resource(Score, '/score', endpoint = 'score')
 api.add_resource(Players, '/players', endpoint = 'players')
+
+@app.route("/")
+def get():
+    with open('index2.html') as f:
+        return f.read()
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')
