@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 set -e
-FOOS_PATH=/home/foos/foostools
+FOOS_PATH=/home/foos/fooscam/foostools
 
 case "$1" in
   start)
