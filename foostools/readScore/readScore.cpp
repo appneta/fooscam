@@ -112,6 +112,12 @@ int main( int argc, char** argv )
 							<< "\"}}\n";
 
 					if (jsonStringNew.str() != jsonStringOld.str()) {
+
+						string cmd = "curl -X POST -H \"Content-Type: application/json\" "
+								"-d '" + jsonStringNew.str() + "' "
+								+ configs["jsonEndpoint"] + ">/dev/null &";
+						if (system(cmd.c_str())){}
+
 						jsonFile.open ("/tmp/score.json");
 						jsonFile << jsonStringNew.str();
 						jsonFile.close();
