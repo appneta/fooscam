@@ -7,8 +7,8 @@ CREATE TABLE "games" (
     "winner" TEXT,
     "blue_score" TEXT,
     "red_score" TEXT,
-    "started" DATETIME,
-    "ended" DATETIME,
+    "started" INTEGER,
+    "ended" INTEGER,
     PRIMARY KEY (id)
 );
 
@@ -26,5 +26,6 @@ CREATE TABLE "state" (
     "blue_off" INTEGER, 
     "blue_def" INTEGER,
     "red_score" INTEGER,
-    "blue_score" INTEGER
+    "blue_score" INTEGER,
+    "game_started" INTEGER 
 );

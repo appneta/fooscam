@@ -3,13 +3,14 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect, url_for
 from flask.ext.restful import Api, Resource, reqparse
 from flask import abort
 
 import json
 
-import pdb
+from time import time
+from datetime import datetime
 
 import logging
 
@@ -32,6 +33,7 @@ class GameState(ORMBase):
     blue_def = Column(Integer)
     blue_score = Column(Integer)
     red_score = Column(Integer)
+    game_started = Column(Integer)
 
     def __init__(self):
         self.id = 1
@@ -63,8 +65,10 @@ class Game(ORMBase):
     winner = Column(String)
     blue_score = Column(Integer)
     red_score = Column(Integer)
+    started = Column(Integer)
+    ended = Column(Integer)
 
-    def __init__(self, winner, blue_score, red_score, red_off=1, red_def=1, blue_off=1, blue_def=1):
+    def __init__(self, winner, blue_score, red_score, red_off, red_def, blue_off, blue_def, started, ended):
         self.red_off = red_off
         self.red_def = red_def
         self.blue_off = blue_off
@@ -72,6 +76,36 @@ class Game(ORMBase):
         self.winner = winner
         self.blue_score = blue_score
         self.red_score = red_score
+        self.started = started
+        self.ended = ended
+
+    def __repr__(self):
+        gw = GameWatch()
+        rep = 'Game ID: ' + str(self.id)
+        rep += ' Red Team: (offense) ' + gw.GetNameByID(self.red_off)
+        rep += ' (defense) ' + gw.GetNameByID(self.red_def)
+        rep += ' Score: ' + str(self.red_score)
+        rep += ' Blue Team: (offense) ' + gw.GetNameByID(self.blue_off)
+        rep += ' (defense) ' + gw.GetNameByID(self.blue_def)
+        rep += ' Score: ' + str(self.blue_score)
+        rep += ' Game On: ' + datetime.fromtimestamp(self.started).strftime('%Y-%m-%d %H:%M:%S')
+        rep += ' Game Over: ' + datetime.fromtimestamp(self.ended).strftime('%Y-%m-%d %H:%M:%S')
+        rep += ' Result: ' + self.winner + ' WINS!'
+        return rep
+
+    def Summary(self):
+        gw = GameWatch()
+        rep = 'Game ID: ' + str(self.id)
+        rep += ' Red Team: (offense) ' + gw.GetNameByID(self.red_off)
+        rep += ' (defense) ' + gw.GetNameByID(self.red_def)
+        rep += ' Score: ' + str(self.red_score)
+        rep += ' Blue Team: (offense) ' + gw.GetNameByID(self.blue_off)
+        rep += ' (defense) ' + gw.GetNameByID(self.blue_def)
+        rep += ' Score: ' + str(self.blue_score)
+        rep += ' Game On: ' + datetime.fromtimestamp(self.started).strftime('%Y-%m-%d %H:%M:%S')
+        rep += ' Game Over: ' + datetime.fromtimestamp(self.ended).strftime('%Y-%m-%d %H:%M:%S')
+        rep += ' Result: ' + self.winner + ' WINS!'
+        return rep
 
 
 class Status(Resource):
@@ -190,7 +224,7 @@ class GameWatch():
                             self.game_state.blue_def = players['bd']
                             self.game_state.red_off = players['ro']
                             self.game_state.red_def = players['rd']
-                            self.DBCommit()
+                            self.CommitState()
                             self.GameOver()
                             return
                     else:
@@ -207,7 +241,7 @@ class GameWatch():
                 self.game_state.blue_def = players['bd']
                 self.game_state.red_off = players['ro']
                 self.game_state.red_def = players['rd']
-                self.DBCommit()
+                self.CommitState()
                 self.GameOn()
             else:
                 log.debug('4 ids locked but game is already going')
@@ -218,7 +252,7 @@ class GameWatch():
         """
         self.game_state.red_score = score['red']
         self.game_state.blue_score = score['blue']
-        self.DBCommit()
+        self.CommitState()
 
     def UpdateStatus(self, status):
         """
@@ -229,7 +263,7 @@ class GameWatch():
         else:
             self.game_state.game_on = False
 
-        self.DBCommit()
+        self.CommitState()
 
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
@@ -255,23 +289,49 @@ class GameWatch():
     def GetIDs(self):
         return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
 
+    def GetNameByID(self, player_id):
+        return str(self.session.query(Player.name).filter_by(id=player_id).first()[0])
+
     def GetStatus(self):
         return self.game_state.game_on
 
+    def GetHistory(self):
+        history = []
+        for thing in self.session.query(Game).order_by(Game.id):
+            history.append(thing)
+
+        return history
+
     def GameOver(self):
+        if self.game_state.red_score > self.game_state.blue_score:
+            winner = 'red'
+        elif self.game_state.blue_score > self.game_state.red_score:
+            winner = 'blue'
+        elif self.game_state.blue_score == self.game_state.red_score:
+            winner = 'tie'
+
+        #log the game details
+        foos_log = Game(winner, self.game_state.blue_score, self.game_state.red_score, \
+            self.game_state.red_off, self.game_state.red_def, \
+            self.game_state.blue_off, self.game_state.blue_def, \
+            self.game_state.game_started, int(time()))
+
+        self.session.add(foos_log)
+        self.session.commit()
+
         self.game_state.game_on = False
         self.game_state.blue_off = -1
         self.game_state.blue_def = -1
         self.game_state.red_off = -1
         self.game_state.red_def = -1
-        self.DBCommit()
-        #TODO: save score and stuff in games table
+        self.CommitState()
 
     def GameOn(self):
         self.game_state.game_on = True
-        self.DBCommit()
+        self.game_state.game_started = int(time())
+        self.CommitState()
 
-    def DBCommit(self):
+    def CommitState(self):
         self.session.add(self.game_state)
         self.session.commit()
 
@@ -281,10 +341,20 @@ api.add_resource(Score, '/score', endpoint = 'score')
 api.add_resource(Players, '/players', endpoint = 'players')
 api.add_resource(Status, '/status', endpoint = 'status')
 
-@app.route("/")
-def get():
-    with open('index.html') as f:
-        return f.read()
+@app.route('/')
+def home():
+    return redirect(url_for('static', filename='index.html'))
+
+@app.route('/history')
+def games_history():
+    gw = GameWatch()
+    history = gw.GetHistory()
+    output = 'Warning, stats tracking is pretty twitchy. Please report weird and wonky results in #fooscam :)<br><br><br>'
+    for line in history:
+        output += line.Summary() + '<br>'
+
+    return output
+
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
