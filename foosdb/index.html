@@ -26,9 +26,9 @@
 	  //setTimeout(getscores, 2000);
 	  });
 	}
-    /*
+    
 	function getplayers() {
-		$.getJSON('http://foosserv/players.json', function(data) {
+		$.getJSON('http://foosserv:5000/players', function(data) {
 			if (data) {
 				$('.off-red').text(data['team'][1]['red']['offense']);
 				$('.def-red').text(data['team'][1]['red']['defense']);
@@ -36,11 +36,11 @@
 				$('.def-blue').text(data['team'][0]['blue']['defense']);
 			}
 		});
-	}*/
+	}
 
 	function update_ui() {
 		getscores();
-		//getplayers();
+		getplayers();
 		setTimeout(update_ui, 2000);
 	}
 </script>

@@ -68,6 +68,14 @@ class Game(ORMBase):
         self.red_score = red_score
 
 
+class Status(Resource):
+    def get(self):
+        gw = GameWatch()
+        if gw.GetStatus():
+            return {'status': 'Game On!'}
+        else:
+            return {'status': 'Table Open!'}
+
 class Score(Resource):
     """
     flask-restful score handler
@@ -105,8 +113,9 @@ class Players(Resource):
 
     def get(self):
         gw = GameWatch()
-        return gw.GetNames()
-        #red_off
+        names = gw.GetNames()
+        return {'team': [{'blue': {'offense': names['bo'], 'defense': names['bd']}},
+            {'red': {'offense': names['ro'], 'defense': names['rd']}}]}
 
     def post(self):
         args = self.reqparse.parse_args()
@@ -139,13 +148,34 @@ class GameWatch():
         """
         do something constructive with the incoming player ID's
         """
-        self.game_state.blue_off = players['bo']
-        self.game_state.blue_def = players['bd']
-        self.game_state.red_off = players['ro']
-        self.game_state.red_def = players['rd']
 
-        self.session.add(self.game_state)
-        self.session.commit()
+        new_ids = [players['bo'], players['bd'], players['ro'], players['rd']]
+        current_ids = self.GetIDs()
+        #update game state, try to be clever about
+        if new_ids != current_ids:
+            if new_ids == [-1, -1, -1,-1]:
+                #game is over
+                self.game_state.blue_off = -1
+                self.game_state.blue_def = -1
+                self.game_state.red_off = -1
+                self.game_state.red_def = -1
+            else:
+                if -1 in new_ids:
+                    for pair in zip(current_ids, new_ids):
+                        if pair[0] != pair[1]:
+                            #if an ID has changed but is unknown don't assume game is over
+                            if pair[1] == -1:
+                                #fuzzy
+                                pass
+                            else:
+                                #TODO: Allow offense and defense to swap mid game?
+                                #if an ID has changed and is now a new valid ID game is over
+                                self.game_state.blue_off = players['bo']
+                                self.game_state.blue_def = players['bd']
+                                self.game_state.red_off = players['ro']
+                                self.game_state.red_def = players['rd']
+                                self.session.add(self.game_state)
+                                self.session.commit()
 
     def UpdateScore(self, score):
         """
@@ -162,21 +192,28 @@ class GameWatch():
 
     def GetNames(self):
         player_names = {}
-        player_names['bo'] = self.game_state.blue_off
-        player_names['bd'] = self.game_state.blue_def
-        player_names['ro'] = self.game_state.red_off
-        player_names['rd'] = self.game_state.red_def
+        player_names['bo'] = self.session.query(Player.name).filter_by(id=self.game_state.blue_off).first()
+        player_names['bd'] = self.session.query(Player.name).filter_by(id=self.game_state.blue_def).first()
+        player_names['ro'] = self.session.query(Player.name).filter_by(id=self.game_state.red_off).first()
+        player_names['rd'] = self.session.query(Player.name).filter_by(id=self.game_state.red_def).first()
 
         return player_names
+
+    def GetIDs(self):
+        return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
+
+    def GetStatus(self):
+        return self.game_state.game_on
 
 app = Flask(__name__)
 api = Api(app)
 api.add_resource(Score, '/score', endpoint = 'score')
 api.add_resource(Players, '/players', endpoint = 'players')
+api.add_resource(Status, '/status', endpoint = 'status')
 
 @app.route("/")
 def get():
-    with open('index2.html') as f:
+    with open('index.html') as f:
         return f.read()
 
 if __name__ == '__main__':
