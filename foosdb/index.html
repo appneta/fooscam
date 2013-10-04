@@ -14,19 +14,15 @@
   <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
 
 <script type="text/javascript">
-    //$(document).ready(setTimeout(getscores, 2000));
-    $(document).ready(setTimeout(update_ui, 2000));
-
+    $(document).ready(update_ui());
 	function getscores() {
 	  $.getJSON('http://foosserv:5000/score', function(data) {
 	   if(data){
 	 	$('#score-red').text(data['score']['red']);
 		$('#score-blue').text(data['score']['blue']);
 	   }
-	  //setTimeout(getscores, 2000);
 	  });
 	}
-    
 	function getplayers() {
 		$.getJSON('http://foosserv:5000/players', function(data) {
 			if (data) {
@@ -37,7 +33,6 @@
 			}
 		});
 	}
-
     function getstatus() {
         $.getJSON('http://foosserv:5000/status', function(data) {
             if (data) {
@@ -45,7 +40,6 @@
             }
         });
     }
-
 	function update_ui() {
 		getscores();
 		getplayers();
@@ -113,7 +107,7 @@
 <body>
 <div id='foosvid'>
   <h1 class="foos-title">AppNeta Foosball Tournament!</h1>
-  <h1 class="status"></h1>
+  <h2 class="status"></h2>
   <div id="score">
     <span class="team team-blue">
             Blue: <span id="score-blue"></span>

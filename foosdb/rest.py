@@ -11,6 +11,12 @@ import json
 
 import pdb
 
+import logging
+
+log = logging.getLogger('gamewatch')
+log.setLevel(logging.DEBUG)
+log.addHandler(logging.StreamHandler())
+
 ORMBase = declarative_base()
 
 class GameState(ORMBase):
@@ -114,21 +120,22 @@ class Players(Resource):
     def get(self):
         gw = GameWatch()
         names = gw.GetNames()
-        return {'team': [{'blue': {'offense': names['bo'], 'defense': names['bd']}},
+        return {'team': [{'blue': {'offense': str(names['bo']), 'defense': names['bd']}},
             {'red': {'offense': names['ro'], 'defense': names['rd']}}]}
 
     def post(self):
+        log.debug('players posted')
         args = self.reqparse.parse_args()
         if len(args['team']) == 2:
             try:
-                blue_off = args['team'][0]['blue']['offense']
-                blue_def = args['team'][0]['blue']['defense']
-                red_off = args['team'][1]['red']['offense']
-                red_def = args['team'][1]['red']['defense']
+                blue_off = int(args['team'][0]['blue']['offense'])
+                blue_def = int(args['team'][0]['blue']['defense'])
+                red_off = int(args['team'][1]['red']['offense'])
+                red_def = int(args['team'][1]['red']['defense'])
             except (KeyError, IndexError):
                 return {'status': 'invalid JSON data'}, 400
 
-            #TODO:
+            log.debug(str(blue_off) + ' ' + str(blue_def) + ' ' + str(red_off) + ' ' + str(red_def))
             gw = GameWatch()
             gw.UpdatePlayers({'bo': blue_off, 'bd': blue_def, 'ro': red_off, 'rd': red_def})
             return {'status': 'accepted'}, 201
@@ -144,38 +151,66 @@ class GameWatch():
         #persist current game state by maintaining only 1 row in there
         self.game_state = self.session.query(GameState).filter_by(id=1).first()
 
+
     def UpdatePlayers(self, players):
         """
         do something constructive with the incoming player ID's
         """
-
         new_ids = [players['bo'], players['bd'], players['ro'], players['rd']]
         current_ids = self.GetIDs()
-        #update game state, try to be clever about
-        if new_ids != current_ids:
-            if new_ids == [-1, -1, -1,-1]:
-                #game is over
-                self.game_state.blue_off = -1
-                self.game_state.blue_def = -1
-                self.game_state.red_off = -1
-                self.game_state.red_def = -1
+
+        #update game state, try to be clever about it
+        if new_ids == [-1, -1, -1,-1]:
+            if self.game_state.game_on:
+                #if there was a game on, there ain't now
+                log.debug("4 unknown ID's incoming, ending current game")
+                if self.game_state.game_on:
+                    self.GameOver()
+                    return
             else:
-                if -1 in new_ids:
-                    for pair in zip(current_ids, new_ids):
-                        if pair[0] != pair[1]:
-                            #if an ID has changed but is unknown don't assume game is over
-                            if pair[1] == -1:
-                                #fuzzy
-                                pass
-                            else:
-                                #TODO: Allow offense and defense to swap mid game?
-                                #if an ID has changed and is now a new valid ID game is over
-                                self.game_state.blue_off = players['bo']
-                                self.game_state.blue_def = players['bd']
-                                self.game_state.red_off = players['ro']
-                                self.game_state.red_def = players['rd']
-                                self.session.add(self.game_state)
-                                self.session.commit()
+                log.debug("4 unknown ID's incoming, no game to end")
+                return
+
+        if new_ids != current_ids and (-1 in new_ids):
+            if self.game_state.game_on:
+                #id change detect and at least one id is unknown
+                for pair in zip(current_ids, new_ids):
+                    if pair[0] != pair[1]:
+                        log.debug('fuzzy detection started')
+                        #if an ID has changed but < 4 new ID's are unknown don't assume game is over
+                        if pair[1] == -1:
+                            log.debug('fuzzy players detected, ignoring')
+                            #fuzzy
+                            return
+                        else:
+                            #TODO: Allow offense and defense to swap mid game?
+                            #if an ID has changed and is now a new valid ID -> game is over
+                            log.debug('somebody moved REALLY fast')
+                            self.game_state.blue_off = players['bo']
+                            self.game_state.blue_def = players['bd']
+                            self.game_state.red_off = players['ro']
+                            self.game_state.red_def = players['rd']
+                            self.DBCommit()
+                            self.GameOver()
+                            return
+                    else:
+                        #no player change detected in this pair, game continues
+                        return
+            else:
+                log.debug('fuzzy players detected but game is off')
+                return
+        else:
+            #id change detected and all id's are known
+            if not self.game_state.game_on:
+                log.debug('4 new ids locked and no game going ... starting a new game!')
+                self.game_state.blue_off = players['bo']
+                self.game_state.blue_def = players['bd']
+                self.game_state.red_off = players['ro']
+                self.game_state.red_def = players['rd']
+                self.DBCommit()
+                self.GameOn()
+            else:
+                log.debug('4 ids locked but game is already going')
 
     def UpdateScore(self, score):
         """
@@ -183,9 +218,18 @@ class GameWatch():
         """
         self.game_state.red_score = score['red']
         self.game_state.blue_score = score['blue']
+        self.DBCommit()
 
-        self.session.add(self.game_state)
-        self.session.commit()
+    def UpdateStatus(self, status):
+        """
+        game on? game over?
+        """
+        if status:
+            self.game_state.game_on = True
+        else:
+            self.game_state.game_on = False
+
+        self.DBCommit()
 
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
@@ -197,6 +241,15 @@ class GameWatch():
         player_names['ro'] = self.session.query(Player.name).filter_by(id=self.game_state.red_off).first()
         player_names['rd'] = self.session.query(Player.name).filter_by(id=self.game_state.red_def).first()
 
+        try:
+            player_names['bo'] = str(player_names['bo'][0])
+            player_names['bd'] = str(player_names['bd'][0])
+            player_names['ro'] = str(player_names['ro'][0])
+            player_names['rd'] = str(player_names['rd'][0])
+        except Exception, e:
+            log.debug('oh shit')
+            log.debug(e)
+
         return player_names
 
     def GetIDs(self):
@@ -204,6 +257,23 @@ class GameWatch():
 
     def GetStatus(self):
         return self.game_state.game_on
+
+    def GameOver(self):
+        self.game_state.game_on = False
+        self.game_state.blue_off = -1
+        self.game_state.blue_def = -1
+        self.game_state.red_off = -1
+        self.game_state.red_def = -1
+        self.DBCommit()
+        #TODO: save score and stuff in games table
+
+    def GameOn(self):
+        self.game_state.game_on = True
+        self.DBCommit()
+
+    def DBCommit(self):
+        self.session.add(self.game_state)
+        self.session.commit()
 
 app = Flask(__name__)
 api = Api(app)
@@ -217,4 +287,4 @@ def get():
         return f.read()
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0')
+    app.run(debug=True,host='0.0.0.0',port=5000)
