@@ -14,6 +14,7 @@
             $(document).ready(function() {
                 $('#foos-stats').dataTable( {
                     "bProcessing": true,
+                    "aaSorting" : [[7, "desc"]],
                     "sAjaxSource": '/livehistjson'
                 } );
             } );
@@ -22,6 +23,7 @@
     <body>
     <div id='history'>
         <h1 class="foos-title">AppNeta FoosBall Stats</h1>
+        <a href='/'>Back to Fooscam</a>
         <div id='datatable'>
             <table cellpadding="0" cellspacing="0" border="0" class="display" id="foos-stats">
                 <thead>
