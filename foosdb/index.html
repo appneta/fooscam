@@ -38,9 +38,18 @@
 		});
 	}
 
+    function getstatus() {
+        $.getJSON('http://foosserv:5000/status', function(data) {
+            if (data) {
+                $('.status').text(data['status']);
+            }
+        });
+    }
+
 	function update_ui() {
 		getscores();
 		getplayers();
+        getstatus();
 		setTimeout(update_ui, 2000);
 	}
 </script>
@@ -103,7 +112,8 @@
 </style>
 <body>
 <div id='foosvid'>
-  <h1 class="foos-title">AppNeta Foosball Tournament!!!</h1>
+  <h1 class="foos-title">AppNeta Foosball Tournament!</h1>
+  <h1 class="status"></h1>
   <div id="score">
     <span class="team team-blue">
             Blue: <span id="score-blue"></span>
