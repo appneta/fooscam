@@ -3,14 +3,18 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from flask import Flask, jsonify, redirect, url_for
+from flask import Flask, jsonify, redirect, render_template
+from flask import url_for
 from flask.ext.restful import Api, Resource, reqparse
+#from flask.ext.restful import url_for as flask_restful_url_for
 from flask import abort
 
 import json
 
 from time import time
-from datetime import datetime
+from datetime import datetime, timedelta
+
+import pdb
 
 import logging
 
@@ -79,7 +83,7 @@ class Game(ORMBase):
         self.started = started
         self.ended = ended
 
-    def __repr__(self):
+    """def __repr__(self):
         gw = GameWatch()
         rep = 'Game ID: ' + str(self.id)
         rep += ' Red Team: (offense) ' + gw.GetNameByID(self.red_off)
@@ -91,7 +95,7 @@ class Game(ORMBase):
         rep += ' Game On: ' + datetime.fromtimestamp(self.started).strftime('%Y-%m-%d %H:%M:%S')
         rep += ' Game Over: ' + datetime.fromtimestamp(self.ended).strftime('%Y-%m-%d %H:%M:%S')
         rep += ' Result: ' + self.winner + ' WINS!'
-        return rep
+        return rep"""
 
     def Summary(self):
         gw = GameWatch()
@@ -107,6 +111,24 @@ class Game(ORMBase):
         rep += ' Result: ' + self.winner + ' WINS!'
         return rep
 
+class LiveHistory(Resource):
+    def get(self):
+        gw = GameWatch()
+        history = gw.GetHistory()
+        datatable_array = []
+        for game in history:
+            game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
+            datatable_array.append([gw.GetNameByID(game.red_off), \
+                gw.GetNameByID(game.red_def), \
+                gw.GetNameByID(game.blue_off), \
+                gw.GetNameByID(game.blue_def), \
+                game.red_score, game.blue_score, \
+                datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \
+                datetime.fromtimestamp(game.ended).strftime('%Y-%m-%d %H:%M:%S'), \
+                str(timedelta(seconds=game_duration.seconds)), \
+                game.winner])
+
+        return {'aaData': datatable_array}
 
 class Status(Resource):
     def get(self):
@@ -340,10 +362,15 @@ api = Api(app)
 api.add_resource(Score, '/score', endpoint = 'score')
 api.add_resource(Players, '/players', endpoint = 'players')
 api.add_resource(Status, '/status', endpoint = 'status')
+api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 
 @app.route('/')
 def home():
     return redirect(url_for('static', filename='index.html'))
+
+@app.route('/livehist')
+def live_hist():
+    return redirect(url_for('static', filename='history.html'))
 
 @app.route('/history')
 def games_history():

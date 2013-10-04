@@ -8,15 +8,15 @@
 
   <title>Foosball Score</title>
 
-  <link rel="stylesheet" href="http://foosserv/css/normalize.min.css">
-  <link rel="stylesheet" href="http://foosserv/css/main.css">
+  <link rel="stylesheet" href="/css/normalize.min.css">
+  <link rel="stylesheet" href="/css/main.css">
 
   <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
 
 <script type="text/javascript">
     $(document).ready(update_ui());
 	function getscores() {
-	  $.getJSON('http://foosserv:5000/score', function(data) {
+	  $.getJSON('/score', function(data) {
 	   if(data){
 	 	$('#score-red').text(data['score']['red']);
 		$('#score-blue').text(data['score']['blue']);
@@ -24,7 +24,7 @@
 	  });
 	}
 	function getplayers() {
-		$.getJSON('http://foosserv:5000/players', function(data) {
+		$.getJSON('/players', function(data) {
 			if (data) {
 				$('.off-red').text(data['team'][1]['red']['offense']);
 				$('.def-red').text(data['team'][1]['red']['defense']);
@@ -34,7 +34,7 @@
 		});
 	}
     function getstatus() {
-        $.getJSON('http://foosserv:5000/status', function(data) {
+        $.getJSON('/status', function(data) {
             if (data) {
                 $('.status').text(data['status']);
             }
