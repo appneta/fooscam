@@ -75,6 +75,7 @@ class Game(ORMBase):
 #Flask-Restful API endpoints
 class LiveHistory(Resource):
     #TODO: accept param to output by player + wins (total / red / blue)
+    #http://www.datatables.net/release-datatables/examples/server_side/server_side.html
     def get(self):
         gw = GameWatch()
         history = gw.GetHistory()
