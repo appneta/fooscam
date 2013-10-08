@@ -33,6 +33,7 @@ class GameState(ORMBase):
     blue_score = Column(Integer)
     red_score = Column(Integer)
     game_started = Column(Integer)
+    fuzzy = Column(Boolean)
 
     def __init__(self):
         self.id = 1
@@ -118,7 +119,7 @@ class Score(Resource):
             return {'score': {'red': red_score, 'blue': blue_score}}
 
     def post(self):
-        #TODO: add fuzzy flag to game status and don't update score if game is fuzzy
+        log.debug('score posted')
         args = self.reqparse.parse_args()
         try:
             red_score = args['score']['red']
@@ -154,7 +155,7 @@ class Players(Resource):
             except (KeyError, IndexError):
                 return {'status': 'invalid JSON data'}, 400
 
-            log.debug(str(blue_off) + ' ' + str(blue_def) + ' ' + str(red_off) + ' ' + str(red_def))
+            log.debug('ids = [' + str(blue_off) + ', ' + str(blue_def) + ', ' + str(red_off) + ', ' + str(red_def) + ']')
             gw = GameWatch()
             gw.UpdatePlayers({'bo': blue_off, 'bd': blue_def, 'ro': red_off, 'rd': red_def})
             return {'status': 'accepted'}, 201
@@ -181,14 +182,16 @@ class GameWatch():
         new_ids = [players['bo'], players['bd'], players['ro'], players['rd']]
         current_ids = self.GetIDs()
 
-        #update game state, try to be clever about it
+        #nothing to see here
+        if new_ids == current_ids:
+            return
+
         if new_ids == [-1, -1, -1,-1]:
             if self.game_state.game_on:
                 #if there was a game on, there ain't now
                 log.debug("4 unknown ID's incoming, ending current game")
-                if self.game_state.game_on:
-                    self.GameOver()
-                    return
+                self.GameOver()
+                return
             else:
                 #if there isn't a game on, who cares?
                 log.debug("4 unknown ID's incoming, no game to end")
@@ -209,18 +212,17 @@ class GameWatch():
                         else:
                             #TODO: Allow offense and defense to swap mid game?
                             #if an ID has changed but is NOT unknown new players are joining, current game is now over
-                            log.debug('somebody moved REALLY fast')
+                            """log.debug('somebody moved REALLY fast')
                             self.game_state.blue_off = players['bo']
                             self.game_state.blue_def = players['bd']
                             self.game_state.red_off = players['ro']
                             self.game_state.red_def = players['rd']
                             self.CommitState()
-                            self.GameOver()
-                            return
+                            self.GameOver()"""
+                            continue
                     else:
                         #no player change detected in this pair, game continues
-                        #TODO: this should probably be a continue statement, test that
-                        return
+                        continue
             else:
                 log.debug('fuzzy players detected but game is off')
                 return
@@ -312,6 +314,8 @@ class GameWatch():
 
     def GameOn(self):
         self.game_state.game_on = True
+        self.game_state.red_score = 0
+        self.game_state.blue_score = 0
         self.game_state.game_started = int(time())
         self.CommitState()
 

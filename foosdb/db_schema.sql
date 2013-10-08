@@ -18,14 +18,15 @@ CREATE TABLE "players" (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE "state" ( 
-    "id" INTEGER NOT NULL, 
-    "game_on" BOOLEAN NOT NULL, 
-    "red_off" INTEGER, 
-    "red_def" INTEGER, 
-    "blue_off" INTEGER, 
+CREATE TABLE "state" (
+    "id" INTEGER NOT NULL,
+    "game_on" BOOLEAN NOT NULL,
+    "red_off" INTEGER,
+    "red_def" INTEGER,
+    "blue_off" INTEGER,
     "blue_def" INTEGER,
     "red_score" INTEGER,
     "blue_score" INTEGER,
-    "game_started" INTEGER 
+    "game_started" INTEGER,
+    "fuzzy" BOOLEAN
 );
