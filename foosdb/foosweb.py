@@ -240,6 +240,7 @@ class GameWatch():
                 return
         else:
             #id change detected and all id's are known
+            #TODO: this is ugly flow control
             if not self.game_state.game_on:
                 log.debug('4 new ids locked and no game going ... starting a new game!')
             else:
@@ -381,6 +382,10 @@ def home():
 @app.route('/history')
 def live_hist():
     return redirect(url_for('static', filename='history.html'))
+
+@app.route('/readme')
+def readme():
+    return redirect(url_for('static', filename='fooscam.html'))
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
