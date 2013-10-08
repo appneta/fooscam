@@ -98,7 +98,7 @@ class LiveHistory(Resource):
 class Status(Resource):
     def get(self):
         gw = GameWatch()
-        if gw.GetStatus():
+        if gw.GetGameStatus():
             return {'status': 'Game On!'}
         else:
             return {'status': 'Table Open!'}
@@ -111,8 +111,11 @@ class Score(Resource):
 
     def get(self):
         gw = GameWatch()
-        red_score, blue_score = gw.GetScore()
-        return {'score': {'red': red_score, 'blue': blue_score}}
+        if not gw.GetGameStatus():
+            return {'score': {'red' : '', 'blue': ''}}
+        else:
+            red_score, blue_score = gw.GetScore()
+            return {'score': {'red': red_score, 'blue': blue_score}}
 
     def post(self):
         #TODO: add fuzzy flag to game status and don't update score if game is fuzzy
@@ -136,7 +139,7 @@ class Players(Resource):
     def get(self):
         gw = GameWatch()
         names = gw.GetNames()
-        return {'team': [{'blue': {'offense': str(names['bo']), 'defense': names['bd']}},
+        return {'team': [{'blue': {'offense': names['bo'], 'defense': names['bd']}},
             {'red': {'offense': names['ro'], 'defense': names['rd']}}]}
 
     def post(self):
@@ -246,18 +249,7 @@ class GameWatch():
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
 
-    def UpdateStatus(self, status):
-        """
-        game on? game over?
-        """
-        if status:
-            self.game_state.game_on = True
-        else:
-            self.game_state.game_on = False
-
-        self.CommitState()
-
-    def GetStatus(self):
+    def GetGameStatus(self):
         return self.game_state.game_on
 
     def GetNames(self):
@@ -273,7 +265,7 @@ class GameWatch():
             player_names['ro'] = str(player_names['ro'][0])
             player_names['rd'] = str(player_names['rd'][0])
         except Exception, e:
-            log.debug('oh shit')
+            log.debug('oh shit, player ID tag detected but not in foos db')
             log.debug(e)
 
         return player_names

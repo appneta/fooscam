@@ -17,19 +17,33 @@
     $(document).ready(update_ui());
 	function getscores() {
 	  $.getJSON('/score', function(data) {
-	   if(data){
-	 	$('#score-red').text(data['score']['red']);
-		$('#score-blue').text(data['score']['blue']);
-	   }
+	   if (data) {
+         if (data['score']['red'].length == 0 && data['score']['blue'].length == 0) {
+           $('#score').fadeOut();
+         } else {
+           $('#score-red').text(data['score']['red']);
+           $('#score-blue').text(data['score']['blue']);
+           $('#score').fadeIn();
+	    }
+       }
 	  });
 	}
 	function getplayers() {
 		$.getJSON('/players', function(data) {
 			if (data) {
-				$('.off-red').text(data['team'][1]['red']['offense']);
-				$('.def-red').text(data['team'][1]['red']['defense']);
-				$('.off-blue').text(data['team'][0]['blue']['offense']);
-				$('.def-blue').text(data['team'][0]['blue']['defense']);
+                //holy crap I miss multiple comparison!
+                if (data['team'][1]['red']['offense'] == 'None' && 
+                    data['team'][1]['red']['defense'] == 'None' &&
+                    data['team'][0]['blue']['offense'] == 'None' &&
+                    data['team'][0]['blue']['defense'] == 'None') {
+                    $('#teams, .tag').fadeOut();
+                } else {
+                    $('.off-red').text(data['team'][1]['red']['offense']);
+                    $('.def-red').text(data['team'][1]['red']['defense']);
+                    $('.off-blue').text(data['team'][0]['blue']['offense']);
+                    $('.def-blue').text(data['team'][0]['blue']['defense']);
+                    $('#teams, .tag').fadeIn(0);
+                }
 			}
 		});
 	}
@@ -67,13 +81,15 @@
     padding-left: 10px;
     padding-right: 10px;
   }
+  #teams, #score, #tag{
+    display: none; 
+  }
   .team-red{
     color:red;
   }
   .team-blue{
     color:blue;
   }
-
   #cam-frame{
     position: relative;
     margin: 0 auto;
