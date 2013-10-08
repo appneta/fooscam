@@ -15,17 +15,13 @@
   <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 <script type="text/javascript">
     $(document).ready(update_ui());
+    var fade_time = 250
 	function getscores() {
 	  $.getJSON('/score', function(data) {
 	   if (data) {
-         if (data['score']['red'].length == 0 && data['score']['blue'].length == 0) {
-           $('#score').fadeOut();
-         } else {
-           $('#score-red').text(data['score']['red']);
-           $('#score-blue').text(data['score']['blue']);
-           $('#score').fadeIn();
+           settext('#score-red', String(data['score']['red']));
+           settext('#score-blue', String(data['score']['blue']));
 	    }
-       }
 	  });
 	}
 	function getplayers() {
@@ -36,13 +32,13 @@
                     data['team'][1]['red']['defense'] == 'None' &&
                     data['team'][0]['blue']['offense'] == 'None' &&
                     data['team'][0]['blue']['defense'] == 'None') {
-                    $('#teams, .tag').fadeOut();
+                    $('#teams, .tag').fadeOut(fade_time);
                 } else {
                     $('.off-red').text(data['team'][1]['red']['offense']);
                     $('.def-red').text(data['team'][1]['red']['defense']);
                     $('.off-blue').text(data['team'][0]['blue']['offense']);
                     $('.def-blue').text(data['team'][0]['blue']['defense']);
-                    $('#teams, .tag').fadeIn(0);
+                    $('#teams, .tag').fadeIn(fade_time);
                 }
 			}
 		});
@@ -52,25 +48,33 @@
             if (data) {
                 if (data['status'] == 'blue') {
                     pulse('blue');
-                    statustext('Blue Wins!');
+                    settext('.status', 'Blue Wins!');
+                    $('#score','#teams', '#cam-frame').fadeOut(fade_time);
                 } else if (data['status'] == 'red') {
                     pulse('red');
-                    statustext('Red Wins!');
+                    settext('.status', 'Red Wins!');
+                    $('#score','#teams', '#cam-frame').fadeOut(fade_time);
                 } else if (data['status'] == 'tie') {
                     pulse('yellow');
-                    statustext('Tie Game!');
+                    settext('.status', 'Tie Game!');
+                    $('#score','#teams', '#cam-frame').fadeOut(fade_time);
+                } else if (data['status'] == 'Game On!') {
+                    $('#score','#teams', '#cam-frame').fadeIn(fade_time);
+                    settext('.status', data['status']);
+                    getplayers();
+                    getscores();
                 } else {
-                    statustext(data['status']);
+                    // table-open message
+                    settext('.status', data['status']);
                 }
             }
         });
     }
 
-    function statustext(text) {
-        if (text != $('.status').text()) {
-            $('.foos-title').fadeOut(200, function() {$('.status').text(text);});
-            /*$('.status').text(text);*/
-            $('.foos-title').fadeIn(200);
+    function settext(element, text) {
+        if (text != $(element).text()) {
+            $(element).fadeOut(fade_time, function() {$(element).text(text);});
+            $(element).fadeIn(fade_time);
         }
     }
     function pulse(color) {
@@ -80,8 +84,9 @@
         }
     }
 	function update_ui() {
-		getscores();
-		getplayers();
+        $('.foos-title').fadeIn(fade_time);
+		/*getscores();
+		getplayers();*/
         getstatus();
 		setTimeout(update_ui, 2000);
 	}
@@ -89,6 +94,7 @@
 
 <style>
   #score {
+    display: none;
     margin-left: auto;
     margin-right: auto;
     /*width: 480px;*/
@@ -110,6 +116,10 @@
   #teams, #score, #tag{
     display: none; 
   }
+  .tag{
+    position:absolute;
+    font-size: 1.5em;
+  }
   .team-red{
     color:red;
   }
@@ -121,12 +131,6 @@
     margin: 0 auto;
     width:1280px;
   }
-
-  .tag{
-    position:absolute;
-    font-size: 1.5em;
-  }
-
   #off-blue-tag{
     bottom:4px;
     right:4px;
@@ -143,6 +147,10 @@
   #def-red-tag{
     top:4px;
     right:4px;
+  }
+  #foot-clan{
+    position: absolute;
+    top: 0;
   }
 
 </style>
@@ -172,7 +180,9 @@
     <span id="off-red-tag" class="off-red tag team-red" ></span> <span id="def-red-tag" class="def-red tag team-red"></span>
       <img src="http://foosview:8082/v.mjpg">
   </div>
+  <div id="foot-clan">
   <a href="/history">Foosball Stats</a>&nbsp;<a href="/readme">Read Me</a>
+  </div>
 </div>
 </body>
 </html>

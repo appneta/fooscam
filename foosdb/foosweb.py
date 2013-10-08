@@ -192,7 +192,7 @@ class GameWatch():
             winner_announced_at = self.session.query(Game.ended).order_by(Game.id.desc()).first()
             if len(winner_announced_at) == 1:
                 announce_duration = datetime.fromtimestamp(time()) - datetime.fromtimestamp(winner_announced_at[0])
-                if announce_duration.seconds > 5:
+                if announce_duration.seconds > 2:
                     self.game_state.game_winner = ''
                     self.CommitState()
 
