@@ -182,13 +182,17 @@ class GameWatch():
         new_ids = [players['bo'], players['bd'], players['ro'], players['rd']]
         current_ids = self.GetIDs()
 
-        #nothing to see here
+        #same as it ever was
         if new_ids == current_ids:
-            return
+            if self.game_state.fuzzy:
+                log.debug('4 players locked and game in progress, reverting fuzzy state')
+                self.game_state.fuzzy = False
+                self.CommitState()
+                return
 
+        #if there was a game on, there ain't now
         if new_ids == [-1, -1, -1,-1]:
             if self.game_state.game_on:
-                #if there was a game on, there ain't now
                 log.debug("4 unknown ID's incoming, ending current game")
                 self.GameOver()
                 return
@@ -204,6 +208,8 @@ class GameWatch():
                 for pair in zip(current_ids, new_ids):
                     if pair[0] != pair[1]:
                         log.debug('fuzzy detection started')
+                        self.game_state.fuzzy = True
+                        self.CommitState()
                         if pair[1] == -1:
                             #one or more incoming ID's are unknown (but not all of them)
                             #TODO: ensure the other incoming ID's which are known match the existing game state and mark game as fuzzy
@@ -238,15 +244,24 @@ class GameWatch():
                 self.GameOn()
             else:
                 log.debug('4 ids locked but game is already going')
+                if self.game_state.fuzzy:
+                    log.debug('Reversing fuzzy status')
+                    self.game_state.fuzzy = False
+                    self.CommitState()
 
     def UpdateScore(self, score):
         """
         do something useful with the score
         """
-        #TODO: something here about fuzziness
-        self.game_state.red_score = score['red']
-        self.game_state.blue_score = score['blue']
-        self.CommitState()
+        if self.game_state.fuzzy:
+            log.debug('ignoring score update while game is fuzzy')
+        elif not self.game_state.game_on:
+            log.debug('ignoring score update while no game underway')
+        else:
+            log.debug('game in progress and ids are locked, updating score')
+            self.game_state.red_score = score['red']
+            self.game_state.blue_score = score['blue']
+            self.CommitState()
 
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
