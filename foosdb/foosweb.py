@@ -122,9 +122,9 @@ class Score(Resource):
         log.debug('score posted')
         args = self.reqparse.parse_args()
         try:
-            red_score = args['score']['red']
-            blue_score = args['score']['blue']
-        except KeyError:
+            red_score = int(args['score']['red'])
+            blue_score = int(args['score']['blue'])
+        except (KeyError, ValueError):
             return {'status': 'invalid JSON data'}, 400
 
         gw = GameWatch()
@@ -173,6 +173,9 @@ class GameWatch():
         self.session = Session()
         #persist current game state by maintaining only 1 row in there
         self.game_state = self.session.query(GameState).filter_by(id=1).first()
+        if not self.game_state.game_on:
+            self.game_state.fuzzy = False
+            self.CommitState()
 
 
     def UpdatePlayers(self, players):
@@ -185,7 +188,7 @@ class GameWatch():
         #same as it ever was
         if new_ids == current_ids:
             if self.game_state.fuzzy:
-                log.debug('4 players locked and game in progress, reverting fuzzy state')
+                log.debug('got 4 players matching ids for game in progress, reverting fuzzy state')
                 self.game_state.fuzzy = False
                 self.CommitState()
                 return
@@ -193,75 +196,72 @@ class GameWatch():
         #if there was a game on, there ain't now
         if new_ids == [-1, -1, -1,-1]:
             if self.game_state.game_on:
-                log.debug("4 unknown ID's incoming, ending current game")
+                log.debug("got 4 unknown ID's, ending current game")
                 self.GameOver()
                 return
             else:
                 #if there isn't a game on, who cares?
-                log.debug("4 unknown ID's incoming, no game to end")
+                log.debug("got 4 unknown ID's, no game to end")
                 return
 
-        #game is looking fuzzy
+        #one or more incoming ID's are unknown (but not all of them)
         if new_ids != current_ids and (-1 in new_ids):
             if self.game_state.game_on:
-                #id change detect and at least one id is unknown
+                #mark current game fuzzy
+                self.game_state.fuzzy = True
+                self.CommitState()
+                log.debug('fuzzy players detected, ignoring player ids')
                 for pair in zip(current_ids, new_ids):
-                    if pair[0] != pair[1]:
-                        log.debug('fuzzy detection started')
-                        self.game_state.fuzzy = True
-                        self.CommitState()
-                        if pair[1] == -1:
-                            #one or more incoming ID's are unknown (but not all of them)
-                            #TODO: ensure the other incoming ID's which are known match the existing game state and mark game as fuzzy
-                            log.debug('fuzzy players detected, ignoring')
-                            return
-                        else:
-                            #TODO: Allow offense and defense to swap mid game?
-                            #if an ID has changed but is NOT unknown new players are joining, current game is now over
-                            """log.debug('somebody moved REALLY fast')
-                            self.game_state.blue_off = players['bo']
-                            self.game_state.blue_def = players['bd']
-                            self.game_state.red_off = players['ro']
-                            self.game_state.red_def = players['rd']
-                            self.CommitState()
-                            self.GameOver()"""
-                            continue
-                    else:
-                        #no player change detected in this pair, game continues
-                        continue
+                    if pair[0] != pair[1] and pair[1] != -1:
+                        #game is fuzzy AND a valid player id has changed!
+                        log.debug('fuzzy game with people moving around, assuming game over')
+                        self.GameOver()
+                        return
             else:
-                log.debug('fuzzy players detected but game is off')
+                log.debug('fuzzy players detected but no game is on')
                 return
         else:
             #id change detected and all id's are known
             if not self.game_state.game_on:
                 log.debug('4 new ids locked and no game going ... starting a new game!')
-                self.game_state.blue_off = players['bo']
-                self.game_state.blue_def = players['bd']
-                self.game_state.red_off = players['ro']
-                self.game_state.red_def = players['rd']
-                self.CommitState()
-                self.GameOn()
             else:
-                log.debug('4 ids locked but game is already going')
-                if self.game_state.fuzzy:
-                    log.debug('Reversing fuzzy status')
-                    self.game_state.fuzzy = False
-                    self.CommitState()
+                log.debug('4 new ids locked but game is already going, throwing away current game state and starting a new game')
+
+            self.game_state.blue_off = players['bo']
+            self.game_state.blue_def = players['bd']
+            self.game_state.red_off = players['ro']
+            self.game_state.red_def = players['rd']
+            self.CommitState()
+            self.GameOn()
 
     def UpdateScore(self, score):
         """
         do something useful with the score
         """
-        if self.game_state.fuzzy:
-            log.debug('ignoring score update while game is fuzzy')
-        elif not self.game_state.game_on:
+
+        if not self.game_state.game_on:
             log.debug('ignoring score update while no game underway')
+            return
         else:
-            log.debug('game in progress and ids are locked, updating score')
-            self.game_state.red_score = score['red']
-            self.game_state.blue_score = score['blue']
-            self.CommitState()
+            log.debug('processing score update while game underway')
+            #end the game when a score goes from >= 8 to 0
+            log.debug(str(score['red']) + ' ' + str(self.game_state.red_score) + ' ' + str(score['blue']) + ' ' + str( self.game_state.blue_score))
+            if (score['red'] == 0 and self.game_state.red_score >=8) or (score['blue'] == 0 and self.game_state.blue_score >=8):
+                log.debug('score went from red: ' + str(self.game_state.red_score) + ' blue: ' + str(self.game_state.blue_score) + ' to red: ' + \
+                    str(score['red']) + ' blue: ' + str(score['blue']))
+                log.debug('assuming game is over and using previous scores to determine winner')
+                self.GameOver()
+                return
+            else:
+                if self.game_state.fuzzy:
+                    log.debug('minor score change detected and game is fuzzy, ignoring until locked')
+                    return
+                else:
+                    log.debug('minor score change detected and game is locked, updating score')
+                    self.game_state.red_score = score['red']
+                    self.game_state.blue_score = score['blue']
+                    self.CommitState()
+                    return
 
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
@@ -270,6 +270,7 @@ class GameWatch():
         return self.game_state.game_on
 
     def GetNames(self):
+        #TODO: this could probably be better ...
         player_names = {}
         player_names['bo'] = self.session.query(Player.name).filter_by(id=self.game_state.blue_off).first()
         player_names['bd'] = self.session.query(Player.name).filter_by(id=self.game_state.blue_def).first()
@@ -277,12 +278,12 @@ class GameWatch():
         player_names['rd'] = self.session.query(Player.name).filter_by(id=self.game_state.red_def).first()
 
         try:
-            player_names['bo'] = str(player_names['bo'][0])
-            player_names['bd'] = str(player_names['bd'][0])
-            player_names['ro'] = str(player_names['ro'][0])
-            player_names['rd'] = str(player_names['rd'][0])
+            player_names['bo'] = str(player_names['bo'][0]) if self.game_state.blue_off != -1 else 'None'
+            player_names['bd'] = str(player_names['bd'][0]) if self.game_state.blue_def != -1 else 'None'
+            player_names['ro'] = str(player_names['ro'][0]) if self.game_state.red_off != -1 else 'None'
+            player_names['rd'] = str(player_names['rd'][0]) if self.game_state.red_def != -1 else 'None'
         except Exception, e:
-            log.debug('oh shit, player ID tag detected but not in foos db')
+            log.error('player ID tag detected but not in foos db!')
             log.debug(e)
 
         return player_names
@@ -329,6 +330,7 @@ class GameWatch():
 
     def GameOn(self):
         self.game_state.game_on = True
+        self.game_state.fuzzy = False
         self.game_state.red_score = 0
         self.game_state.blue_score = 0
         self.game_state.game_started = int(time())
