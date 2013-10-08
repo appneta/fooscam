@@ -28,5 +28,6 @@ CREATE TABLE "state" (
     "red_score" INTEGER,
     "blue_score" INTEGER,
     "game_started" INTEGER,
-    "fuzzy" BOOLEAN
+    "fuzzy" BOOLEAN,
+    "game_winner" STRING
 );

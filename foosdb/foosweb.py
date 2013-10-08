@@ -14,6 +14,8 @@ from datetime import datetime, timedelta
 
 import logging
 
+import pdb
+
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
@@ -34,6 +36,7 @@ class GameState(ORMBase):
     red_score = Column(Integer)
     game_started = Column(Integer)
     fuzzy = Column(Boolean)
+    game_winner = Column(String)
 
     def __init__(self):
         self.id = 1
@@ -99,10 +102,14 @@ class LiveHistory(Resource):
 class Status(Resource):
     def get(self):
         gw = GameWatch()
-        if gw.GetGameStatus():
-            return {'status': 'Game On!'}
+        if gw.GetWinner():
+            #game is won, huzzah!
+            return {'status': gw.GetWinner()}
         else:
-            return {'status': 'Table Open!'}
+            if gw.IsGameOn():
+                return {'status': 'Game On!'}
+            else:
+                return {'status': 'Table Open!'}
 
 class Score(Resource):
     def __init__(self):
@@ -112,7 +119,7 @@ class Score(Resource):
 
     def get(self):
         gw = GameWatch()
-        if not gw.GetGameStatus():
+        if not gw.IsGameOn():
             return {'score': {'red' : '', 'blue': ''}}
         else:
             red_score, blue_score = gw.GetScore()
@@ -166,6 +173,7 @@ class GameWatch():
     """
     main fooswatcher game logic lives in here
     """
+
     def __init__(self):
         db = create_engine('sqlite:///foosball.db')
         Session = sessionmaker()
@@ -173,10 +181,20 @@ class GameWatch():
         self.session = Session()
         #persist current game state by maintaining only 1 row in there
         self.game_state = self.session.query(GameState).filter_by(id=1).first()
+
+        #reset fuzziness between games
         if not self.game_state.game_on:
             self.game_state.fuzzy = False
             self.CommitState()
 
+        #if a game winner has been decided clear from the game state after a short time
+        if self.game_state.game_winner != '':
+            winner_announced_at = self.session.query(Game.ended).order_by(Game.id.desc()).first()
+            if len(winner_announced_at) == 1:
+                announce_duration = datetime.fromtimestamp(time()) - datetime.fromtimestamp(winner_announced_at[0])
+                if announce_duration.seconds > 5:
+                    self.game_state.game_winner = ''
+                    self.CommitState()
 
     def UpdatePlayers(self, players):
         """
@@ -266,7 +284,7 @@ class GameWatch():
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
 
-    def GetGameStatus(self):
+    def IsGameOn(self):
         return self.game_state.game_on
 
     def GetNames(self):
@@ -301,6 +319,12 @@ class GameWatch():
 
         return game_history
 
+    def GetWinner(self):
+        if self.game_state.game_winner == '':
+            return None
+        else:
+            return self.game_state.game_winner
+
     def GameOver(self):
         """
         determine the winner and record that along with the current game state
@@ -320,6 +344,9 @@ class GameWatch():
 
         self.session.add(foos_log)
         self.session.commit()
+
+        #set a state object to the winner to update web ui with winning team detected
+        self.game_state.game_winner = winner
 
         self.game_state.game_on = False
         self.game_state.blue_off = -1
