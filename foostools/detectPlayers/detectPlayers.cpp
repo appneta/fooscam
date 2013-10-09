@@ -404,7 +404,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	stringstream jsonStringOld;
+	string jsonStringOld;
 	ofstream jsonFile;
 
 	for(;;) {
@@ -461,7 +461,7 @@ int main(int argc, char** argv)
 						 << redDefense
 						 << "\"}}]}\n";
 
-		if (jsonStringNew.str() != jsonStringOld.str()) {
+		if (jsonStringNew.str() != jsonStringOld) {
 
 			string cmd = "curl -X POST -H \"Content-Type: application/json\" "
 					   "-d '" + jsonStringNew.str() + "' "
@@ -473,7 +473,7 @@ int main(int argc, char** argv)
 			jsonFile.close();
 
 			jsonStringOld.clear();
-			jsonStringOld << jsonStringNew.rdbuf();
+			jsonStringOld = String(jsonStringNew.str());
 		}
 
 		if (showSpeed) {
