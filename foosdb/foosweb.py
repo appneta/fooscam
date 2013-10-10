@@ -264,8 +264,8 @@ class GameWatch():
             return
         else:
             log.debug('processing score update while game underway')
-            #end the game when a score goes from >= 8 to 0
             log.debug(str(score['red']) + ' ' + str(self.game_state.red_score) + ' ' + str(score['blue']) + ' ' + str( self.game_state.blue_score))
+            #end the game when a score goes from >= 8 to 0
             if (score['red'] == 0 and self.game_state.red_score >=8) or (score['blue'] == 0 and self.game_state.blue_score >=8):
                 log.debug('score went from red: ' + str(self.game_state.red_score) + ' blue: ' + str(self.game_state.blue_score) + ' to red: ' + \
                     str(score['red']) + ' blue: ' + str(score['blue']))
