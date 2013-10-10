@@ -59,12 +59,14 @@
                     settext('.status', 'Tie Game!');
                     $('#score','#teams', '#cam-frame').fadeOut(fade_time);
                 } else if (data['status'] == 'Game On!') {
-                    $('#score','#teams', '#cam-frame').fadeIn(fade_time);
+                    /*$('#score','#teams', '#cam-frame').fadeIn(fade_time);*/
+                    $('#score','#teams', '#cam-frame').css('display': 'block');
                     settext('.status', data['status']);
                     getplayers();
                     getscores();
                 } else {
                     // table-open message
+                    $('.foos-title').fadeIn(fade_time);
                     settext('.status', data['status']);
                 }
             }
@@ -84,9 +86,6 @@
         }
     }
 	function update_ui() {
-        $('.foos-title').fadeIn(fade_time);
-		/*getscores();
-		getplayers();*/
         getstatus();
 		setTimeout(update_ui, 2000);
 	}
@@ -94,7 +93,7 @@
 
 <style>
   #score {
-    display: none;
+    /*display: none;*/
     margin-left: auto;
     margin-right: auto;
     /*width: 480px;*/
@@ -113,7 +112,7 @@
     padding-left: 10px;
     padding-right: 10px;
   }
-  #teams, #score, #tag{
+  #teams, #tag{
     display: none; 
   }
   .tag{
@@ -156,7 +155,7 @@
 </style>
 <body>
 <div id='foosvid' align='center'>
-  <h1 class="foos-title">AppNeta Foos&beta;eta: <span class="status"></span></h1>
+  <h1 class="foos-title">AppNeta Foos&beta;eta: <span class="status">Checking Table ...</span></h1>
   <div id="score">
     <span class="team team-blue">
             Blue: <span id="score-blue"></span>

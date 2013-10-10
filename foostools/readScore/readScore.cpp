@@ -56,7 +56,7 @@ int main( int argc, char** argv )
 	Rect redArea = Rect(atoi(configs["redX"].c_str()), atoi(configs["redY"].c_str()),
 			atoi(configs["redW"].c_str()), atoi(configs["redH"].c_str()));
 
-	stringstream jsonStringOld;
+	string jsonStringOld;
 	ofstream jsonFile;
 
 	for(;;) {
@@ -111,7 +111,7 @@ int main( int argc, char** argv )
 							<< redScore
 							<< "\"}}\n";
 
-					if (jsonStringNew.str() != jsonStringOld.str()) {
+					if (jsonStringNew.str() != jsonStringOld) {
 
 						string cmd = "curl -X POST -H \"Content-Type: application/json\" "
 								"-d '" + jsonStringNew.str() + "' "
@@ -123,7 +123,7 @@ int main( int argc, char** argv )
 						jsonFile.close();
 
 						jsonStringOld.clear();
-						jsonStringOld << jsonStringNew.rdbuf();
+						jsonStringOld = String(jsonStringNew.str());
 					}
 				} else {
 					std::cout << "error: matchScore returned NULL\n";
