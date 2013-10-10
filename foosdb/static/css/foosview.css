@@ -9,6 +9,7 @@
 }
 /* team and score */
 #game-info {
+    opacity: 0;
     overflow: auto;
 }
 #score{
@@ -41,6 +42,7 @@
     height: 628px;
 }
 .tag{
+    opacity: 0;
     position: absolute;
     font-size: 1.5em;
 }

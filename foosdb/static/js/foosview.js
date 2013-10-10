@@ -16,13 +16,13 @@ function getplayers() {
                 data['team'][1]['red']['defense'] == 'None' &&
                 data['team'][0]['blue']['offense'] == 'None' &&
                 data['team'][0]['blue']['defense'] == 'None') {
-                $('#teams, .tag').fadeOut(fade_time);
+                $('#teams, .tag').fadeTo(fade_time, 1);
             } else {
                 $('.off-red').text(data['team'][1]['red']['offense']);
                 $('.def-red').text(data['team'][1]['red']['defense']);
                 $('.off-blue').text(data['team'][0]['blue']['offense']);
                 $('.def-blue').text(data['team'][0]['blue']['defense']);
-                $('#teams, .tag').fadeIn(fade_time);
+                $('#teams, .tag').fadeTo(fade_time, 1);
             }
         }
     });
@@ -31,24 +31,25 @@ function getstatus() {
     $.getJSON('/status', function(data) {
         if (data) {
             if (data['status'] == 'blue') {
-                pulse('blue');
                 settext('.status', 'Blue Wins!');
+                pulse('blue');
                 $('#score','#teams', '#cam-frame').fadeOut(fade_time);
             } else if (data['status'] == 'red') {
-                pulse('red');
                 settext('.status', 'Red Wins!');
+                pulse('red');
                 $('#score','#teams', '#cam-frame').fadeOut(fade_time);
             } else if (data['status'] == 'tie') {
-                pulse('yellow');
                 settext('.status', 'Tie Game!');
+                pulse('yellow');
                 $('#score','#teams', '#cam-frame').fadeOut(fade_time);
             } else if (data['status'] == 'Game On!') {
-                $('#score','#teams', '#cam-frame').fadeIn(fade_time);
+                $('#game-info').fadeTo(fade_time, 1);
                 settext('.status', data['status']);
                 getplayers();
                 getscores();
-            } else {
+            } else if (data['status'] == 'Table Open!') {
                 // table-open message
+                $('#game-info').fadeTo(fade_time, 0);
                 settext('.status', data['status']);
             }
         }
@@ -57,8 +58,8 @@ function getstatus() {
 
 function settext(element, text) {
     if (text != $(element).text()) {
-        $(element).fadeOut(fade_time, function() {$(element).text(text);});
-        $(element).fadeIn(fade_time);
+        $(element).fadeTo(fade_time, 0, function() {$(element).text(text);});
+        $(element).fadeTo(fade_time, 1);
     }
 }
 function pulse(color) {
