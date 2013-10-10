@@ -45,6 +45,7 @@
     opacity: 0;
     position: absolute;
     font-size: 1.5em;
+    text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
 }
 #off-blue-tag{
     bottom:4px;

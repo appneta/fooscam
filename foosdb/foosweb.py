@@ -108,9 +108,9 @@ class Status(Resource):
             return {'status': gw.GetWinner()}
         else:
             if gw.IsGameOn():
-                return {'status': 'Game On!'}
+                return {'status': 'gameon'}
             else:
-                return {'status': 'Table Open!'}
+                return {'status': 'gameoff'}
 
 class Score(Resource):
     def __init__(self):
@@ -331,10 +331,14 @@ class GameWatch():
         """
         determine the winner and record that along with the current game state
         """
+
+        #decide who won and compensate for players not actually sliding the 10th cube into place
         if self.game_state.red_score > self.game_state.blue_score:
             winner = 'red'
+            self.game_state.red_score = 10
         elif self.game_state.blue_score > self.game_state.red_score:
             winner = 'blue'
+            self.game_state.blue_score = 10
         elif self.game_state.blue_score == self.game_state.red_score:
             winner = 'tie'
 

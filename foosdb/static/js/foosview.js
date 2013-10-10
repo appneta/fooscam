@@ -33,25 +33,22 @@ function getstatus() {
             if (data['status'] == 'blue') {
                 settext('.status', 'Blue Wins!');
                 pulse('blue');
-                $('#score','#teams', '#cam-frame').fadeOut(fade_time);
             } else if (data['status'] == 'red') {
                 settext('.status', 'Red Wins!');
                 pulse('red');
-                $('#score','#teams', '#cam-frame').fadeOut(fade_time);
             } else if (data['status'] == 'tie') {
                 settext('.status', 'Tie Game!');
                 pulse('yellow');
-                $('#score','#teams', '#cam-frame').fadeOut(fade_time);
-            } else if (data['status'] == 'Game On!') {
+            } else if (data['status'] == 'gameon') {
                 $('#game-info').fadeTo(fade_time, 1);
-                settext('.status', data['status']);
+                settext('.status', 'Game On!');
                 getplayers();
                 getscores();
-            } else if (data['status'] == 'Table Open!') {
+            } else if (data['status'] == 'gameoff') {
                 // table-open message
                 $('#game-info').fadeTo(fade_time, 0);
                 $('#teams, .tag').fadeTo(fade_time, 0);
-                settext('.status', data['status']);
+                settext('.status', 'Table Open!');
             }
         }
     });
