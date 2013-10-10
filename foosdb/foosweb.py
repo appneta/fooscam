@@ -388,7 +388,7 @@ assets.register('js', js)
 
 @app.route('/')
 def home():
-    return render_template('index.html', debug_image='static/img/table.png')
+    return render_template('index.html')#, debug_image='static/img/table.png')
 
 @app.route('/history')
 def live_hist():
