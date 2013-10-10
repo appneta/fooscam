@@ -3,20 +3,13 @@
     margin-left: auto;
     margin-right: auto;
 }
-
 .foos-title{
-    /*display: none;
-    margin-left: auto;
-    margin-right: auto;*/
     margin-top: 4px;
     width: 690px;
 }
 /* team and score */
 #game-info {
-    /*display: none;
-    margin-left: auto;
-    margin-right: auto;
-    width: 480px;*/
+    overflow: auto;
 }
 #score{
     float: left;
@@ -41,7 +34,6 @@
 /* video frame and embedded name tags */
 #cam-frame{
     position: relative;
-    margin: 0 auto;
     width:1280px;
 }
 #table-video{
@@ -49,7 +41,7 @@
     height: 628px;
 }
 .tag{
-    0position:absolute;
+    position: absolute;
     font-size: 1.5em;
 }
 #off-blue-tag{
@@ -60,7 +52,6 @@
     bottom:4px;
     left:4px;
 }
-
 #off-red-tag{
     top:4px;
     left:4px;
@@ -69,8 +60,7 @@
     top:4px;
     right:4px;
 }
-/* derp
 #foot-clan{
     position: absolute;
     top: 0;
-}*/
+}
