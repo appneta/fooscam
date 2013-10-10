@@ -16,7 +16,7 @@ function getplayers() {
                 data['team'][1]['red']['defense'] == 'None' &&
                 data['team'][0]['blue']['offense'] == 'None' &&
                 data['team'][0]['blue']['defense'] == 'None') {
-                $('#teams, .tag').fadeTo(fade_time, 1);
+                $('#teams, .tag').fadeTo(fade_time, 0);
             } else {
                 $('.off-red').text(data['team'][1]['red']['offense']);
                 $('.def-red').text(data['team'][1]['red']['defense']);
@@ -50,6 +50,7 @@ function getstatus() {
             } else if (data['status'] == 'Table Open!') {
                 // table-open message
                 $('#game-info').fadeTo(fade_time, 0);
+                $('#teams, .tag').fadeTo(fade_time, 0);
                 settext('.status', data['status']);
             }
         }
