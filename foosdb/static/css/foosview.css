@@ -1,0 +1,59 @@
+#score {
+display: none;
+margin-left: auto;
+margin-right: auto;
+/*width: 480px;*/
+}
+.foos-title{
+display: none;
+margin-left: auto;
+margin-right: auto;
+width: 690px;
+}
+.team, #team-divider{
+font-weight: bold;
+font-size: 24px;
+}
+#team-divider{
+padding-left: 10px;
+padding-right: 10px;
+}
+#teams, #score, #tag{
+display: none; 
+}
+.tag{
+position:absolute;
+font-size: 1.5em;
+}
+.team-red{
+color:red;
+}
+.team-blue{
+color:blue;
+}
+#cam-frame{
+position: relative;
+margin: 0 auto;
+width:1280px;
+}
+#off-blue-tag{
+bottom:4px;
+right:4px;
+}
+#def-blue-tag{
+bottom:4px;
+left:4px;
+}
+
+#off-red-tag{
+top:4px;
+left:4px;
+}
+#def-red-tag{
+top:4px;
+right:4px;
+}
+#foot-clan{
+position: absolute;
+top: 0;
+}

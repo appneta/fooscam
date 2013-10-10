@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from flask import Flask, jsonify, redirect, render_template, url_for
 from flask.ext.restful import Api, Resource, reqparse
+from flask.ext.assets import Environment, Bundle
 from flask import abort
 
 import json
@@ -375,9 +376,16 @@ api.add_resource(Players, '/players', endpoint = 'players')
 api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 
+assets = Environment(app)
+js = Bundle('js/foosview.js', 'js/modernizr-2.6.2.min.js')
+css = Bundle('css/normalize.css', 'css/main.css', 'css/foosview.css')
+assets.register('css', css)
+assets.register('js', js)
+
 @app.route('/')
 def home():
-    return redirect(url_for('static', filename='index.html'))
+    return render_template('index.html')
+    #return redirect(url_for('static', filename='index_new.html'))
 
 @app.route('/history')
 def live_hist():

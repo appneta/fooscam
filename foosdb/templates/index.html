@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+        {% assets "css" %}
+        <link rel="stylesheet" href="{{ ASSET_URL }}">
+        {% endassets %}
+        {% assets "js" %}
+        <script src="{{ ASSET_URL }}"></script>
+        {% endassets %}
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <div id='foosvid' align='center'>
+            <h1 class="foos-title">AppNeta Foos&beta;eta: <span class="status"></span></h1>
+            <div id="score">
+                <span class="team team-blue">
+                    Blue: <span id="score-blue"></span>
+                </span>
+                <span id="team-divider">VS</span>
+                <span class="team team-red">
+                    Red: <span id="score-red"></span>
+                </span>
+            </div>
+            <div id="teams">
+                <span class="team team-blue">
+                    <span id="off-blue" class="off-blue"></span> &amp; <span id="def-blue" class="def-blue"></span>
+                </span>
+                <span id="team-divider">VS</span>
+                <span class="team team-red">
+                    <span id="off-red" class="off-red" ></span> &amp; <span id="def-red" class="def-red"></span>
+                </span>
+            </div>
+            <div id="cam-frame">
+                <span id="off-blue-tag" class="off-blue tag team-blue"></span> <span id="def-blue-tag" class="def-blue tag team-blue"> </span>
+                <span id="off-red-tag" class="off-red tag team-red" ></span> <span id="def-red-tag" class="def-red tag team-red"></span>
+                <img src="http://foosview:8082/v.mjpg">
+            </div>
+            <div id="foot-clan">
+                <a href="/history">Foosball Stats</a>&nbsp;<a href="/readme">Read Me</a>
+            </div>
+        </div>
+    </body>
+</html>
