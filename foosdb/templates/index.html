@@ -23,30 +23,36 @@
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-        <div id='foosvid' align='center'>
+        <div id='foosview' align='center'>
             <h1 class="foos-title">AppNeta Foos&beta;eta: <span class="status"></span></h1>
-            <div id="score">
-                <span class="team team-blue">
-                    Blue: <span id="score-blue"></span>
+            <div id="game-info">
+                <span id="score">
+                    <span class="team team-blue">
+                        Blue: <span id="score-blue"></span>
+                    </span>
+                    &nbsp;
+                    <span class="team team-red">
+                        Red: <span id="score-red"></span>
+                    </span>
                 </span>
-                <span id="team-divider">VS</span>
-                <span class="team team-red">
-                    Red: <span id="score-red"></span>
-                </span>
-            </div>
-            <div id="teams">
-                <span class="team team-blue">
-                    <span id="off-blue" class="off-blue"></span> &amp; <span id="def-blue" class="def-blue"></span>
-                </span>
-                <span id="team-divider">VS</span>
-                <span class="team team-red">
-                    <span id="off-red" class="off-red" ></span> &amp; <span id="def-red" class="def-red"></span>
+                <span id="teams">
+                    <span class="team team-blue">
+                        <span id="off-blue" class="off-blue"></span> &amp; <span id="def-blue" class="def-blue"></span>
+                    </span>
+                    <span id="team-divider">VS</span>
+                    <span class="team team-red">
+                        <span id="off-red" class="off-red" ></span> &amp; <span id="def-red" class="def-red"></span>
+                    </span>
                 </span>
             </div>
             <div id="cam-frame">
                 <span id="off-blue-tag" class="off-blue tag team-blue"></span> <span id="def-blue-tag" class="def-blue tag team-blue"> </span>
                 <span id="off-red-tag" class="off-red tag team-red" ></span> <span id="def-red-tag" class="def-red tag team-red"></span>
+                {% if debug_image is defined %}
+                <img id="table-video" src="{{ debug_image }}">
+                {% else %}
                 <img id="table-video" src="http://foosview:8082/v.mjpg">
+                {% endif %}
             </div>
             <div id="foot-clan">
                 <a href="/history">Foosball Stats</a>&nbsp;<a href="/readme">Read Me</a>

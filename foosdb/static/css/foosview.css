@@ -1,14 +1,25 @@
-#score {
-    display: none;
+#foosview{
+    width: 1284px;
     margin-left: auto;
     margin-right: auto;
-    /*width: 480px;*/
 }
+
 .foos-title{
-    display: none;
+    /*display: none;
+    margin-left: auto;
+    margin-right: auto;*/
+    margin-top: 4px;
+    width: 690px;
+}
+/* team and score */
+#game-info {
+    /*display: none;
     margin-left: auto;
     margin-right: auto;
-    width: 690px;
+    width: 480px;*/
+}
+#score{
+    float: left;
 }
 .team, #team-divider{
     font-weight: bold;
@@ -18,8 +29,8 @@
     padding-left: 10px;
     padding-right: 10px;
 }
-#teams, #score, #tag{
-    display: none; 
+#teams{
+    float: right;
 }
 .team-red{
     color:red;
@@ -38,7 +49,7 @@
     height: 628px;
 }
 .tag{
-    position:absolute;
+    0position:absolute;
     font-size: 1.5em;
 }
 #off-blue-tag{
@@ -58,8 +69,8 @@
     top:4px;
     right:4px;
 }
-/* derp */
+/* derp
 #foot-clan{
     position: absolute;
     top: 0;
-}
+}*/
