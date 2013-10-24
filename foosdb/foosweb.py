@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from flask import Flask, jsonify, redirect, render_template, url_for
 from flask.ext.restful import Api, Resource, reqparse
@@ -25,14 +26,23 @@ ORMBase = declarative_base()
 
 #DB ORM models
 
+class Player(ORMBase):
+    __tablename__ = 'players'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    def __init__(self, name):
+        self.name = name
+
 class GameState(ORMBase):
     __tablename__ = 'state'
     id = Column(Integer, primary_key=True)
     game_on = Column(Boolean)
-    red_off = Column(Integer)
-    red_def = Column(Integer)
-    blue_off = Column(Integer)
-    blue_def = Column(Integer)
+    red_off = Column(Integer, ForeignKey(Player.id), nullable=False)
+    red_def = Column(Integer, ForeignKey(Player.id), nullable=False)
+    blue_off = Column(Integer, ForeignKey(Player.id), nullable=False)
+    blue_def = Column(Integer, ForeignKey(Player.id), nullable=False)
     blue_score = Column(Integer)
     red_score = Column(Integer)
     game_started = Column(Integer)
@@ -43,23 +53,14 @@ class GameState(ORMBase):
         self.id = 1
         self.game_on = False
 
-class Player(ORMBase):
-    __tablename__ = 'players'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-
-    def __init__(self, name):
-        self.name = name
-
 class Game(ORMBase):
     __tablename__ = 'games'
 
     id = Column(Integer, primary_key=True)
-    red_off = Column(Integer)
-    red_def = Column(Integer)
-    blue_off = Column(Integer)
-    blue_def = Column(Integer)
+    red_off = Column(Integer, ForeignKey(Player.id))
+    red_def = Column(Integer, ForeignKey(Player.id))
+    blue_off = Column(Integer, ForeignKey(Player.id))
+    blue_def = Column(Integer, ForeignKey(Player.id))
     winner = Column(String)
     blue_score = Column(Integer)
     red_score = Column(Integer)
@@ -245,12 +246,22 @@ class GameWatch():
             if not self.game_state.game_on:
                 log.debug('4 new ids locked and no game going ... starting a new game!')
             else:
+                #TODO: something useful here?
                 log.debug('4 new ids locked but game is already going, throwing away current game state and starting a new game')
 
-            self.game_state.blue_off = players['bo']
-            self.game_state.blue_def = players['bd']
-            self.game_state.red_off = players['ro']
-            self.game_state.red_def = players['rd']
+            try:
+                bo = self.session.query(Player).filter_by(id=players['bo']).one()
+                bd = self.session.query(Player).filter_by(id=players['bd']).one()
+                ro = self.session.query(Player).filter_by(id=players['ro']).one()
+                rd = self.session.query(Player).filter_by(id=players['rd']).one()
+            except (NoResultFound, MultipleResultsFound), e:
+                log.error('unknown player ID submitted, NOT logging game!')
+                raise
+
+            self.game_state.blue_off = bo.id
+            self.game_state.blue_def = bd.id
+            self.game_state.red_off = ro.id
+            self.game_state.red_def = rd.id
             self.CommitState()
             self.GameOn()
 
@@ -400,3 +411,6 @@ def readme():
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
+    #uncomment to build db from scratch
+    #db = create_engine('sqlite:///foosball.db')
+    #ORMBase.metadata.create_all(db)
