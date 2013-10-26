@@ -1,9 +1,12 @@
-from flask import Flask, jsonify, redirect, render_template, url_for
+from flask import render_template, url_for
 from flask.ext.restful import Api, Resource, reqparse
-from flask.ext.assets import Environment, Bundle
 from flask import abort
 
 from foosweb import GameWatch
+
+import logging
+
+log = logging.getLogger('gamewatch')
 
 #Flask-Restful API endpoints
 class LiveHistory(Resource):
