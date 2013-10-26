@@ -7,7 +7,7 @@ from flask.ext.restful import Api, Resource, reqparse
 from flask.ext.assets import Environment, Bundle
 from flask import abort
 
-from models import Player, Game, GameState
+from models import GameState, Player, Game
 
 import json
 
@@ -23,7 +23,6 @@ import pdb
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
-
 
 #Flask-Restful API endpoints
 class LiveHistory(Resource):
