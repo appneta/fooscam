@@ -11,6 +11,8 @@ from flask import abort
 
 import json
 
+import os
+
 from time import time
 from datetime import datetime, timedelta
 
@@ -52,31 +54,31 @@ class GameState(ORMBase):
     def __init__(self):
         self.id = 1
         self.game_on = False
+        self.red_off = -1
+        self.red_def = -1
+        self.blue_off = -1
+        self.blue_def = -1
+        self.fuzzy = 0
+        self.game_started = 0
+        self.game_winner = ''
 
 class Game(ORMBase):
     __tablename__ = 'games'
 
     id = Column(Integer, primary_key=True)
-    red_off = Column(Integer, ForeignKey(Player.id))
-    red_def = Column(Integer, ForeignKey(Player.id))
-    blue_off = Column(Integer, ForeignKey(Player.id))
-    blue_def = Column(Integer, ForeignKey(Player.id))
+    red_off = Column(Integer, ForeignKey(Player.id), nullable=False)
+    red_def = Column(Integer, ForeignKey(Player.id), nullable=False)
+    blue_off = Column(Integer, ForeignKey(Player.id), nullable=False)
+    blue_def = Column(Integer, ForeignKey(Player.id), nullable=False)
     winner = Column(String)
     blue_score = Column(Integer)
     red_score = Column(Integer)
     started = Column(Integer)
     ended = Column(Integer)
 
-    def __init__(self, winner, blue_score, red_score, red_off, red_def, blue_off, blue_def, started, ended):
-        self.red_off = red_off
-        self.red_def = red_def
-        self.blue_off = blue_off
-        self.blue_def = blue_def
-        self.winner = winner
-        self.blue_score = blue_score
-        self.red_score = red_score
-        self.started = started
-        self.ended = ended
+    def __init__(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            setattr(self, k, v)
 
 #Flask-Restful API endpoints
 class LiveHistory(Resource):
@@ -181,6 +183,10 @@ class GameWatch():
         Session = sessionmaker()
         Session.configure(bind=db)
         self.session = Session()
+
+        if not os.path.exists('./foosball.db'):
+            self.InitializeDB(db)
+
         #persist current game state by maintaining only 1 row in there
         self.game_state = self.session.query(GameState).filter_by(id=1).first()
 
@@ -197,6 +203,16 @@ class GameWatch():
                 if announce_duration.seconds > 2:
                     self.game_state.game_winner = ''
                     self.CommitState()
+
+    def InitializeDB(self, db_obj):
+        """build default sqlite database"""
+        ORMBase.metadata.create_all(db_obj)
+        init_state = GameState()
+        self.CommitState(init_state)
+        anon_player = Player('Anonymous')
+        anon_player.id = -1
+        self.session.add(anon_player)
+        self.session.commit()
 
     def UpdatePlayers(self, players):
         """
@@ -354,10 +370,15 @@ class GameWatch():
             winner = 'tie'
 
         #populate and commit a game state object
-        foos_log = Game(winner, self.game_state.blue_score, self.game_state.red_score, \
-            self.game_state.red_off, self.game_state.red_def, \
-            self.game_state.blue_off, self.game_state.blue_def, \
-            self.game_state.game_started, int(time()))
+        foos_log = Game(winner=winner,\
+            blue_score=self.game_state.blue_score,\
+            red_score=self.game_state.red_score,\
+            red_off=self.game_state.red_off,\
+            red_def=self.game_state.red_def,\
+            blue_off=self.game_state.blue_off,\
+            blue_def=self.game_state.blue_def,\
+            started=self.game_state.game_started,\
+            ended=int(time()))
 
         self.session.add(foos_log)
         self.session.commit()
@@ -380,8 +401,11 @@ class GameWatch():
         self.game_state.game_started = int(time())
         self.CommitState()
 
-    def CommitState(self):
-        self.session.add(self.game_state)
+    def CommitState(self, state=None):
+        if state == None:
+            self.session.add(self.game_state)
+        else:
+            self.session.add(state)
         self.session.commit()
 
 app = Flask(__name__)
