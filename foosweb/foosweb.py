@@ -108,20 +108,11 @@ class GameWatch():
                 #TODO: something useful here?
                 log.debug('4 new ids locked but game is already going, throwing away current game state and starting a new game')
 
-            try:
-                bo = self.session.query(Player).filter_by(id=players['bo']).one()
-                bd = self.session.query(Player).filter_by(id=players['bd']).one()
-                ro = self.session.query(Player).filter_by(id=players['ro']).one()
-                rd = self.session.query(Player).filter_by(id=players['rd']).one()
-            except (NoResultFound, MultipleResultsFound), e:
-                log.error('unknown player ID submitted, NOT logging game!')
-                #TODO: msg to UI requesting new player ID
-                return
 
-            self.game_state.blue_off = bo.id
-            self.game_state.blue_def = bd.id
-            self.game_state.red_off = ro.id
-            self.game_state.red_def = rd.id
+            self.game_state.blue_off = players['bo']
+            self.game_state.blue_def = players['bd']
+            self.game_state.red_off = players['ro']
+            self.game_state.red_def = players['rd']
             self.CommitState()
             self.GameOn()
 
@@ -160,22 +151,27 @@ class GameWatch():
     def IsGameOn(self):
         return self.game_state.game_on
 
-    def GetNames(self):
-        #TODO: this could probably be better ...
-        player_names = {}
-        player_names['bo'] = self.session.query(Player.name).filter_by(id=self.game_state.blue_off).first()
-        player_names['bd'] = self.session.query(Player.name).filter_by(id=self.game_state.blue_def).first()
-        player_names['ro'] = self.session.query(Player.name).filter_by(id=self.game_state.red_off).first()
-        player_names['rd'] = self.session.query(Player.name).filter_by(id=self.game_state.red_def).first()
-
+    def GetPlayerIDs(self):
+        player_ids = {}
         try:
-            player_names['bo'] = str(player_names['bo'][0]) if self.game_state.blue_off != -1 else 'None'
-            player_names['bd'] = str(player_names['bd'][0]) if self.game_state.blue_def != -1 else 'None'
-            player_names['ro'] = str(player_names['ro'][0]) if self.game_state.red_off != -1 else 'None'
-            player_names['rd'] = str(player_names['rd'][0]) if self.game_state.red_def != -1 else 'None'
-        except Exception, e:
-            log.error('player ID tag detected but not in foos db!')
-            log.debug(e)
+            player_ids['bo'] = self.session.query(Player).filter_by(id=players['bo']).one()
+            player_ids['bd'] = self.session.query(Player).filter_by(id=players['bd']).one()
+            player_ids['ro'] = self.session.query(Player).filter_by(id=players['ro']).one()
+            player_ids['rd'] = self.session.query(Player).filter_by(id=players['rd']).one()
+        except (NoResultFound, MultipleResultsFound), e:
+            log.error('unknown player ID submitted, NOT logging game!')
+            #TODO: msg to UI requesting new player ID
+            return
+
+        return player_ids
+
+    def GetNames(self):
+        player_names = {}
+
+        player_names['bo'] = self.GetNameByID(self.game_state.blue_off)
+        player_names['bd'] = self.GetNameByID(self.game_state.blue_def)
+        player_names['ro'] = self.GetNameByID(self.game_state.red_off)
+        player_names['rd'] = self.GetNameByID(self.game_state.red_def)
 
         return player_names
 
@@ -183,7 +179,15 @@ class GameWatch():
         return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
 
     def GetNameByID(self, player_id):
-        return str(self.session.query(Player.name).filter_by(id=player_id).first()[0])
+        if player_id == -1:
+            player_name = 'None'
+        else:
+            try:
+                player_name = str(self.session.query(Player.name).filter_by(id=player_id).one())
+            except NoResultFound:
+                player_name = 'Anonymous'
+
+        return player_name
 
     def GetHistory(self):
         game_history = []
