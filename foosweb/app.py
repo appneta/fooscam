@@ -23,11 +23,15 @@ main_js = Bundle('js/modernizr-2.6.2.min.js')
 main_css = Bundle('css/normalize.css', 'css/main.css')
 foos_js = Bundle('js/foosview.js')
 foos_css = Bundle('css/foosview.css')
+hist_js = Bundle('js/jquery.dataTables.min.js', 'js/foos-stats.js')
+hist_css = Bundle('css/jquery.dataTables.css')
 
 assets.register('js', main_js)
 assets.register('css', main_css)
 assets.register('foos_js', foos_js)
 assets.register('foos_css', foos_css)
+assets.register('hist_js', hist_js)
+assets.register('hist_css', hist_css)
 
 @app.route('/')
 def home():
@@ -47,11 +51,12 @@ def player(id=-1):
 
 @app.route('/history')
 def live_hist():
-    return redirect(url_for('static', filename='history.html'))
+    #return redirect(url_for('static', filename='history.html'))
+    return render_template('history.html')
 
 @app.route('/readme')
 def readme():
-    return redirect(url_for('static', filename='fooscam.html'))
+    return redirect(url_for('static', filename='readme.html'))
 
 
 if __name__ == '__main__':
