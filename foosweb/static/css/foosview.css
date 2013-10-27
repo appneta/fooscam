@@ -63,6 +63,9 @@
     top:4px;
     right:4px;
 }
+#off-blue-a, #def-blue-a, #off-red-a, #def-red-a{
+    text-decoration: none;
+}
 #foot-clan{
     position: absolute;
     top: 0;

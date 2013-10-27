@@ -25,7 +25,7 @@ assets.register('foos_css', foos_css)
 
 @app.route('/')
 def home():
-    return render_template('foosview.html')#, debug_image='static/img/table.png')
+    return render_template('foosview.html', debug_image='static/img/table.png')
 
 @app.route('/players/')
 @app.route('/players/<id>')
