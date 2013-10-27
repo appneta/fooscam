@@ -176,7 +176,7 @@ class GameWatch():
             player_name = 'None'
         else:
             try:
-                player_name = str(self.session.query(Player.name).filter_by(id=player_id).one())
+                player_name = str(self.session.query(Player.name).filter_by(id=player_id).one()[0])
             except NoResultFound:
                 player_name = 'Anonymous'
 

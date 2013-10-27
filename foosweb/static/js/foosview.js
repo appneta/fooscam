@@ -18,10 +18,10 @@ function getplayers() {
                 data['bd']['id'] == -1) {
                 $('#teams, .tag').fadeTo(fade_time, 0);
             } else {
-                $('.off-red').text(data['ro']['name']);
-                $('.def-red').text(data['rd']['name']);
-                $('.off-blue').text(data['bo']['name']);
-                $('.def-blue').text(data['bd']['name']);
+                $('#off-red-a').attr('href', '/players/' + data['ro']['id']).text(data['ro']['name']);
+                $('#def-red-a').attr('href', '/players/' + data['rd']['id']).text(data['rd']['name']);
+                $('#off-blue-a').attr('href', '/players/' + data['bo']['id']).text(data['bo']['name']);
+                $('#def-blue-a').attr('href', '/players/' + data['bd']['id']).text(data['bd']['name']);
                 $('#teams, .tag').fadeTo(fade_time, 1);
             }
         }

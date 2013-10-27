@@ -19,17 +19,17 @@
                 </span>
                 <span id="teams">
                     <span class="team team-blue">
-                        <span id="off-blue" class="off-blue"></span> &amp; <span id="def-blue" class="def-blue"></span>
                     </span>
                     <span id="team-divider">VS</span>
                     <span class="team team-red">
-                        <span id="off-red" class="off-red" ></span> &amp; <span id="def-red" class="def-red"></span>
                     </span>
                 </span>
             </div>
             <div id="cam-frame">
-                <span id="off-blue-tag" class="off-blue tag team-blue"></span> <span id="def-blue-tag" class="def-blue tag team-blue"> </span>
-                <span id="off-red-tag" class="off-red tag team-red" ></span> <span id="def-red-tag" class="def-red tag team-red"></span>
+                <span id="off-blue-tag" class="off-blue tag team-blue"><a href='#' id='off-blue-a'></a></span>
+                <span id="def-blue-tag" class="def-blue tag team-blue"><a href='#' id='def-blue-a'></a></span>
+                <span id="off-red-tag" class="off-red tag team-red" ><a href='#' id='off-red-a'></a></span>
+                <span id="def-red-tag" class="def-red tag team-red"><a href='#' id='def-red-a'></a></span>
                 {% if debug_image is defined %}
                 <img id="table-video" src="{{ debug_image }}">
                 {% else %}
