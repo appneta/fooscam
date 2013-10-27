@@ -11,6 +11,8 @@ class Player(ORMBase):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    email = Column(String)
+    password = Column(String)
 
     def __init__(self, name):
         self.name = name

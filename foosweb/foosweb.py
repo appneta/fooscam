@@ -1,8 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.ext.declarative import declarative_base
 
-from models import GameState, Player, Game
+from models import GameState, Player, Game, ORMBase
 
 import json
 import os
@@ -14,8 +15,6 @@ import logging
 import pdb
 
 log = logging.getLogger('gamewatch')
-log.setLevel(logging.DEBUG)
-log.addHandler(logging.StreamHandler())
 
 class GameWatch():
     """

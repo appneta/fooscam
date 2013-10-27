@@ -2,8 +2,14 @@ from flask import Flask, redirect, render_template
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 
+import logging
+
 from views import LiveHistory, Score, Players, Status
 from foosweb import GameWatch
+
+log = logging.getLogger('gamewatch')
+log.setLevel(logging.DEBUG)
+log.addHandler(logging.StreamHandler())
 
 app = Flask(__name__)
 api = Api(app)
@@ -35,7 +41,7 @@ def player(id=-1):
     player_info['name'] = gw.GetNameByID(id)
     player_info['id'] = id
 
-    return render_template('player.html', **player_info)
+    return render_template('player_view.html', **player_info)
 
 @app.route('/history')
 def live_hist():
