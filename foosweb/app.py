@@ -1,4 +1,4 @@
-from flask import Flask, redirect
+from flask import Flask, redirect, render_template
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 
@@ -13,14 +13,20 @@ api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 
 assets = Environment(app)
-js = Bundle('js/foosview.js', 'js/modernizr-2.6.2.min.js')
-css = Bundle('css/normalize.css', 'css/main.css', 'css/foosview.css')
-assets.register('css', css)
-assets.register('js', js)
+main_js = Bundle('js/modernizr-2.6.2.min.js')
+main_css = Bundle('css/normalize.css', 'css/main.css')
 
 @app.route('/')
 def home():
-    return render_template('index.html')#, debug_image='static/img/table.png')
+    assets.register('css', Bundle(main_css, Bundle('css/foosview.css')))
+    assets.register('js', Bundle(main_js, 'js/foosview.js'))
+    return render_template('foosview.html')#, debug_image='static/img/table.png')
+
+@app.route('/player')
+def player():
+    assets.register('css', main_css)
+    assets.register('js', main_js)
+    return render_template('player.html')
 
 @app.route('/history')
 def live_hist():
@@ -29,6 +35,7 @@ def live_hist():
 @app.route('/readme')
 def readme():
     return redirect(url_for('static', filename='fooscam.html'))
+
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
