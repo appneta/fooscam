@@ -154,9 +154,12 @@ class GameWatch():
 
     def GetGravatarURLByID(self, id, size=80):
         email = self.GetEmailByID(id)
-        email = email.strip().lower()
-        g_hash = md5(email).hexdigest()
-        return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
+        if email is not None:
+            email = email.strip().lower()
+            g_hash = md5(email).hexdigest()
+            return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
+        else:
+             return ''
 
     def GetGravatarURLs(self):
         urls = {}
