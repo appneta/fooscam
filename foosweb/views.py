@@ -80,10 +80,11 @@ class Players(Resource):
         gw = GameWatch()
         names = gw.GetNames()
         ids = gw.GetIDs()
-        return  {'bo': {'name': names['bo'], 'id': ids['bo']},
-                 'bd': {'name': names['bd'], 'id': ids['bd']},
-                 'ro': {'name': names['ro'], 'id': ids['ro']},
-                 'rd': {'name': names['rd'], 'id': ids['rd']}}
+        gravatars = gw.GetGravatarURLs()
+        return  {'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},
+                 'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},
+                 'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},
+                 'rd': {'name': names['rd'], 'id': ids['rd'], 'gravatar': gravatars['rd']}}
 
     def post(self):
         log.debug('players posted')

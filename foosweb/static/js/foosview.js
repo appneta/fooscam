@@ -22,6 +22,10 @@ function getplayers() {
                 $('#def-red-a').attr('href', '/players/' + data['rd']['id']).text(data['rd']['name']);
                 $('#off-blue-a').attr('href', '/players/' + data['bo']['id']).text(data['bo']['name']);
                 $('#def-blue-a').attr('href', '/players/' + data['bd']['id']).text(data['bd']['name']);
+                $('#off-red-g').attr('src', data['ro']['gravatar']);
+                $('#def-red-g').attr('src', data['rd']['gravatar']);
+                $('#off-blue-g').attr('src', data['bo']['gravatar']);
+                $('#def-blue-g').attr('src', data['bd']['gravatar']);
                 $('#teams, .tag').fadeTo(fade_time, 1);
             }
         }

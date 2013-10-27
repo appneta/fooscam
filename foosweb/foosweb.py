@@ -152,21 +152,20 @@ class GameWatch():
     def IsGameOn(self):
         return self.game_state.game_on
 
-    def GetNames(self):
-        player_names = {}
 
-        player_names['bo'] = self.GetNameByID(self.game_state.blue_off)
-        player_names['bd'] = self.GetNameByID(self.game_state.blue_def)
-        player_names['ro'] = self.GetNameByID(self.game_state.red_off)
-        player_names['rd'] = self.GetNameByID(self.game_state.red_def)
-
-        return player_names
-
-    def GetGravatarURL(self, id, size=80):
+    def GetGravatarURLByID(self, id, size=80):
         email = self.GetEmailByID(id)
         email = email.strip().lower()
         g_hash = md5(email).hexdigest()
         return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
+
+    def GetGravatarURLs(self):
+        urls = {}
+        urls['bo'] = self.GetGravatarURLByID(self.game_state.blue_off)
+        urls['bd'] = self.GetGravatarURLByID(self.game_state.blue_def)
+        urls['ro'] = self.GetGravatarURLByID(self.game_state.red_off)
+        urls['rd'] = self.GetGravatarURLByID(self.game_state.red_def)
+        return urls
 
     def GetIDs(self):
         #return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
@@ -196,6 +195,16 @@ class GameWatch():
                 player_name = 'Anonymous'
 
         return player_name
+
+    def GetNames(self):
+        player_names = {}
+
+        player_names['bo'] = self.GetNameByID(self.game_state.blue_off)
+        player_names['bd'] = self.GetNameByID(self.game_state.blue_def)
+        player_names['ro'] = self.GetNameByID(self.game_state.red_off)
+        player_names['rd'] = self.GetNameByID(self.game_state.red_def)
+
+        return player_names
 
     def GetHistory(self):
         game_history = []

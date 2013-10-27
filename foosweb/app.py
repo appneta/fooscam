@@ -40,7 +40,7 @@ def player(id=-1):
     gw = GameWatch()
     player_info = {}
     player_info['name'] = gw.GetNameByID(id)
-    player_info['gravatar_url'] = gw.GetGravatarURL(id)
+    player_info['gravatar_url'] = gw.GetGravatarURLByID(id)
     player_info['id'] = id
 
     return render_template('player_view.html', **player_info)
