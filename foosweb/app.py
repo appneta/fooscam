@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template
+from flask import Flask, redirect, render_template, url_for
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 

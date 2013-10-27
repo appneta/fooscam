@@ -9,7 +9,6 @@ import json
 from hashlib import md5
 import os
 from time import time
-from datetime import datetime, timedelta
 
 import logging
 
