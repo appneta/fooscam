@@ -13,6 +13,7 @@
         <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
         {% assets "css" %}<link rel="stylesheet" href="{{ ASSET_URL }}">{% endassets %}
         {% assets "js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+        {% block head %}{% endblock %}
     </head>
     <body>
         <!--[if lt IE 7]>

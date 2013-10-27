@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block title %} FoosView {% endblock %}
+{% block head %}
+{% assets "foos_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+{% assets "foos_css" %}<link rel="stylesheet" href="{{ ASSET_URL }}">{% endassets %}
+{% endblock %}
 {% block content %}
         <div id='foosview' align='center'>
             <h1 class="foos-title">AppNeta Foos&beta;eta: <span class="status"></span></h1>

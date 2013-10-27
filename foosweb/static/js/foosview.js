@@ -9,7 +9,7 @@ function getscores() {
   });
 }
 function getplayers() {
-    $.getJSON('/players', function(data) {
+    $.getJSON('/current_players', function(data) {
         if (data) {
             //holy crap I miss multiple comparison!
             if (data['team'][1]['red']['offense'] == 'None' && 
@@ -68,8 +68,8 @@ function pulse(color) {
 }
 function update_ui() {
     $('.foos-title').fadeIn(fade_time);
-    /*getscores();
-    getplayers();*/
+    getscores();
+    getplayers()
     getstatus();
     setTimeout(update_ui, 2000);
 }
