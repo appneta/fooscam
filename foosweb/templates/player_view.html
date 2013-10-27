@@ -2,6 +2,7 @@
 {% block title %} {{ name }} {% endblock %}
 {% block content %}
         <div id='player_info'>
-            <h1>{{ name }}</h1>
+            <span><h1>{{ name }}</h1></span>
+            <span><img src="{{ gravatar_url }}"></span>
         </div>
 {% endblock %}

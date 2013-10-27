@@ -5,7 +5,7 @@ from flask.ext.assets import Environment, Bundle
 import logging
 
 from views import LiveHistory, Score, Players, Status
-from foosweb import GameWatch
+from foosweb import GameWatch, PlayerPage
 
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
@@ -33,12 +33,14 @@ assets.register('foos_css', foos_css)
 def home():
     return render_template('foosview.html', debug_image='static/img/table.png')
 
-@app.route('/players/')
+#@app.route('/players/')
 @app.route('/players/<id>')
 def player(id=-1):
+
     gw = GameWatch()
     player_info = {}
     player_info['name'] = gw.GetNameByID(id)
+    player_info['gravatar_url'] = gw.GetGravatarURL(id)
     player_info['id'] = id
 
     return render_template('player_view.html', **player_info)

@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from models import GameState, Player, Game, ORMBase
 
 import json
+from hashlib import md5
 import os
 from time import time
 from datetime import datetime, timedelta
@@ -161,6 +162,12 @@ class GameWatch():
 
         return player_names
 
+    def GetGravatarURL(self, id, size=80):
+        email = self.GetEmailByID(id)
+        email = email.strip().lower()
+        g_hash = md5(email).hexdigest()
+        return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
+
     def GetIDs(self):
         #return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
         player_ids = {}
@@ -169,6 +176,15 @@ class GameWatch():
         player_ids['ro'] = self.game_state.red_off
         player_ids['rd'] = self.game_state.red_def
         return player_ids
+
+    def GetEmailByID(self, player_id):
+        if player_id == -1:
+            return
+        else:
+            try:
+                return str(self.session.query(Player.email).filter_by(id=player_id).one()[0])
+            except NoResultFound:
+                return
 
     def GetNameByID(self, player_id):
         if player_id == -1:
@@ -247,4 +263,22 @@ class GameWatch():
         else:
             self.session.add(state)
         self.session.commit()
+
+class PlayerPage():
+    def __init__(self):
+        db = create_engine('sqlite:///foosball.db')
+        Session = sessionmaker()
+        Session.configure(bind=db)
+        self.session = Session()
+
+    def GetPlayer(self, id):
+        try:
+            player = self.session.query(Player).filter_by(id=id).one()
+        except NoResultFound, e:
+            player = None
+        except MultipleResultsFound, e:
+            player = None
+            log.error('Multiple players with ID %s found in database!' % (id))
+
+        return player
 
