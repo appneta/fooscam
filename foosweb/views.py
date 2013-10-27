@@ -79,8 +79,11 @@ class Players(Resource):
     def get(self):
         gw = GameWatch()
         names = gw.GetNames()
-        return {'team': [{'blue': {'offense': names['bo'], 'defense': names['bd']}},
-            {'red': {'offense': names['ro'], 'defense': names['rd']}}]}
+        ids = gw.GetIDs()
+        return  {'bo': {'name': names['bo'], 'id': ids['bo']},
+                 'bd': {'name': names['bd'], 'id': ids['bd']},
+                 'ro': {'name': names['ro'], 'id': ids['ro']},
+                 'rd': {'name': names['rd'], 'id': ids['rd']}}
 
     def post(self):
         log.debug('players posted')

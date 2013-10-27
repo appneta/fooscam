@@ -62,7 +62,8 @@ class GameWatch():
         do something constructive with the incoming player ID's
         """
         new_ids = [players['bo'], players['bd'], players['ro'], players['rd']]
-        current_ids = self.GetIDs()
+        tmp_ids = self.GetIDs()
+        current_ids = [tmp_ids['bo'], tmp_ids['bd'], tmp_ids['ro'], tmp_ids['rd']]
 
         #same as it ever was
         if new_ids == current_ids:
@@ -151,20 +152,6 @@ class GameWatch():
     def IsGameOn(self):
         return self.game_state.game_on
 
-    def GetPlayerIDs(self):
-        player_ids = {}
-        try:
-            player_ids['bo'] = self.session.query(Player).filter_by(id=players['bo']).one()
-            player_ids['bd'] = self.session.query(Player).filter_by(id=players['bd']).one()
-            player_ids['ro'] = self.session.query(Player).filter_by(id=players['ro']).one()
-            player_ids['rd'] = self.session.query(Player).filter_by(id=players['rd']).one()
-        except (NoResultFound, MultipleResultsFound), e:
-            log.error('unknown player ID submitted, NOT logging game!')
-            #TODO: msg to UI requesting new player ID
-            return
-
-        return player_ids
-
     def GetNames(self):
         player_names = {}
 
@@ -176,7 +163,13 @@ class GameWatch():
         return player_names
 
     def GetIDs(self):
-        return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
+        #return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
+        player_ids = {}
+        player_ids['bo'] = self.game_state.blue_off
+        player_ids['bd'] = self.game_state.blue_def
+        player_ids['ro'] = self.game_state.red_off
+        player_ids['rd'] = self.game_state.red_def
+        return player_ids
 
     def GetNameByID(self, player_id):
         if player_id == -1:

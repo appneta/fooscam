@@ -12,16 +12,16 @@ function getplayers() {
     $.getJSON('/current_players', function(data) {
         if (data) {
             //holy crap I miss multiple comparison!
-            if (data['team'][1]['red']['offense'] == 'None' && 
-                data['team'][1]['red']['defense'] == 'None' &&
-                data['team'][0]['blue']['offense'] == 'None' &&
-                data['team'][0]['blue']['defense'] == 'None') {
+            if (data['ro']['id'] == -1 && 
+                data['rd']['id'] == -1 &&
+                data['bo']['id'] == -1 &&
+                data['bd']['id'] == -1) {
                 $('#teams, .tag').fadeTo(fade_time, 0);
             } else {
-                $('.off-red').text(data['team'][1]['red']['offense']);
-                $('.def-red').text(data['team'][1]['red']['defense']);
-                $('.off-blue').text(data['team'][0]['blue']['offense']);
-                $('.def-blue').text(data['team'][0]['blue']['defense']);
+                $('.off-red').text(data['ro']['name']);
+                $('.def-red').text(data['rd']['name']);
+                $('.off-blue').text(data['bo']['name']);
+                $('.def-blue').text(data['bd']['name']);
                 $('#teams, .tag').fadeTo(fade_time, 1);
             }
         }

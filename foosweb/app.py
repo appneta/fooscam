@@ -17,8 +17,11 @@ main_js = Bundle('js/modernizr-2.6.2.min.js')
 main_css = Bundle('css/normalize.css', 'css/main.css')
 foos_js = Bundle('js/foosview.js')
 foos_css = Bundle('css/foosview.css')
-assets.register('js', Bundle(main_js, foos_js))
-assets.register('css', Bundle(main_css, foos_css))
+
+assets.register('js', main_js)
+assets.register('css', main_css)
+assets.register('foos_js', foos_js)
+assets.register('foos_css', foos_css)
 
 @app.route('/')
 def home():
