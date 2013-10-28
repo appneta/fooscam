@@ -302,3 +302,7 @@ textarea {
         page-break-after: avoid;
     }
 }
+#main-menu{{
+    position: absolute;
+    top: 0;
+}
