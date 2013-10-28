@@ -10,9 +10,28 @@ from datetime import datetime, timedelta
 log = logging.getLogger('gamewatch')
 
 #Flask-Restful API endpoints
+class PlayerHistory(Resource):
+    #TODO: deduplicate this and LiveHistory
+    def get(self, id):
+        gw = GameWatch()
+        history = gw.GetHistory(id)
+        datatable_array = []
+        #format json serializable game history data for history page - http://datatables.net/index
+        for game in history:
+            game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
+            datatable_array.append([gw.GetNameByID(game.red_off), \
+                gw.GetNameByID(game.red_def), \
+                gw.GetNameByID(game.blue_off), \
+                gw.GetNameByID(game.blue_def), \
+                game.red_score, game.blue_score, \
+                datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \
+                datetime.fromtimestamp(game.ended).strftime('%Y-%m-%d %H:%M:%S'), \
+                str(timedelta(seconds=game_duration.seconds)), \
+                game.winner])
+
+        return {'aaData': datatable_array}
+
 class LiveHistory(Resource):
-    #TODO: accept param to output by player + wins (total / red / blue)
-    #http://www.datatables.net/release-datatables/examples/server_side/server_side.html
     def get(self):
         gw = GameWatch()
         history = gw.GetHistory()

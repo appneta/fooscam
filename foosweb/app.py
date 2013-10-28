@@ -4,7 +4,7 @@ from flask.ext.assets import Environment, Bundle
 
 import logging
 
-from views import LiveHistory, Score, Players, Status
+from views import LiveHistory, Score, Players, Status, PlayerHistory
 from foosweb import GameWatch, PlayerPage
 
 log = logging.getLogger('gamewatch')
@@ -17,9 +17,10 @@ api.add_resource(Score, '/score', endpoint = 'score')
 api.add_resource(Players, '/current_players', endpoint = 'current_players')
 api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
+api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhistjson')
 
 assets = Environment(app)
-main_js = Bundle('js/modernizr-2.6.2.min.js')
+main_js = Bundle('js/modernizr-2.6.2.min.js', 'js/jquery-latest.min.js', 'js/jquery-ui.js')
 main_css = Bundle('css/normalize.css', 'css/main.css')
 foos_js = Bundle('js/foosview.js')
 foos_css = Bundle('css/foosview.css')

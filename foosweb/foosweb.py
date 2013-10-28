@@ -208,10 +208,16 @@ class GameWatch():
 
         return player_names
 
-    def GetHistory(self):
+    def GetHistory(self,id=None):
         game_history = []
-        for game in self.session.query(Game).order_by(Game.id):
-            game_history.append(game)
+        if id is not None:
+            for game in self.session.query(Game).filter(\
+                    (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
+                    order_by(Game.id):
+                game_history.append(game)
+        else:
+            for game in self.session.query(Game).order_by(Game.id):
+                game_history.append(game)
 
         return game_history
 
