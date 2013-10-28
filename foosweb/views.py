@@ -70,7 +70,7 @@ class Players(Resource):
         pd = PlayerData()
         ids = gw.CurrentPlayerIDs()
         names = pd.GetNames(gw.CurrentPlayerIDs())
-        gravatars = gw.GetGravatarURLs()
+        gravatars = pd.GetGravatarURLs(gw.CurrentPlayerIDs())
         return  {'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},
                  'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},
                  'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},

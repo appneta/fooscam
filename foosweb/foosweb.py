@@ -215,56 +215,6 @@ class GameWatch():
             self.session.add(state)
         self.session.commit()
 
-    def GetHistory(self,id=None):
-        game_history = []
-        if id is not None:
-            for game in self.session.query(Game).filter(\
-                    (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
-                    order_by(Game.id):
-                game_history.append(game)
-        else:
-            for game in self.session.query(Game).order_by(Game.id):
-                game_history.append(game)
-
-        return game_history
-
-    def GetEmailByID(self, player_id):
-        if player_id == -1:
-            return
-        else:
-            try:
-                return str(self.session.query(Player.email).filter_by(id=player_id).one()[0])
-            except NoResultFound:
-                return
-
-    def GetGravatarURLByID(self, id, size=80):
-        email = self.GetEmailByID(id)
-        if email is not None:
-            email = email.strip().lower()
-            g_hash = md5(email).hexdigest()
-            return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
-        else:
-             return ''
-
-    def GetGravatarURLs(self):
-        urls = {}
-        urls['bo'] = self.GetGravatarURLByID(self.game_state.blue_off)
-        urls['bd'] = self.GetGravatarURLByID(self.game_state.blue_def)
-        urls['ro'] = self.GetGravatarURLByID(self.game_state.red_off)
-        urls['rd'] = self.GetGravatarURLByID(self.game_state.red_def)
-        return urls
-
-    def GetPlayer(self, id):
-        try:
-            player = self.session.query(Player).filter_by(id=id).one()
-        except NoResultFound, e:
-            player = None
-        except MultipleResultsFound, e:
-            player = None
-            log.error('Multiple players with ID %s found in database!' % (id))
-
-        return player
-
 class PlayerData():
     def __init__(self):
         db = create_engine('sqlite:///foosball.db')
@@ -280,6 +230,39 @@ class PlayerData():
             else:
                 retvals.append(item[0])
         return retvals
+
+    def _get_email_by_id(self, player_id):
+        if player_id == -1:
+            return
+        else:
+            try:
+                return str(self.session.query(Player.email).filter_by(id=player_id).one()[0])
+            except NoResultFound:
+                return
+
+    def _get_gravatar_url_by_id(self, id, size=80):
+        email = self._get_email_by_id(id)
+        if email is not None:
+            email = email.strip().lower()
+            g_hash = md5(email).hexdigest()
+            return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
+        else:
+             return ''
+
+    def _make_gravatar_url(self, email, size=80):
+        if email is not None:
+            return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().tolower()).hexdigest(), int(size)
+
+    def GetGravatarURLs(self, id):
+        """get url if id=INT, if id is a dict of current players populate with urls"""
+        if type(id) == int:
+            return self._get_gravatar_url_by_id(id)
+        elif type(id) == dict:
+            id['bo'] = self._get_gravatar_url_by_id(id['bo'])
+            id['bd'] = self._get_gravatar_url_by_id(id['bd'])
+            id['ro'] = self._get_gravatar_url_by_id(id['ro'])
+            id['rd'] = self._get_gravatar_url_by_id(id['rd'])
+            return id
 
     def _get_name_by_id(self, player_id):
         if player_id == -1:
@@ -302,7 +285,7 @@ class PlayerData():
             if id == -1:
                 return 'None'
             else:
-                player_name = self._get_name_by_id(id)
+                return self._get_name_by_id(id)
 
         if type(id) == dict:
             id['bo'] = self._get_name_by_id(id['bo'])

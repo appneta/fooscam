@@ -1,8 +1,9 @@
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, redirect, render_template, url_for, abort
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 
 import logging
+import pdb
 
 from views import LiveHistory, Score, Players, Status, PlayerHistory
 from foosweb import GameWatch, PlayerData
@@ -39,14 +40,14 @@ def home():
     return render_template('foosview.html', debug_image='static/img/table.png')
 
 #@app.route('/players/')
-@app.route('/players/<id>')
+@app.route('/players/<int:id>')
 def player(id=-1):
 
     gw = GameWatch()
     pd = PlayerData()
     player_info = {}
     player_info['name'] = pd.GetNames(id=id)
-    player_info['gravatar_url'] = gw.GetGravatarURLByID(id)
+    player_info['gravatar_url'] = pd.GetGravatarURLs(id=id)
     player_info['id'] = id
     player_info['hist_url'] = '/playerhistjson/' + str(id)
 
