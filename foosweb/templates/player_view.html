@@ -1,13 +1,5 @@
 {% extends 'base.html' %}
 {% block title %} {{ name }} {% endblock %}
-{# inject a little javascript to pass the history url to the history template / foos-stats.js #}
-{% block head %}
-<script type='text/javascript'>
-    $(document).ready(function() {
-        player_hist_url = '/playerhistjson/{{ id }}'
-    });
-</script>
-{% endblock %}
 {% block content %}
         <div id='player_info'>
             <span><h1>{{ name }}</h1></span>
