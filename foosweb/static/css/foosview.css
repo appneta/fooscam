@@ -66,6 +66,12 @@
 #off-blue-a, #def-blue-a, #off-red-a, #def-red-a{
     text-decoration: none;
 }
+#off-blue-a:visited, #def-blue-a:visited{
+    color: blue;
+}   
+#off-red-a:visited, #def-red-a:visited{
+    color: red;
+}   
 #foot-clan{
     position: absolute;
     top: 0;
