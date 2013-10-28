@@ -1,2 +1,2 @@
 #!/bin/bash
-nohup uwsgi uwsgi.ini &
+nohup uwsgi uwsgi.ini & > foosview.log

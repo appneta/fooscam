@@ -41,7 +41,8 @@ menu_items = [{'name': 'Home', 'url': '/'}, \
 
 @app.route('/')
 def home():
-    return render_template('foosview.html', debug_image='static/img/table.png', menu=all_but('Home'))
+    #return render_template('foosview.html', debug_image='static/img/table.png', menu=all_but('Home'))
+    return render_template('foosview.html', menu=all_but('Home'))
 
 #TODO: all players view @app.route('/players/')
 
