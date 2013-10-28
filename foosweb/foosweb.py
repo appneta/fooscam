@@ -307,7 +307,7 @@ class PlayerData():
 
         profile['name'] = self._get_name_by_id(id)
         profile['gravatar_url'] = self._get_gravatar_url_by_id(id)
-        profile['hist_url'] = '/playerhistjson' + str(id)
+        profile['hist_url'] = '/playerhistjson/' + str(id)
         profile['total_games'] = self.GetHistory(id=id, count=True)
 
         return profile
