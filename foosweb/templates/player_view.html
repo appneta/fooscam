@@ -2,11 +2,31 @@
 {% block title %} {{ name }} {% endblock %}
 {% block content %}
         <div id='player_info'>
-            <span><h1>{{ name }}</h1></span>
+            <span><h1>{{ name }} has logged {{ total_games }} games!</h1></span>
             <span><img src="{{ gravatar_url }}"></span>
         </div>
         <div id='player_stats'>
             <h2>Stats</h2>
+            <table id='win-stats' cellpadding='10' cellspacing='2' border='1'>
+                <thead>
+                    <tr>
+                        <th id='tb-title'>Total Wins</th>
+                        <th id='tb-blue-head'>Blue</th>
+                        <th id='tb-red-head'>Red</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Offense</b></td>
+                        <td><span id='bo-wins'>{{ bo_wins }}</span></td>
+                        <td><span id='ro-wins'>{{ ro_wins }}</span></td>
+                    </tr>
+                    <tr><td><b>Defense</b></td>
+                        <td><span id='bd-wins'>{{ bd_wins }}</span></td>
+                        <td><span id='rd-wins'>{{ rd_wins }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         {% include 'history.html' %}
 {% endblock %}

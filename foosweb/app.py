@@ -39,23 +39,16 @@ assets.register('hist_css', hist_css)
 def home():
     return render_template('foosview.html', debug_image='static/img/table.png')
 
-#@app.route('/players/')
+#TODO: all players view @app.route('/players/')
+
 @app.route('/players/<int:id>')
 def player(id=-1):
-
-    gw = GameWatch()
     pd = PlayerData()
-    player_info = {}
-    player_info['name'] = pd.GetNames(id=id)
-    player_info['gravatar_url'] = pd.GetGravatarURLs(id=id)
-    player_info['id'] = id
-    player_info['hist_url'] = '/playerhistjson/' + str(id)
-
-    return render_template('player_view.html', **player_info)
+    profile = pd.GetProfile(id)
+    return render_template('player_view.html', **profile)
 
 @app.route('/history')
 def live_hist():
-    #return redirect(url_for('static', filename='history.html'))
     return render_template('history.html', hist_url='/livehistjson')
 
 @app.route('/readme')

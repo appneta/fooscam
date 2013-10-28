@@ -294,13 +294,36 @@ class PlayerData():
             id['rd'] = self._get_name_by_id(id['rd'])
             return id
 
-    def GetHistory(self,id=None, formatted=False):
+    def GetProfile(self, id):
+        profile = {}
+        try:
+            profile['ro_wins'] = self.session.query(Game).filter(Game.red_off == id).filter(Game.winner == 'red').count()
+            profile['rd_wins'] = self.session.query(Game).filter(Game.red_def == id).filter(Game.winner == 'red').count()
+            profile['bo_wins'] = self.session.query(Game).filter(Game.blue_off == id).filter(Game.winner == 'blue').count()
+            profile['bd_wins'] = self.session.query(Game).filter(Game.blue_def == id).filter(Game.winner == 'blue').count()
+        except Exception, e:
+            log.error('Failed to get wins from db for id %s with error %s' % (str(id), repr(e)))
+            return
+
+        profile['name'] = self._get_name_by_id(id)
+        profile['gravatar_url'] = self._get_gravatar_url_by_id(id)
+        profile['hist_url'] = '/playerhistjson' + str(id)
+        profile['total_games'] = self.GetHistory(id=id, count=True)
+
+        return profile
+
+    def GetHistory(self,id=None, formatted=False, count=False):
         game_history = []
         if id is not None:
-            for game in self.session.query(Game).filter(\
-                    (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
-                    order_by(Game.id):
-                game_history.append(game)
+            if count:
+                return self.session.query(Game).filter(\
+                        (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
+                        order_by(Game.id).count()
+            else:
+                for game in self.session.query(Game).filter(\
+                        (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
+                        order_by(Game.id):
+                    game_history.append(game)
         else:
             for game in self.session.query(Game).order_by(Game.id):
                 game_history.append(game)
