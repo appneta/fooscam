@@ -49,6 +49,7 @@ def home():
 def player(id=-1):
     pd = PlayerData()
     profile = pd.GetProfile(id)
+    profile['menu'] = menu_items
     return render_template('player_view.html', **profile)
 
 @app.route('/history')
