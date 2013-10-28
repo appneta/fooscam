@@ -309,10 +309,11 @@ class PlayerData():
             retvals = []
             for game in game_history:
                 game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
-                retvals.append([self._get_name_by_id(game.red_off), \
-                    self._get_name_by_id(game.red_def), \
-                    self._get_name_by_id(game.blue_off), \
-                    self._get_name_by_id(game.blue_def), \
+                ro = "<a href='/players/%s'>%s</a>" % (game.red_off, self._get_name_by_id(game.red_off))
+                rd = "<a href='/players/%s'>%s</a>" % (game.red_def, self._get_name_by_id(game.red_def))
+                bo = "<a href='/players/%s'>%s</a>" % (game.blue_off, self._get_name_by_id(game.blue_off))
+                bd = "<a href='/players/%s'>%s</a>" % (game.blue_def, self._get_name_by_id(game.blue_def))
+                retvals.append([ro, rd, bo, bd,
                     game.red_score, game.blue_score, \
                     datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \
                     datetime.fromtimestamp(game.ended).strftime('%Y-%m-%d %H:%M:%S'), \
