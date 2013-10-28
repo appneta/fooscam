@@ -5,12 +5,12 @@ from flask.ext.assets import Environment, Bundle
 import logging
 import pdb
 
-from views import LiveHistory, Score, Players, Status, PlayerHistory
-from foosweb import GameWatch, PlayerData
-
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
+
+from views import LiveHistory, Score, Players, Status, PlayerHistory
+from foosweb import GameWatch, PlayerData
 
 app = Flask(__name__)
 api = Api(app)
@@ -35,9 +35,13 @@ assets.register('foos_css', foos_css)
 assets.register('hist_js', hist_js)
 assets.register('hist_css', hist_css)
 
+menu_items = [{'name': 'Home', 'url': '/'}, \
+     {'name': 'History', 'url': '/history'}, \
+     {'name': 'Readme', 'url': '/readme'}]
+
 @app.route('/')
 def home():
-    return render_template('foosview.html', debug_image='static/img/table.png')
+    return render_template('foosview.html', debug_image='static/img/table.png', menu=all_but('Home'))
 
 #TODO: all players view @app.route('/players/')
 
@@ -49,11 +53,19 @@ def player(id=-1):
 
 @app.route('/history')
 def live_hist():
-    return render_template('history.html', hist_url='/livehistjson')
+    return render_template('history.html', hist_url='/livehistjson', menu=all_but('History'))
 
 @app.route('/readme')
 def readme():
-    return redirect(url_for('static', filename='readme.html'))
+    return render_template('readme.html', menu=all_but('Readme'))
+    #return redirect(url_for('static', filename='readme.html'))
+
+def all_but(entry):
+    menu = []
+    for item in menu_items:
+        if item['name'] != entry:
+            menu.append(item)
+    return menu
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)

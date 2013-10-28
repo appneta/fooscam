@@ -59,3 +59,11 @@ class Game(ORMBase):
     def __init__(self, **kwargs):
         for k, v in kwargs.iteritems():
             setattr(self, k, v)
+
+class Team(ORMBase):
+    __tablename__ = 'teams'
+    id = Column(Integer, primary_key=True)
+    player_one = Column(Integer, ForeignKey(Player.id), nullable=False)
+    player_two = Column(Integer, ForeignKey(Player.id), nullable=False)
+    name = Column(String, nullable=False)
+    status = Column(Integer, nullable=False)
