@@ -2,7 +2,7 @@ from flask import render_template
 from flask.ext.restful import Api, Resource, reqparse
 from flask import abort
 
-from foosweb import GameWatch
+from foosweb import GameWatch, PlayerData
 
 import logging
 from datetime import datetime, timedelta
@@ -11,45 +11,14 @@ log = logging.getLogger('gamewatch')
 
 #Flask-Restful API endpoints
 class PlayerHistory(Resource):
-    #TODO: deduplicate this and LiveHistory
     def get(self, id):
-        gw = GameWatch()
-        history = gw.GetHistory(id)
-        datatable_array = []
-        #format json serializable game history data for history page - http://datatables.net/index
-        for game in history:
-            game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
-            datatable_array.append([gw.GetNameByID(game.red_off), \
-                gw.GetNameByID(game.red_def), \
-                gw.GetNameByID(game.blue_off), \
-                gw.GetNameByID(game.blue_def), \
-                game.red_score, game.blue_score, \
-                datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \
-                datetime.fromtimestamp(game.ended).strftime('%Y-%m-%d %H:%M:%S'), \
-                str(timedelta(seconds=game_duration.seconds)), \
-                game.winner])
-
-        return {'aaData': datatable_array}
+        pd = PlayerData()
+        return {'aaData': pd.GetHistory(id, formatted=True)}
 
 class LiveHistory(Resource):
     def get(self):
-        gw = GameWatch()
-        history = gw.GetHistory()
-        datatable_array = []
-        #format json serializable game history data for history page - http://datatables.net/index
-        for game in history:
-            game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
-            datatable_array.append([gw.GetNameByID(game.red_off), \
-                gw.GetNameByID(game.red_def), \
-                gw.GetNameByID(game.blue_off), \
-                gw.GetNameByID(game.blue_def), \
-                game.red_score, game.blue_score, \
-                datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \
-                datetime.fromtimestamp(game.ended).strftime('%Y-%m-%d %H:%M:%S'), \
-                str(timedelta(seconds=game_duration.seconds)), \
-                game.winner])
-
-        return {'aaData': datatable_array}
+        pd = PlayerData()
+        return {'aaData': pd.GetHistory(formatted=True)}
 
 class Status(Resource):
     def get(self):
@@ -98,9 +67,10 @@ class Players(Resource):
 
     def get(self):
         gw = GameWatch()
-        names = gw.GetNames()
-        ids = gw.GetIDs()
-        gravatars = gw.GetGravatarURLs()
+        pd = PlayerData()
+        ids = gw.CurrentPlayerIDs()
+        names = pd.GetNames(gw.CurrentPlayerIDs())
+        gravatars = pd.GetGravatarURLs(gw.CurrentPlayerIDs())
         return  {'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},
                  'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},
                  'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},

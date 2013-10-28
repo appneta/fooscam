@@ -3,6 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.ext.declarative import declarative_base
 
+from datetime import datetime, timedelta
+
 from models import GameState, Player, Game, ORMBase
 
 import json
@@ -61,7 +63,7 @@ class GameWatch():
         do something constructive with the incoming player ID's
         """
         new_ids = [players['bo'], players['bd'], players['ro'], players['rd']]
-        tmp_ids = self.GetIDs()
+        tmp_ids = self.CurrentPlayerIDs()
         current_ids = [tmp_ids['bo'], tmp_ids['bd'], tmp_ids['ro'], tmp_ids['rd']]
 
         #same as it ever was
@@ -108,7 +110,6 @@ class GameWatch():
                 #TODO: something useful here?
                 log.debug('4 new ids locked but game is already going, throwing away current game state and starting a new game')
 
-
             self.game_state.blue_off = players['bo']
             self.game_state.blue_def = players['bd']
             self.game_state.red_off = players['ro']
@@ -120,7 +121,6 @@ class GameWatch():
         """
         do something useful with the score
         """
-
         if not self.game_state.game_on:
             log.debug('ignoring score update while no game underway')
             return
@@ -145,81 +145,14 @@ class GameWatch():
                     self.CommitState()
                     return
 
+    def CurrentPlayerIDs(self):
+        return {'bo': self.game_state.blue_off, 'bd': self.game_state.blue_def, 'ro': self.game_state.red_off, 'rd': self.game_state.red_def}
+
     def GetScore(self):
         return self.game_state.red_score,  self.game_state.blue_score
 
     def IsGameOn(self):
         return self.game_state.game_on
-
-
-    def GetGravatarURLByID(self, id, size=80):
-        email = self.GetEmailByID(id)
-        if email is not None:
-            email = email.strip().lower()
-            g_hash = md5(email).hexdigest()
-            return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
-        else:
-             return ''
-
-    def GetGravatarURLs(self):
-        urls = {}
-        urls['bo'] = self.GetGravatarURLByID(self.game_state.blue_off)
-        urls['bd'] = self.GetGravatarURLByID(self.game_state.blue_def)
-        urls['ro'] = self.GetGravatarURLByID(self.game_state.red_off)
-        urls['rd'] = self.GetGravatarURLByID(self.game_state.red_def)
-        return urls
-
-    def GetIDs(self):
-        #return [self.game_state.blue_off, self.game_state.blue_def, self.game_state.red_off, self.game_state.red_def]
-        player_ids = {}
-        player_ids['bo'] = self.game_state.blue_off
-        player_ids['bd'] = self.game_state.blue_def
-        player_ids['ro'] = self.game_state.red_off
-        player_ids['rd'] = self.game_state.red_def
-        return player_ids
-
-    def GetEmailByID(self, player_id):
-        if player_id == -1:
-            return
-        else:
-            try:
-                return str(self.session.query(Player.email).filter_by(id=player_id).one()[0])
-            except NoResultFound:
-                return
-
-    def GetNameByID(self, player_id):
-        if player_id == -1:
-            player_name = 'None'
-        else:
-            try:
-                player_name = str(self.session.query(Player.name).filter_by(id=player_id).one()[0])
-            except NoResultFound:
-                player_name = 'Anonymous'
-
-        return player_name
-
-    def GetNames(self):
-        player_names = {}
-
-        player_names['bo'] = self.GetNameByID(self.game_state.blue_off)
-        player_names['bd'] = self.GetNameByID(self.game_state.blue_def)
-        player_names['ro'] = self.GetNameByID(self.game_state.red_off)
-        player_names['rd'] = self.GetNameByID(self.game_state.red_def)
-
-        return player_names
-
-    def GetHistory(self,id=None):
-        game_history = []
-        if id is not None:
-            for game in self.session.query(Game).filter(\
-                    (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
-                    order_by(Game.id):
-                game_history.append(game)
-        else:
-            for game in self.session.query(Game).order_by(Game.id):
-                game_history.append(game)
-
-        return game_history
 
     def GetWinner(self):
         if self.game_state.game_winner == '':
@@ -267,6 +200,7 @@ class GameWatch():
         self.CommitState()
 
     def GameOn(self):
+        #TODO: this method should accept 4 player ID's
         self.game_state.game_on = True
         self.game_state.fuzzy = False
         self.game_state.red_score = 0
@@ -288,16 +222,102 @@ class PlayerData():
         Session.configure(bind=db)
         self.session = Session()
 
+    def _tidy_sa_results(self, result):
+        retvals = []
+        for item in result:
+            if type(item[0]) == unicode:
+                retvals.append(str(item[0]))
+            else:
+                retvals.append(item[0])
+        return retvals
 
+    def _get_email_by_id(self, player_id):
+        if player_id == -1:
+            return
+        else:
+            try:
+                return str(self.session.query(Player.email).filter_by(id=player_id).one()[0])
+            except NoResultFound:
+                return
 
-    def GetPlayer(self, id):
-        try:
-            player = self.session.query(Player).filter_by(id=id).one()
-        except NoResultFound, e:
-            player = None
-        except MultipleResultsFound, e:
-            player = None
-            log.error('Multiple players with ID %s found in database!' % (id))
+    def _get_gravatar_url_by_id(self, id, size=80):
+        email = self._get_email_by_id(id)
+        if email is not None:
+            email = email.strip().lower()
+            g_hash = md5(email).hexdigest()
+            return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
+        else:
+             return ''
 
-        return player
+    def _make_gravatar_url(self, email, size=80):
+        if email is not None:
+            return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().tolower()).hexdigest(), int(size)
 
+    def GetGravatarURLs(self, id):
+        """get url if id=INT, if id is a dict of current players populate with urls"""
+        if type(id) == int:
+            return self._get_gravatar_url_by_id(id)
+        elif type(id) == dict:
+            id['bo'] = self._get_gravatar_url_by_id(id['bo'])
+            id['bd'] = self._get_gravatar_url_by_id(id['bd'])
+            id['ro'] = self._get_gravatar_url_by_id(id['ro'])
+            id['rd'] = self._get_gravatar_url_by_id(id['rd'])
+            return id
+
+    def _get_name_by_id(self, player_id):
+        if player_id == -1:
+            player_name = 'None'
+        else:
+            try:
+                player_name = str(self.session.query(Player.name).filter_by(id=player_id).one()[0])
+            except NoResultFound:
+                player_name = 'Anonymous'
+
+        return player_name
+
+    def GetNames(self, id=None):
+        """get all names by default (id==None), get one name if id=INT, if id is a dict of current players populate with names"""
+        if id is None:
+            player_names = self.session.query(Player.name).all()
+            return self._tidy_sa_results(player_names)
+
+        if type(id) == int:
+            if id == -1:
+                return 'None'
+            else:
+                return self._get_name_by_id(id)
+
+        if type(id) == dict:
+            id['bo'] = self._get_name_by_id(id['bo'])
+            id['bd'] = self._get_name_by_id(id['bd'])
+            id['ro'] = self._get_name_by_id(id['ro'])
+            id['rd'] = self._get_name_by_id(id['rd'])
+            return id
+
+    def GetHistory(self,id=None, formatted=False):
+        game_history = []
+        if id is not None:
+            for game in self.session.query(Game).filter(\
+                    (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
+                    order_by(Game.id):
+                game_history.append(game)
+        else:
+            for game in self.session.query(Game).order_by(Game.id):
+                game_history.append(game)
+
+        if formatted:
+            retvals = []
+            for game in game_history:
+                game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
+                retvals.append([self._get_name_by_id(game.red_off), \
+                    self._get_name_by_id(game.red_def), \
+                    self._get_name_by_id(game.blue_off), \
+                    self._get_name_by_id(game.blue_def), \
+                    game.red_score, game.blue_score, \
+                    datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \
+                    datetime.fromtimestamp(game.ended).strftime('%Y-%m-%d %H:%M:%S'), \
+                    str(timedelta(seconds=game_duration.seconds)), \
+                    game.winner])
+            return retvals
+        else:
+            return game_history
