@@ -5,7 +5,7 @@ from flask.ext.assets import Environment, Bundle
 import logging
 
 from views import LiveHistory, Score, Players, Status, PlayerHistory
-from foosweb import GameWatch, PlayerPage
+from foosweb import GameWatch
 
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
@@ -59,9 +59,5 @@ def live_hist():
 def readme():
     return redirect(url_for('static', filename='readme.html'))
 
-
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
-    #uncomment to build db from scratch
-    #db = create_engine('sqlite:///foosball.db')
-    #ORMBase.metadata.create_all(db)

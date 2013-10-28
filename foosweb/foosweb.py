@@ -281,12 +281,14 @@ class GameWatch():
             self.session.add(state)
         self.session.commit()
 
-class PlayerPage():
+class PlayerData():
     def __init__(self):
         db = create_engine('sqlite:///foosball.db')
         Session = sessionmaker()
         Session.configure(bind=db)
         self.session = Session()
+
+
 
     def GetPlayer(self, id):
         try:
