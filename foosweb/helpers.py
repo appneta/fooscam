@@ -1,12 +1,14 @@
 from flask.ext.wtf import Form
 from wtforms import TextField
-from wtforms.validators import Required
+from wtforms.validators import DataRequired, ValidationError, Length
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 import logging
+import collections
+from gettext import gettext
 
 from hashlib import md5
 
@@ -64,13 +66,16 @@ class Auth():
         return player
 
 class LoginForm(Form):
-    email = TextField('email', validators = [Required()])
-    password = TextField('password', validators = [Required()])
+    #TODO: figure out how the hell to get these error messages to display!
+    email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address.")),\
+        Length(min=10, message=gettext("too short"))])
+    password = TextField('password', validators = [DataRequired()])
     auth = Auth()
 
     def validate(self):
         if self.auth.Login(email=self.email.data, password=self.password.data) is not None:
             return True
+
 
 class Menu():
     menu_items = [{'name': 'Home', 'url': '/'}, \
@@ -80,10 +85,6 @@ class Menu():
     def __init__(self, user, entry=None):
         self.entry = entry
         self.menu = {}
-        """for item in self.menu_items:
-            if item['name'] == entry:
-                del self."""
-
         self.menu['menu'] = (item for item in self.menu_items if item['name'] != entry)
         if user.is_authenticated():
             self.menu['name'] = user.name
@@ -92,4 +93,4 @@ class Menu():
             self.menu['anonymous'] = True
 
     def Make(self):
-        return self.menu
+        return collections.OrderedDict(sorted(self.menu.items()))

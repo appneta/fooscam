@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, url_for, abort, request
+from flask import Flask, redirect, render_template, url_for, abort, request, flash
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
@@ -58,6 +58,8 @@ def login():
         player=auth.GetPlayerByEmail(form.email.data)
         login_user(player)
         return redirect(url_for('home'))
+    else:
+        error = 'Username or Password Incorrect'
     return render_template('login.html', form=form, **data)
 
 @app.route('/logout')
