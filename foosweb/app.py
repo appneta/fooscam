@@ -81,7 +81,7 @@ def player(id=-1):
 def live_hist():
     menu = Menu(current_user, 'History')
     data = menu.Make()
-    return render_template('history.html', hist_url='/livehistjson', **data)
+    return render_template('history_view.html', hist_url='/livehistjson', **data)
 
 @app.route('/readme')
 def readme():
