@@ -21,6 +21,12 @@
         {% for item in menu %}
             <a href='{{ item.url }}'>{{ item.name }}</a>
         {% endfor %}
+        {% if anonymous %}
+            <a href='/login'>Login</a>
+        {% else %}
+            <a href='/players/{{ id }}'>{{ name }}</a>
+            <a href='/logout'>Logout</a>
+        {% endif %}
         </div>
         <div id="content">{% block content %}{% endblock %}</div>
     </body>

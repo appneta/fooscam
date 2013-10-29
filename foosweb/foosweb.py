@@ -251,7 +251,7 @@ class PlayerData():
 
     def _make_gravatar_url(self, email, size=80):
         if email is not None:
-            return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().tolower()).hexdigest(), int(size)
+            return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().lower()).hexdigest(), int(size)
 
     def GetGravatarURLs(self, id):
         """get url if id=INT, if id is a dict of current players populate with urls"""
@@ -274,6 +274,7 @@ class PlayerData():
                 player_name = 'Anonymous'
 
         return player_name
+
 
     def GetNames(self, id=None):
         """get all names by default (id==None), get one name if id=INT, if id is a dict of current players populate with names"""
@@ -345,3 +346,4 @@ class PlayerData():
             return retvals
         else:
             return game_history
+

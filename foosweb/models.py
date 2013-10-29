@@ -13,9 +13,22 @@ class Player(ORMBase):
     name = Column(String)
     email = Column(String)
     password = Column(String)
+    authenticated = Column(Boolean)
 
     def __init__(self, name):
         self.name = name
+
+    def is_active(self):
+        return True
+
+    def is_authenticated(self):
+        return self.authenticated
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return unicode(self.id)
 
 class GameState(ORMBase):
     __tablename__ = 'state'
