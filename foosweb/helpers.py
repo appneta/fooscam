@@ -86,6 +86,11 @@ class Auth():
 
         return True
 
+    def RequiresAdmin(self, func):
+        pdb.set_trace()
+        def wrapped_route(*args, **kwargs):
+            pass
+
 class LoginForm(Form):
     #TODO: figure out how the hell to get these error messages to display!
     email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])

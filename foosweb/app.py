@@ -46,6 +46,7 @@ csrf = CsrfProtect()
 csrf.init_app(app)
 
 rd = RenderData()
+auth = Auth()
 
 @app.route('/')
 def home():
@@ -53,12 +54,19 @@ def home():
     return render_template('foosview.html', debug_image='static/img/table.png', **data)
     #return render_template('foosview.html', menu=all_but('Home'))
 
+@app.route('/admin')
+def admin():
+    if current_user.is_authenticated():
+        if auth.IsAdmin(current_user.id):
+            data = rd.Get(current_user)
+            return render_template('admin.html', **data)
+    return redirect(url_for('home'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     data = rd.Get(current_user)
     form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
-        auth = Auth()
         if auth.Login(**request.form.to_dict()):
             player=auth.GetPlayerByEmail(form.email.data)
             login_user(player)
@@ -69,7 +77,6 @@ def login():
 
 @app.route('/logout')
 def logout():
-    auth = Auth()
     auth.Logout(current_user)
     logout_user()
     flash('Logged out')
@@ -96,7 +103,6 @@ def readme():
 
 @lm.user_loader
 def user_loader(id):
-    auth = Auth()
     return auth.GetPlayerByID(id)
 
 if __name__ == '__main__':
