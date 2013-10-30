@@ -13,7 +13,7 @@ log.addHandler(logging.StreamHandler())
 
 from views import LiveHistory, Score, Players, Status, PlayerHistory
 from foosweb import GameWatch, PlayerData
-from helpers import LoginForm, Auth, Menu, RenderData
+from helpers import LoginForm, Auth, RenderData
 
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
@@ -27,6 +27,7 @@ api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhi
 assets = Environment(app)
 main_js = Bundle('js/modernizr-2.6.2.min.js', 'js/jquery-latest.min.js', 'js/jquery-ui.js')
 main_css = Bundle('css/normalize.css', 'css/main.css')
+players_css = Bundle('css/players.css')
 foos_js = Bundle('js/foosview.js')
 foos_css = Bundle('css/foosview.css')
 hist_js = Bundle('js/jquery.dataTables.min.js', 'js/foos-stats.js')
@@ -38,6 +39,7 @@ assets.register('foos_js', foos_js)
 assets.register('foos_css', foos_css)
 assets.register('hist_js', hist_js)
 assets.register('hist_css', hist_css)
+assets.register('players_css', players_css)
 
 lm = LoginManager()
 lm.init_app(app)
@@ -83,6 +85,13 @@ def logout():
     return redirect(url_for('home'))
 
 #TODO: all players view @app.route('/players/')
+
+@app.route('/players')
+def players():
+    data = rd.Get(current_user)
+    pd = PlayerData()
+    players = pd.GetAllPlayers()
+    return render_template('players.html', **dict(players.items() + data.items()))
 
 @app.route('/players/<int:id>')
 def player(id=-1):

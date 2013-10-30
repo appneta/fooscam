@@ -295,6 +295,18 @@ class PlayerData():
             id['rd'] = self._get_name_by_id(id['rd'])
             return id
 
+    def GetAllPlayers(self):
+        players = {}
+        players['all_players'] = []
+        all_players = self.session.query(Player).all()
+        #all_players = self.session.query(Player).filter(Player.id<6).all()
+
+        for player in all_players:
+            if player.id != -1 and player.name != 'Guest':
+                players['all_players'].append((player.id, player.name,  self._get_gravatar_url_by_id(player.id, size=200)))
+
+        return players
+
     def GetProfile(self, id):
         profile = {}
         try:

@@ -86,39 +86,12 @@ class Auth():
 
         return True
 
-    def RequiresAdmin(self, func):
-        pdb.set_trace()
-        def wrapped_route(*args, **kwargs):
-            pass
-
 class LoginForm(Form):
-    #TODO: figure out how the hell to get these error messages to display!
     email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
     password = TextField('password', validators = [DataRequired(message=gettext("Enter your password."))])
-    auth = Auth()
-
-class Menu():
-    menu_items = [{'name': 'Home', 'url': '/'}, \
-            {'name': 'History', 'url': '/history'}, \
-            {'name': 'Readme', 'url': '/readme'}]
-
-    def Make(self, user, entry):
-        auth = Auth()
-        menu = {}
-        if user.is_authenticated():
-            menu['name'] = user.name
-            menu['id'] = user.id
-            if auth.IsAdmin(user.id):
-                menu['menu'] = dict(({'name': 'Admin', 'url': '/admin'}).items() + (item for item in self.menu_items if item['name'] != entry))
-        else:
-            menu['anonymous'] = True
-
-        menu['menu'] = (item for item in self.menu_items if item['name'] != entry)
-        return collections.OrderedDict(sorted(menu.items()))
-
 
 class RenderData():
-    menu_items = (('Home', '/'), ('History', '/history'), ('Readme', '/readme'))
+    menu_items = (('Home', '/'), ('Players', '/players'), ('History', '/history'), ('Readme', '/readme'))
 
     def __init__(self):
         self.auth = Auth()

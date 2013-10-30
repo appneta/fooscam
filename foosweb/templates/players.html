@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %} Foosball Players {% endblock %}
+{% block head %}
+{% assets "players_css" %}<link rel="stylesheet" href="{{ ASSET_URL }}">{% endassets %}
+{% endblock %}
+{% block content %}
+    <h1>FoosBallas!</a>
+    {% if all_players|length < 5 %}
+        <table class='player-list'><tr>
+        {% for name, gravatar_url in all_players %}
+            <td class='player-box'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></td>
+        {% endfor %}
+        </tr></table>
+    {% else %}
+        <table class='player-list'>
+        {% for players in all_players|slice(3) %}
+            {% for id, name, gravatar_url in players %}
+                {% if loop.first %}
+                <tr><td class='player-list'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
+                {% elif loop.last %}
+                <td class='player-list'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td></tr>
+                {% else %}
+                <td class='player-list'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}
