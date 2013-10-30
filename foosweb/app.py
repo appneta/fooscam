@@ -63,6 +63,7 @@ def login():
         if auth.Login(**request.form.to_dict()):
             player=auth.GetPlayerByEmail(form.email.data)
             login_user(player)
+            flash("y'all be logged in!")
             return redirect(url_for('home'))
     else:
         return render_template('login.html', form=form, **data)
@@ -72,6 +73,7 @@ def logout():
     auth = Auth()
     auth.Logout(current_user)
     logout_user()
+    flash("y'all be logged out!")
     return redirect(url_for('home'))
 
 #TODO: all players view @app.route('/players/')
