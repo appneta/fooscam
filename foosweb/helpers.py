@@ -13,7 +13,7 @@ from gettext import gettext
 from hashlib import md5
 
 from foosweb import PlayerData
-from models import Player
+from models import Player, Admin
 
 import pdb
 
@@ -64,7 +64,27 @@ class Auth():
             player = self.session.query(Player).filter_by(id=id).one()
         except NoResultFound:
             return
+        except Exception, e:
+            log.error('Exception thrown trying to get player %s!' % (str(id)))
+            return
+
         return player
+
+    def IsAdmin(self, id):
+        try:
+            id = int(id)
+        except ValueError, e:
+            return
+
+        try:
+            admin = self.session.query(Admin).filter_by(player_id=id).one()
+        except NoResultFound:
+            return
+        except Exception, e:
+            log.error('Exception %s thrown checking admin status of  %s!' % (repr(e), str(id)))
+            return
+
+        return True
 
 class LoginForm(Form):
     #TODO: figure out how the hell to get these error messages to display!
@@ -72,25 +92,41 @@ class LoginForm(Form):
     password = TextField('password', validators = [DataRequired(message=gettext("Enter your password."))])
     auth = Auth()
 
-    """def validate(self):
-        if self.auth.Login(email=self.email.data, password=self.password.data) is not None:
-            return True"""
-
-
 class Menu():
     menu_items = [{'name': 'Home', 'url': '/'}, \
-             {'name': 'History', 'url': '/history'}, \
-             {'name': 'Readme', 'url': '/readme'}]
+            {'name': 'History', 'url': '/history'}, \
+            {'name': 'Readme', 'url': '/readme'}]
 
-    def __init__(self, user, entry=None):
-        self.entry = entry
-        self.menu = {}
-        self.menu['menu'] = (item for item in self.menu_items if item['name'] != entry)
+    def Make(self, user, entry):
+        auth = Auth()
+        menu = {}
         if user.is_authenticated():
-            self.menu['name'] = user.name
-            self.menu['id'] = user.id
+            menu['name'] = user.name
+            menu['id'] = user.id
+            if auth.IsAdmin(user.id):
+                menu['menu'] = dict(({'name': 'Admin', 'url': '/admin'}).items() + (item for item in self.menu_items if item['name'] != entry))
         else:
-            self.menu['anonymous'] = True
+            menu['anonymous'] = True
 
-    def Make(self):
-        return collections.OrderedDict(sorted(self.menu.items()))
+        menu['menu'] = (item for item in self.menu_items if item['name'] != entry)
+        return collections.OrderedDict(sorted(menu.items()))
+
+
+class RenderData():
+    menu_items = (('Home', '/'), ('History', '/history'), ('Readme', '/readme'))
+
+    def __init__(self):
+        self.auth = Auth()
+
+    def Get(self, user):
+        data = {}
+        data['menu'] = self.menu_items
+        if user.is_authenticated():
+            data['name'] = user.name
+            data['id'] = user.id
+            if self.auth.IsAdmin(user.id):
+                data['admin'] = True
+        else:
+            data['anonymous'] = True
+
+        return data

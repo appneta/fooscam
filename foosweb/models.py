@@ -80,3 +80,8 @@ class Team(ORMBase):
     player_two = Column(Integer, ForeignKey(Player.id), nullable=False)
     name = Column(String, nullable=False)
     status = Column(Integer, nullable=False)
+
+class Admin(ORMBase):
+    __tablename__ = 'admins'
+    id = Column(Integer, primary_key=True)
+    player_id = Column(Integer, ForeignKey(Player.id), nullable=False)

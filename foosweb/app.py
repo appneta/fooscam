@@ -13,7 +13,7 @@ log.addHandler(logging.StreamHandler())
 
 from views import LiveHistory, Score, Players, Status, PlayerHistory
 from foosweb import GameWatch, PlayerData
-from helpers import LoginForm, Auth, Menu
+from helpers import LoginForm, Auth, Menu, RenderData
 
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
@@ -45,25 +45,24 @@ lm.init_app(app)
 csrf = CsrfProtect()
 csrf.init_app(app)
 
+rd = RenderData()
+
 @app.route('/')
 def home():
-    menu = Menu(current_user, 'Home')
-    data = menu.Make()
+    data = rd.Get(current_user)
     return render_template('foosview.html', debug_image='static/img/table.png', **data)
     #return render_template('foosview.html', menu=all_but('Home'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    menu = Menu(current_user, 'Profile')
-    data = menu.Make()
+    data = rd.Get(current_user)
     form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
         auth = Auth()
-        #if auth.Login(email=request.form.email.data, password=request.form.password.data):
         if auth.Login(**request.form.to_dict()):
             player=auth.GetPlayerByEmail(form.email.data)
             login_user(player)
-            flash("y'all be logged in!")
+            flash('Welcome back to FoosView %s!' % (player.name))
             return redirect(url_for('home'))
     else:
         return render_template('login.html', form=form, **data)
@@ -73,29 +72,26 @@ def logout():
     auth = Auth()
     auth.Logout(current_user)
     logout_user()
-    flash("y'all be logged out!")
+    flash('Logged out')
     return redirect(url_for('home'))
 
 #TODO: all players view @app.route('/players/')
 
 @app.route('/players/<int:id>')
 def player(id=-1):
+    data = rd.Get(current_user)
     pd = PlayerData()
     profile = pd.GetProfile(id)
-    menu = Menu(current_user, 'Profile')
-    data = menu.Make()
     return render_template('player_view.html', **dict(profile.items() + data.items()))
 
 @app.route('/history')
 def live_hist():
-    menu = Menu(current_user, 'History')
-    data = menu.Make()
+    data = rd.Get(current_user)
     return render_template('history_view.html', hist_url='/livehistjson', **data)
 
 @app.route('/readme')
 def readme():
-    menu = Menu(current_user, 'Readme')
-    data = menu.Make()
+    data = rd.Get(current_user)
     return render_template('readme.html', **data)
 
 @lm.user_loader
