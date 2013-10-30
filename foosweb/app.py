@@ -2,6 +2,7 @@ from flask import Flask, redirect, render_template, url_for, abort, request, fla
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask_wtf.csrf import CsrfProtect
 
 import logging
 import pdb
@@ -41,6 +42,9 @@ assets.register('hist_css', hist_css)
 lm = LoginManager()
 lm.init_app(app)
 
+csrf = CsrfProtect()
+csrf.init_app(app)
+
 @app.route('/')
 def home():
     menu = Menu(current_user, 'Home')
@@ -55,12 +59,13 @@ def login():
     form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
         auth = Auth()
-        player=auth.GetPlayerByEmail(form.email.data)
-        login_user(player)
-        return redirect(url_for('home'))
+        #if auth.Login(email=request.form.email.data, password=request.form.password.data):
+        if auth.Login(**request.form.to_dict()):
+            player=auth.GetPlayerByEmail(form.email.data)
+            login_user(player)
+            return redirect(url_for('home'))
     else:
-        error = 'Username or Password Incorrect'
-    return render_template('login.html', form=form, **data)
+        return render_template('login.html', form=form, **data)
 
 @app.route('/logout')
 def logout():

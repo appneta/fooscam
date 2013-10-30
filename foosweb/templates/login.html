@@ -5,6 +5,7 @@
     <h1>Login</h1>
     {% from "_formhelpers.html" import render_field %}
     <form method=post action="/login">
+        {{ form.csrf_token }}
       <dl>
         {{ render_field(form.email) }}
         {{ render_field(form.password, type='password') }}

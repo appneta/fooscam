@@ -26,9 +26,10 @@ class Auth():
         Session.configure(bind=db)
         self.session = Session()
 
-    def Login(self, email, password):
-        password = md5(password).hexdigest()
-        email = str(email).strip().lower()
+    #def Login(self, email, password):
+    def Login(self, **kwargs):
+        password = md5(kwargs['password']).hexdigest()
+        email = str(kwargs['email']).strip().lower()
         try:
             player = self.session.query(Player).filter_by(email=email).filter_by(password=password).one()
         except NoResultFound:
@@ -67,14 +68,13 @@ class Auth():
 
 class LoginForm(Form):
     #TODO: figure out how the hell to get these error messages to display!
-    email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address.")),\
-        Length(min=10, message=gettext("too short"))])
-    password = TextField('password', validators = [DataRequired()])
+    email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
+    password = TextField('password', validators = [DataRequired(message=gettext("Enter your password."))])
     auth = Auth()
 
-    def validate(self):
+    """def validate(self):
         if self.auth.Login(email=self.email.data, password=self.password.data) is not None:
-            return True
+            return True"""
 
 
 class Menu():
