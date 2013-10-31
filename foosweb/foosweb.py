@@ -267,7 +267,8 @@ class PlayerData():
 
     def _get_teams_by_player_id(self, id):
         try:
-            teams = self.session.query(Team).filter((Team.player_one == id) | (Team.player_two == id)).all()
+            teams = self.session.query(Team).filter((Team.player_one == id) | (Team.player_two == id)).\
+            filter(Team.status < Team.STATUS_DECLINED).all()
         except Exception, e:
             log.debug('Something horrible happened trying to find teams for player: %s' % (str(id)))
             return
