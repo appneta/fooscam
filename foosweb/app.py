@@ -3,6 +3,7 @@ from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CsrfProtect
+from BeautifulSoup import BeautifulSoup as bs
 
 import logging
 import pdb

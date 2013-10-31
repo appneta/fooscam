@@ -275,13 +275,9 @@ class PlayerData():
         retvals = []
 
         for team in teams:
-            if team.player_one == id:
-                team_mate_name = self._get_name_by_id(team.player_two)
-                team_mate_id = team.player_two
-            else:
-                team_mate_name = self._get_name_by_id(team.player_one)
-                team_mate_id = team.player_one
-            retvals.append((team_mate_id, team_mate_name, team.name, team.status))
+            p_one_name = self._get_name_by_id(team.player_one)
+            p_two_name = self._get_name_by_id(team.player_two)
+            retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.name, team.status))
 
         return retvals
 
@@ -329,6 +325,7 @@ class PlayerData():
 
     #def GetProfile(self, id, user_id):
     def GetProfile(self, id):
+        """Get profile data for id and show it to user_id"""
         profile = {}
         try:
             profile['ro_wins'] = self.session.query(Game).filter(Game.red_off == id).filter(Game.winner == 'red').count()
@@ -340,11 +337,11 @@ class PlayerData():
             return
 
         profile['profile_name'] = self._get_name_by_id(id)
+        profile['profile_id'] = id
         profile['gravatar_url'] = self._get_gravatar_url_by_id(id)
         profile['hist_url'] = '/playerhistjson/' + str(id)
         profile['total_games'] = self.GetHistory(id=id, count=True)
         profile['teams'] = self._get_teams_by_player_id(id)
-        profile['profile_id'] = id
 
         return profile
 
