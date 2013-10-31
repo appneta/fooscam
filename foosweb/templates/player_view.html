@@ -34,14 +34,14 @@
                 {% if teams %}
                     {% for team_mate_id, team_mate_name, team_name, team_status in teams %}
                         {# STATUS 1 == pending 2 == confirmed -- only show team invites to users looking at their own profile#}
-                        {% if team_status == 1 and profile_id == id %}
+                        {% if team_status == 1 and profile_id == user_id %}
                         <li><a href='/players/{{team_mate_id}}'>{{ team_mate_name }}</a> has invited you to join {{ team_name }}!</li>
                         {% elif team_status == 2 %}
                         <li> {{ profile_name }} &amp; <a href='/players/{{ team_mate_id }}'>{{ team_mate_name }}</a> are team: {{ team_name }}</li>
                         {% endif %}
                     {% endfor %}
                 {% else %}
-                        {% if profile_id == id %}
+                        {% if profile_id == user_id %}
                         <li> You are not on any teams! <a href='#'>Create a team!</a></li>
                         {% else %}
                         <li> {{ profile_name }} is not on any teams, why not <a href='#'>team up with them?</a>

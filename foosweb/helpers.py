@@ -91,6 +91,7 @@ class LoginForm(Form):
     password = TextField('password', validators = [DataRequired(message=gettext("Enter your password."))])
 
 class RenderData():
+    """base data to customize views for current user"""
     menu_items = (('Home', '/'), ('Players', '/players'), ('History', '/history'), ('Readme', '/readme'))
 
     def __init__(self):
@@ -101,11 +102,12 @@ class RenderData():
         data['menu'] = self.menu_items
         if user.is_authenticated():
             #TODO: change these to player_id/player_name
-            data['name'] = user.name
-            data['id'] = user.id
+            data['user_name'] = user.name
+            data['user_id'] = user.id
             if self.auth.IsAdmin(user.id):
                 data['admin'] = True
         else:
             data['anonymous'] = True
+            data['id'] = -1
 
         return data

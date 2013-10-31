@@ -27,7 +27,7 @@
         {% if anonymous %}
             <a href='/login'>Login</a>
         {% else %}
-            <a href='/players/{{ id }}'>{{ name }}</a>
+            <a href='/players/{{ user_id }}'>{{ user_name }}</a>
             <a href='/logout'>Logout</a>
         {% endif %}
         </div>

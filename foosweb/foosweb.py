@@ -327,6 +327,7 @@ class PlayerData():
 
         return players
 
+    #def GetProfile(self, id, user_id):
     def GetProfile(self, id):
         profile = {}
         try:
