@@ -16,11 +16,11 @@
         {% for players in all_players|slice(3) %}
             {% for id, name, gravatar_url in players %}
                 {% if loop.first %}
-                <tr><td class='player-list'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
+                <tr><td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
                 {% elif loop.last %}
-                <td class='player-list'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td></tr>
+                <td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td></tr>
                 {% else %}
-                <td class='player-list'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
+                <td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
                 {% endif %}
             {% endfor %}
         {% endfor %}

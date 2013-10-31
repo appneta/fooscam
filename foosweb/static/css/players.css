@@ -1,7 +1,9 @@
 table.player-list{
     margin-left: auto;
     margin-right: auto;
+    border: 1px solid black;
 }
-td.player-list{
+td.player-box{
+    border: 1px solid black;
     text-align: center;
 }
