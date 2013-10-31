@@ -111,6 +111,23 @@ class TeamData():
         self.session.commit()
         return True
 
+    def GetInvitesFor(self, id):
+        try:
+            invites = self.session.query(Team).filter(Team.status == Team.STATUS_PENDING).\
+                filter((Team.player_one == id) | (Team.player_two == id)).all()
+        except Exception, e:
+            log.error('something horrible happened whily trying to find invites for id %s' % (str(id)))
+            return
+
+        retvals = []
+        pd = PlayerData()
+        for invite in invites:
+            p_one_name = pd._get_name_by_id(invite.player_one)
+            p_two_name = pd._get_name_by_id(invite.player_two)
+            retvals.append((invite.player_one, p_one_name, invite.player_two, p_two_name, invite.name, invite.id))
+
+        return retvals
+
 class RenderData():
     """base data to customize views for current user"""
     menu_items = (('Home', '/'), ('Players', '/players'), ('History', '/history'), ('Readme', '/readme'))

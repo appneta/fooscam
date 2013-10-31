@@ -51,6 +51,7 @@ csrf.init_app(app)
 rd = RenderData()
 auth = Auth()
 pd = PlayerData()
+td = TeamData()
 
 @app.route('/')
 def home():
@@ -69,17 +70,28 @@ def admin():
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
 def teamup(id):
-    profile_name = pd._get_name_by_id(id)
     data = rd.Get(current_user)
+    profile_name = pd._get_name_by_id(id)
     form = TeamupForm(request.form)
     if request.method == 'POST' and form.validate():
-        td = TeamData()
         if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
             flash('Invite to %s sent!' % (profile_name), 'info')
         else:
             flash('Error sending invite!', 'error')
         return redirect(url_for('home'))
     return render_template('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
+
+@app.route('/teamup/invites')
+@login_required
+def show_invites():
+    data = rd.Get(current_user)
+    invites = td.GetInvitesFor(current_user.id)
+    return render_template('teamup_invites.html', invites=invites, **data)
+
+@app.route('/teamup/accept/<int:invite_id>')
+@login_required
+def teamup_resp(id):
+    td.RSVP()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

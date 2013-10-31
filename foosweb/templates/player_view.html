@@ -37,9 +37,9 @@
         {% if team_status == 1 and profile_id == user_id %}
           {# invites are sent by player_one to player_two -- show invitees their invite #}
           {% if user_id == p_two_id %}
-            <li><a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> has <a href='#'>invited you to join team {{ team_name }}</a>!</li>
+            <li><a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> has <a href='/teamup/invites'>invited you to join team {{ team_name }}</a>!</li>
           {% elif user_id == p_one_id %}
-            <li><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> hasn't responded to <a href='#'>your invite</a> yet.</li>
+            <li><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> hasn't responded to <a href='/teamup/invites'>your invite</a> yet.</li>
           {% endif %}
         {% endif %}
         {# show accepted team invites to everyone #}
@@ -57,7 +57,7 @@
       {% endfor %}
     {% else %}
       {% if profile_id == user_id %}
-        <li> You are not on any teams! <a href='#'>Create a team!</a></li>
+        <li> You are not on any teams! Ask someone to <a href='/players'>team up?</a></li>
       {% else %}
         <li> {{ profile_name }} is not on any teams, why not <a href='/teamup/{{ profile_id }}'>team up?</a>
       {% endif %}
