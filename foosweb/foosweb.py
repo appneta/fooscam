@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from datetime import datetime, timedelta
 
-from models import GameState, Player, Game, ORMBase
+from models import GameState, Player, Game, ORMBase, Team
 
 import json
 from hashlib import md5
@@ -253,17 +253,6 @@ class PlayerData():
         if email is not None:
             return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().lower()).hexdigest(), int(size)
 
-    def GetGravatarURLs(self, id):
-        """get url if id=INT, if id is a dict of current players populate with urls"""
-        if type(id) == int:
-            return self._get_gravatar_url_by_id(id)
-        elif type(id) == dict:
-            id['bo'] = self._get_gravatar_url_by_id(id['bo'])
-            id['bd'] = self._get_gravatar_url_by_id(id['bd'])
-            id['ro'] = self._get_gravatar_url_by_id(id['ro'])
-            id['rd'] = self._get_gravatar_url_by_id(id['rd'])
-            return id
-
     def _get_name_by_id(self, player_id):
         if player_id == -1:
             player_name = 'None'
@@ -275,6 +264,37 @@ class PlayerData():
 
         return player_name
 
+
+    def _get_teams_by_player_id(self, id):
+        try:
+            teams = self.session.query(Team).filter((Team.player_one == id) | (Team.player_two == id)).all()
+        except Exception, e:
+            log.debug('Something horrible happened trying to find teams for player: %s' % (str(id)))
+            return
+
+        retvals = []
+
+        for team in teams:
+            if team.player_one == id:
+                team_mate_name = self._get_name_by_id(team.player_two)
+                team_mate_id = team.player_two
+            else:
+                team_mate_name = self._get_name_by_id(team.player_one)
+                team_mate_id = team.player_one
+            retvals.append((team_mate_id, team_mate_name, team.name, team.status))
+
+        return retvals
+
+    def GetGravatarURLs(self, id):
+        """get url if id=INT, if id is a dict of current players populate with urls"""
+        if type(id) == int:
+            return self._get_gravatar_url_by_id(id)
+        elif type(id) == dict:
+            id['bo'] = self._get_gravatar_url_by_id(id['bo'])
+            id['bd'] = self._get_gravatar_url_by_id(id['bd'])
+            id['ro'] = self._get_gravatar_url_by_id(id['ro'])
+            id['rd'] = self._get_gravatar_url_by_id(id['rd'])
+            return id
 
     def GetNames(self, id=None):
         """get all names by default (id==None), get one name if id=INT, if id is a dict of current players populate with names"""
@@ -318,10 +338,12 @@ class PlayerData():
             log.error('Failed to get wins from db for id %s with error %s' % (str(id), repr(e)))
             return
 
-        profile['name'] = self._get_name_by_id(id)
+        profile['profile_name'] = self._get_name_by_id(id)
         profile['gravatar_url'] = self._get_gravatar_url_by_id(id)
         profile['hist_url'] = '/playerhistjson/' + str(id)
         profile['total_games'] = self.GetHistory(id=id, count=True)
+        profile['teams'] = self._get_teams_by_player_id(id)
+        profile['profile_id'] = id
 
         return profile
 

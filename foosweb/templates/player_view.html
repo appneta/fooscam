@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %} {{ name }} {% endblock %}
+{% block title %} {{ profile_name }} {% endblock %}
 {% block content %}
         <div id='player_info'>
-            <span><h1>{{ name }} has logged {{ total_games }} games!</h1></span>
+            <span><h1>{{ profile_name }} has logged {{ total_games }} games!</h1></span>
             <span><img src="{{ gravatar_url }}"></span>
         </div>
         <div id='player_stats'>
@@ -27,6 +27,27 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+        <div id='player_teams'>
+            <span id='team-title'>{{ profile_name }}'s Teams</span>
+            <ul id='team-list'>
+                {% if teams %}
+                    {% for team_mate_id, team_mate_name, team_name, team_status in teams %}
+                        {# STATUS 1 == pending 2 == confirmed -- only show team invites to users looking at their own profile#}
+                        {% if team_status == 1 and profile_id == id %}
+                        <li><a href='/players/{{team_mate_id}}'>{{ team_mate_name }}</a> has invited you to join {{ team_name }}!</li>
+                        {% elif team_status == 2 %}
+                        <li> {{ profile_name }} &amp; <a href='/players/{{ team_mate_id }}'>{{ team_mate_name }}</a> are team: {{ team_name }}</li>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                        {% if profile_id == id %}
+                        <li> You are not on any teams! <a href='#'>Create a team!</a></li>
+                        {% else %}
+                        <li> {{ profile_name }} is not on any teams, why not <a href='#'>team up with them?</a>
+                        {% endif %}
+                {% endif %}
+            </ul>
         </div>
         {% include '_history.html' %}
 {% endblock %}

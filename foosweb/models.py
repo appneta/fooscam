@@ -81,6 +81,15 @@ class Team(ORMBase):
     name = Column(String, nullable=False)
     status = Column(Integer, nullable=False)
 
+    STATUS_PENDING = 1
+    STATUS_COMPLETE = 2
+
+    def __init__(self, player_one, player_two, name):
+        self.status = self.STATUS_PENDING
+        self.player_one = player_one
+        self.player_two = player_two
+        self.name = name
+
 class Admin(ORMBase):
     __tablename__ = 'admins'
     id = Column(Integer, primary_key=True)

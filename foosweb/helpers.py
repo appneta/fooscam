@@ -100,6 +100,7 @@ class RenderData():
         data = {}
         data['menu'] = self.menu_items
         if user.is_authenticated():
+            #TODO: change these to player_id/player_name
             data['name'] = user.name
             data['id'] = user.id
             if self.auth.IsAdmin(user.id):
