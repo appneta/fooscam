@@ -45,6 +45,7 @@
         {# show accepted team invites to everyone #}
         {% if team_status == 2 %}
           {% if profile_id == p_one_id %}
+            {#TODO: link to team page from here #}
             <li> {{ profile_name }} &amp; <a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> are team: {{ team_name }}</li>
           {% elif profile_id == p_two_id %}
             <li> {{ profile_name }} &amp; <a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> are team: {{ team_name }}</li>
