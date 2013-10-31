@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %} Teamup {% endblock %}
+{% block content %}
+<div id='teamup-form'>
+    <h1>Aw YEAH you should team up with {{ profile_name }}</h1>
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post action='/teamup/{{ profile_id }}'>
+        {{ form.csrf_token }}
+        What you crazy kids gonna call yourselves?
+        {{ render_field(form.team_name) }}
+        <p><input type=submit value=TeamUp>
+    </form>
+{% endblock %}

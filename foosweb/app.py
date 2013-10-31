@@ -14,7 +14,7 @@ log.addHandler(logging.StreamHandler())
 
 from views import LiveHistory, Score, Players, Status, PlayerHistory
 from foosweb import GameWatch, PlayerData
-from helpers import LoginForm, Auth, RenderData
+from helpers import LoginForm, Auth, RenderData, TeamupForm, TeamData
 
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
@@ -50,6 +50,7 @@ csrf.init_app(app)
 
 rd = RenderData()
 auth = Auth()
+pd = PlayerData()
 
 @app.route('/')
 def home():
@@ -64,6 +65,21 @@ def admin():
             data = rd.Get(current_user)
             return render_template('admin.html', **data)
     return redirect(url_for('home'))
+
+@app.route('/teamup/<int:id>', methods=['GET', 'POST'])
+@login_required
+def teamup(id):
+    profile_name = pd._get_name_by_id(id)
+    data = rd.Get(current_user)
+    form = TeamupForm(request.form)
+    if request.method == 'POST' and form.validate():
+        td = TeamData()
+        if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
+            flash('Invite to %s sent!' % (profile_name), 'info')
+        else:
+            flash('Error sending invite!', 'error')
+        return redirect(url_for('home'))
+    return render_template('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -85,19 +101,15 @@ def logout():
     flash('Logged out')
     return redirect(url_for('home'))
 
-#TODO: all players view @app.route('/players/')
-
 @app.route('/players')
 def players():
     data = rd.Get(current_user)
-    pd = PlayerData()
     players = pd.GetAllPlayers()
     return render_template('players.html', **dict(players.items() + data.items()))
 
 @app.route('/players/<int:id>')
-def player(id=-1):
+def player(id):
     data = rd.Get(current_user)
-    pd = PlayerData()
     profile = pd.GetProfile(id)
     return render_template('player_view.html', **dict(profile.items() + data.items()))
 

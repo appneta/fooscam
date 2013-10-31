@@ -1,6 +1,6 @@
 from flask.ext.wtf import Form
-from wtforms import TextField
-from wtforms.validators import DataRequired, ValidationError, Length
+from wtforms import TextField, IntegerField
+from wtforms.validators import DataRequired, ValidationError, EqualTo
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,7 +13,7 @@ from gettext import gettext
 from hashlib import md5
 
 from foosweb import PlayerData
-from models import Player, Admin
+from models import Player, Admin, Team
 
 import pdb
 
@@ -89,6 +89,27 @@ class Auth():
 class LoginForm(Form):
     email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
     password = TextField('password', validators = [DataRequired(message=gettext("Enter your password."))])
+
+class TeamupForm(Form):
+    team_name = TextField('Team Name', validators = [DataRequired(message=gettext("Please enter a team name"))])
+
+class TeamData():
+    def __init__(self):
+        db = create_engine('sqlite:///foosball.db')
+        Session = sessionmaker()
+        Session.configure(bind=db)
+        self.session = Session()
+
+    def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
+        #sanity
+        auth = Auth()
+        if (auth.GetPlayerByID(from_player) is None or auth.GetPlayerByID(to_player) is None):
+            return
+
+        team = Team(from_player, to_player, team_name)
+        self.session.add(team)
+        self.session.commit()
+        return True
 
 class RenderData():
     """base data to customize views for current user"""

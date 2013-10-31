@@ -59,7 +59,7 @@
       {% if profile_id == user_id %}
         <li> You are not on any teams! <a href='#'>Create a team!</a></li>
       {% else %}
-        <li> {{ profile_name }} is not on any teams, why not <a href='#'>team up?</a>
+        <li> {{ profile_name }} is not on any teams, why not <a href='/teamup/{{ profile_id }}'>team up?</a>
       {% endif %}
     {% endif %}
   </ul>
