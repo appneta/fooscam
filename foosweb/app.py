@@ -67,6 +67,12 @@ def admin():
             return render_template('admin.html', **data)
     return redirect(url_for('home'))
 
+@app.route('/teams')
+def teamlist():
+    data = rd.Get(current_user)
+    teams = td.TeamList()
+    return render_template('teamlist.html', teams=teams, **data)
+
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
 def teamup(id):

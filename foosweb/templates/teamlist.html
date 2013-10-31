@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %} Teams {% endblock %}
+{% block content %}
+{% if teams %}
+    <table id='team-list'>
+        {% for p_one_id, p_one_name, p_two_id, p_two_name, team_id, team_name in teams %}
+            <tr>
+                <td><a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a></td>
+                <td><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a></td>
+                <td>ARE TEAM: <a href='/teams/{{ team_id }}'>{{ team_name }}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <h1>Not even ONE team!?</h1>
+    Better go <a href='/players'>team up</a>!
+{% endif %}
+{% endblock %}

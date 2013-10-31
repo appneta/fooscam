@@ -100,6 +100,20 @@ class TeamData():
         Session.configure(bind=db)
         self.session = Session()
 
+    def TeamList(self):
+        teams = self.session.query(Team).all()
+        pd = PlayerData()
+
+        #TODO: add standings data & gravatar for teams
+        #XXX: Split game data out of player data!
+        retvals = []
+        for team in teams:
+            p_one_name = pd._get_name_by_id(team.player_one)
+            p_two_name = pd._get_name_by_id(team.player_two)
+            retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name))
+
+        return retvals
+
     def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
         #sanity
         auth = Auth()
@@ -149,7 +163,7 @@ class TeamData():
             return
 
         if invite.player_two == user_id:
-            invite.status = Team.STATUS_COMPLETE
+            invite.status = Team.STATUS_DECLINED
             self.session.add(invite)
             self.session.commit()
             return True
@@ -161,7 +175,7 @@ class TeamData():
 
 class RenderData():
     """base data to customize views for current user"""
-    menu_items = (('Home', '/'), ('Players', '/players'), ('History', '/history'), ('Readme', '/readme'))
+    menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('History', '/history'), ('Readme', '/readme'))
 
     def __init__(self):
         self.auth = Auth()
