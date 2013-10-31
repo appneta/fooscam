@@ -9,8 +9,7 @@
     <ul>
       {% for p_one_id, p_one_name, p_two_id, p_two_name, team_name, invite_id in invites %}
         {% if p_one_id == user_id %}
-        <li> Keep waiting for {{ p_two_name }} to join you on team {{ team_name }}? 
-            <a href='/teamup/accept/{{ invite_id }}'>Yeah!</a> <a href='/teamup/decline/{{ invite_id }}'>Nope</a>.
+        <li> Keep waiting for {{ p_two_name }} to join you on team {{ team_name }}? <a href='/teamup/decline/{{ invite_id }}'>Nope</a>.
         </li>
         {% elif p_two_id == user_id %}
         <li> Join {{ p_one_name }} on team {{ team_name }}? <a href='/teamup/accept/{{ invite_id }}'>Yeah!</a> <a href='/teamup/decline/{{ invite_id }}'>Nope</a>.</li>

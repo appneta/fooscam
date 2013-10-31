@@ -90,8 +90,17 @@ def show_invites():
 
 @app.route('/teamup/accept/<int:invite_id>')
 @login_required
-def teamup_resp(id):
-    td.RSVP()
+def teamup_accept(invite_id):
+    if td.AcceptInvite(invite_id, current_user.id):
+        flash('You dun teamed up!')
+    return redirect(url_for('home'))
+
+@app.route('/teamup/decline/<int:invite_id>')
+@login_required
+def teamup_decline(invite_id):
+    if td.DeclineInvite(invite_id, current_user.id):
+        flash('Invite cancelled.')
+    return redirect(url_for('home'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

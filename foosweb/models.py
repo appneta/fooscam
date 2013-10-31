@@ -84,6 +84,7 @@ class Team(ORMBase):
     STATUS_PENDING = 1
     STATUS_COMPLETE = 2
     STATUS_DECLINED = 3
+    STATUS_CANCELLED = 4
 
     def __init__(self, player_one, player_two, name):
         self.status = self.STATUS_PENDING

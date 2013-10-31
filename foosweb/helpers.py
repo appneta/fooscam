@@ -128,6 +128,37 @@ class TeamData():
 
         return retvals
 
+    def AcceptInvite(self, invite_id, user_id):
+        try:
+            invite = self.session.query(Team).filter(Team.id == invite_id).filter(Team.status == Team.STATUS_PENDING).one()
+        except Exception, e:
+            log.error('soemthing horrible happened while trying to RSVP to invite id %s' % (str(invite_id)))
+            return
+
+        if invite.player_two == user_id:
+            invite.status = Team.STATUS_COMPLETE
+            self.session.add(invite)
+            self.session.commit()
+            return True
+
+    def DeclineInvite(self, invite_id, user_id):
+        try:
+            invite = self.session.query(Team).filter(Team.id == invite_id).filter(Team.status == Team.STATUS_PENDING).one()
+        except Exception, e:
+            log.error('soemthing horrible happened while trying to RSVP to invite id %s' % (str(invite_id)))
+            return
+
+        if invite.player_two == user_id:
+            invite.status = Team.STATUS_COMPLETE
+            self.session.add(invite)
+            self.session.commit()
+            return True
+        elif invite.player_one == user_id:
+            invite.status = Team.STATUS_CANCELLED
+            self.session.add(invite)
+            self.session.commit()
+            return True
+
 class RenderData():
     """base data to customize views for current user"""
     menu_items = (('Home', '/'), ('Players', '/players'), ('History', '/history'), ('Readme', '/readme'))
