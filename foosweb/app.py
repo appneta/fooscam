@@ -4,11 +4,11 @@ from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CsrfProtect
 from BeautifulSoup import BeautifulSoup as bs
+from views import LiveHistory, Score, Players, Status, PlayerHistory
+from forms import LoginForm, TeamupForm
+from controllers import PlayerData, TeamData, RenderData, Auth
 import logging
 import pdb
-from views import LiveHistory, Score, Players, Status, PlayerHistory
-from helpers import LoginForm, TeamupForm
-from controllers import PlayerData, TeamData, RenderData, Auth
 
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
@@ -101,7 +101,6 @@ def show_invites():
 def teamup_accept(invite_id):
     if td.AcceptInvite(invite_id, current_user.id):
         flash('You dun teamed up!')
-    #return redirect(url_for('home'))
     return redirect(request.referrer)
 
 @app.route('/teamup/decline/<int:invite_id>')
@@ -109,7 +108,6 @@ def teamup_accept(invite_id):
 def teamup_decline(invite_id):
     if td.DeclineInvite(invite_id, current_user.id):
         flash('Invite cancelled.')
-    #return redirect(url_for('home'))
     return redirect(request.referrer)
 
 @app.route('/login', methods=['GET', 'POST'])

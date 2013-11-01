@@ -299,11 +299,6 @@ class RenderData():
 
         return data
 
-if __name__ == '__main__':
-    pd = PlayerData()
-    td = TeamData()
-    rd = RenderData()
-
 class Auth():
     def __init__(self):
         db = create_engine('sqlite:///foosball.db')
@@ -322,7 +317,7 @@ class Auth():
         except NoResultFound:
             return
         except Exception, e:
-            log.error('Exception %s thrown checking admin status of  %s!' % (repr(e), str(id)))
+            log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
             return
 
         return True
