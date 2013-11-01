@@ -60,12 +60,10 @@ def home():
     #return render_template('foosview.html', menu=all_but('Home'))
 
 @app.route('/admin')
+@auth.RequiresAdmin
 def admin():
-    if current_user.is_authenticated():
-        if auth.IsAdmin(current_user.id):
-            data = rd.Get(current_user)
-            return render_template('admin.html', **data)
-    return redirect(url_for('home'))
+    data = rd.Get(current_user)
+    return render_template('admin.html', **data)
 
 @app.route('/teams')
 def teamlist():

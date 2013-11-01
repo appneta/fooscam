@@ -1,3 +1,5 @@
+from flask import redirect, url_for
+from flask.ext.login import current_user
 from flask.ext.wtf import Form
 from wtforms import TextField, IntegerField
 from wtforms.validators import DataRequired, ValidationError, EqualTo
@@ -9,6 +11,8 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import logging
 import collections
 from gettext import gettext
+from functools import wraps
+from pprint import pprint
 
 from hashlib import md5
 
@@ -26,7 +30,22 @@ class Auth():
         Session.configure(bind=db)
         self.session = Session()
 
-    #def Login(self, email, password):
+    def _is_admin(self, id):
+        try:
+            id = int(id)
+        except ValueError, e:
+            return
+
+        try:
+            admin = self.session.query(Admin).filter_by(player_id=id).one()
+        except NoResultFound:
+            return
+        except Exception, e:
+            log.error('Exception %s thrown checking admin status of  %s!' % (repr(e), str(id)))
+            return
+
+        return True
+
     def Login(self, **kwargs):
         password = md5(kwargs['password']).hexdigest()
         email = str(kwargs['email']).strip().lower()
@@ -70,21 +89,15 @@ class Auth():
 
         return player
 
-    def IsAdmin(self, id):
-        try:
-            id = int(id)
-        except ValueError, e:
-            return
-
-        try:
-            admin = self.session.query(Admin).filter_by(player_id=id).one()
-        except NoResultFound:
-            return
-        except Exception, e:
-            log.error('Exception %s thrown checking admin status of  %s!' % (repr(e), str(id)))
-            return
-
-        return True
+    def RequiresAdmin(self, func):
+        """decorator to protect views to admins only"""
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if current_user.is_authenticated():
+                if self._is_admin(current_user.id):
+                    return func(*args, **kwargs)
+            return redirect(url_for('home'))
+        return wrapper
 
 class LoginForm(Form):
     email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
@@ -187,7 +200,7 @@ class RenderData():
             #TODO: change these to player_id/player_name
             data['user_name'] = user.name
             data['user_id'] = user.id
-            if self.auth.IsAdmin(user.id):
+            if self.auth._is_admin(user.id):
                 data['admin'] = True
         else:
             data['anonymous'] = True
