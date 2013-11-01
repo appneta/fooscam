@@ -113,28 +113,49 @@ class TeamData():
         Session.configure(bind=db)
         self.session = Session()
 
+        self.pd = PlayerData()
+
     def TeamList(self):
         teams = self.session.query(Team).all()
-        pd = PlayerData()
 
         #TODO: add standings data & gravatar for teams
         #XXX: Split game data out of player data!
         retvals = []
         for team in teams:
-            p_one_name = pd._get_name_by_id(team.player_one)
-            p_two_name = pd._get_name_by_id(team.player_two)
+            p_one_name = self.pd._get_name_by_id(team.player_one)
+            p_two_name = self.pd._get_name_by_id(team.player_two)
             retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name))
 
         return retvals
 
-    def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
+    def ValidateInvite(self, from_player=-1, to_player=-1, team_name=''):
         #sanity
         auth = Auth()
         if (auth.GetPlayerByID(from_player) is None or auth.GetPlayerByID(to_player) is None):
             return
+        try:
+            team_check1 = self.session.query(Team).filter(Team.player_one == from_player).filter(Team.player_two == to_player).all()
+            team_check2 = self.session.query(Team).filter(Team.player_one == to_player).filter(Team.player_two == from_player).all()
+        except Exception, e:
+            log.error('Something horrible happened trying to verify teams for p_id %s & p_id %s' % (from_player, to_player))
+            return
 
+        if team_check1 or team_check2:
+            return "You and %s are already a team!" % (self.pd._get_name_by_id(to_player))
+
+        try:
+            name_check = self.session.query(Team).filter(Team.name == team_name).all()
+        except Exception, e:
+            log.error('Something horrible happened trying to verify team name %s' % (team_name))
+            return
+
+        if name_check:
+            return "Sorry, there's already a team called %s" % (team_name)
+
+    def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
         team = Team(from_player, to_player, team_name)
         self.session.add(team)
+        #TODO: global db session? wrap commit() for table locks
         self.session.commit()
         return True
 
@@ -147,10 +168,9 @@ class TeamData():
             return
 
         retvals = []
-        pd = PlayerData()
         for invite in invites:
-            p_one_name = pd._get_name_by_id(invite.player_one)
-            p_two_name = pd._get_name_by_id(invite.player_two)
+            p_one_name = self.pd._get_name_by_id(invite.player_one)
+            p_two_name = self.pd._get_name_by_id(invite.player_two)
             retvals.append((invite.player_one, p_one_name, invite.player_two, p_two_name, invite.name, invite.id))
 
         return retvals
@@ -197,7 +217,6 @@ class RenderData():
         data = {}
         data['menu'] = self.menu_items
         if user.is_authenticated():
-            #TODO: change these to player_id/player_name
             data['user_name'] = user.name
             data['user_id'] = user.id
             if self.auth._is_admin(user.id):
@@ -207,3 +226,10 @@ class RenderData():
             data['id'] = -1
 
         return data
+
+class SendMail():
+    #Server name: smtp.office365.com
+    #Port: 587
+    #Encryption method: TLS
+    def __init__():
+        pass

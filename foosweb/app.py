@@ -74,15 +74,21 @@ def teamlist():
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
 def teamup(id):
+    #TODO: don't allow the same two players to form more than one team
     data = rd.Get(current_user)
     profile_name = pd._get_name_by_id(id)
     form = TeamupForm(request.form)
     if request.method == 'POST' and form.validate():
-        if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
-            flash('Invite to %s sent!' % (profile_name), 'info')
+        msg = td.ValidateInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data)
+        if msg is None:
+            if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
+                flash('Invite to %s sent!' % (profile_name), 'info')
+            else:
+                flash('Error sending invite!', 'error')
+            return redirect(url_for('home'))
         else:
-            flash('Error sending invite!', 'error')
-        return redirect(url_for('home'))
+            flash(msg)
+            return redirect(url_for('home'))
     return render_template('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
 
 @app.route('/teamup/invites')
@@ -97,14 +103,16 @@ def show_invites():
 def teamup_accept(invite_id):
     if td.AcceptInvite(invite_id, current_user.id):
         flash('You dun teamed up!')
-    return redirect(url_for('home'))
+    #return redirect(url_for('home'))
+    return redirect(request.referrer)
 
 @app.route('/teamup/decline/<int:invite_id>')
 @login_required
 def teamup_decline(invite_id):
     if td.DeclineInvite(invite_id, current_user.id):
         flash('Invite cancelled.')
-    return redirect(url_for('home'))
+    #return redirect(url_for('home'))
+    return redirect(request.referrer)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
