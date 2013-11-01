@@ -1,11 +1,8 @@
-from flask import render_template
-from flask.ext.restful import Api, Resource, reqparse
-from flask import abort
-
-from foosweb import GameWatch, PlayerData
+from flask.ext.restful import Resource, reqparse
+from foosweb import GameWatch
+from controllers import PlayerData
 
 import logging
-from datetime import datetime, timedelta
 
 log = logging.getLogger('gamewatch')
 

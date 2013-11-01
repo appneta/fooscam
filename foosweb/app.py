@@ -4,17 +4,15 @@ from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CsrfProtect
 from BeautifulSoup import BeautifulSoup as bs
-
 import logging
 import pdb
+from views import LiveHistory, Score, Players, Status, PlayerHistory
+from helpers import LoginForm, TeamupForm
+from controllers import PlayerData, TeamData, RenderData, Auth
 
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
-
-from views import LiveHistory, Score, Players, Status, PlayerHistory
-from foosweb import GameWatch, PlayerData
-from helpers import LoginForm, Auth, RenderData, TeamupForm, TeamData
 
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
