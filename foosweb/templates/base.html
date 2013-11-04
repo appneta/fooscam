@@ -18,18 +18,21 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <div id="main-menu">
+        <ul class="nav nav-pills">
+        {% from "_menuhelpers.html" import render_menu_item %}
         {% if admin %}
-            <a href='/admin'>Admin</a>
+            {{ render_menu_item('Admin', '/admin', current_view) }}
         {% endif %}
         {% for text, url in menu %}
-            <a href='{{ url }}'>{{ text }}</a>
+            {{ render_menu_item(text, url, current_view) }}
         {% endfor %}
         {% if anonymous %}
-            <a href='/login'>Login</a>
+            {{ render_menu_item('Login', '/login', current_view) }}
         {% else %}
-            <a href='/players/{{ user_id }}'>{{ user_name }}</a>
-            <a href='/logout'>Logout</a>
+            {{ render_menu_item(user_name, user_profile_url, current_view) }}
+            {{ render_menu_item('Logout', '/logout', current_view) }}
         {% endif %}
+        </ul>
         </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

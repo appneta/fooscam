@@ -56,26 +56,26 @@ td = TeamData()
 
 @app.route('/')
 def home():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/')
     return render_template('foosview.html', debug_image='static/img/table.png', **data)
     #return render_template('foosview.html', menu=all_but('Home'))
 
 @app.route('/admin')
 @auth.RequiresAdmin
 def admin():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/admin')
     return render_template('admin.html', **data)
 
 @app.route('/teams')
 def teamlist():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/teams')
     teams = td.TeamList()
     return render_template('teamlist.html', teams=teams, **data)
 
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
 def teamup(id):
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '')
     profile_name = pd.GetNameByID(id)
     form = TeamupForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -94,7 +94,7 @@ def teamup(id):
 @app.route('/teamup/invites')
 @login_required
 def show_invites():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/teamup/invites')
     invites = td.GetInvitesFor(current_user.id)
     return render_template('teamup_invites.html', invites=invites, **data)
 
@@ -114,7 +114,7 @@ def teamup_decline(invite_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/login')
     form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
         if auth.Login(**request.form.to_dict()):
@@ -135,24 +135,24 @@ def logout():
 
 @app.route('/players')
 def players():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/players')
     players = pd.GetAllPlayers()
     return render_template('players.html', **dict(players.items() + data.items()))
 
 @app.route('/players/<int:id>')
 def player(id):
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/players/%s' % (str(id)))
     profile = pd.GetProfile(id)
     return render_template('player_view.html', **dict(profile.items() + data.items()))
 
 @app.route('/history')
 def live_hist():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/history')
     return render_template('history_view.html', hist_url='/livehistjson', **data)
 
 @app.route('/readme')
 def readme():
-    data = rd.Get(current_user)
+    data = rd.Get(current_user, '/readme')
     return render_template('readme.html', **data)
 
 @lm.user_loader

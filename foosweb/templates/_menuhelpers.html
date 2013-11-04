@@ -1,0 +1,7 @@
+{% macro render_menu_item(item_name, item_url, current_view) %}
+{% if item_url == current_view %}
+<li class='active'><a href='{{ item_url }}'>{{ item_name }}</a></li>
+{% else %}
+<li><a href='{{ item_url }}'>{{ item_name }}</a></li>
+{% endif %}
+{% endmacro %}

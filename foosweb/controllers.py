@@ -285,10 +285,11 @@ class RenderData():
     def __init__(self):
         self.auth = Auth()
 
-    def Get(self, user):
+    def Get(self, user, current_view):
         data = {}
         data['menu'] = self.menu_items
         if user.is_authenticated():
+            data['user_profile_url'] = '/players/%s' % (str(user.id))
             data['user_name'] = user.name
             data['user_id'] = user.id
             if self.auth._is_admin(user.id):
@@ -296,6 +297,8 @@ class RenderData():
         else:
             data['anonymous'] = True
             data['id'] = -1
+
+        data['current_view'] = current_view
 
         return data
 
