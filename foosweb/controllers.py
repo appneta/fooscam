@@ -201,6 +201,7 @@ class TeamData():
         return retvals
 
     def ValidateInvite(self, from_player=-1, to_player=-1, team_name=''):
+        """return None if invite checks out, returns error message if not"""
         #sanity
         auth = Auth()
         if (auth.GetPlayerByID(from_player) is None or auth.GetPlayerByID(to_player) is None):

@@ -27,7 +27,7 @@ assets = Environment(app)
 #main_js = Bundle('js/modernizr-2.6.2.min.js', 'js/jquery-latest.min.js', 'js/jquery-ui.js')
 #main_css = Bundle('css/normalize.css', 'css/main.css')
 main_js = Bundle('js/jquery-latest.min.js', 'js/jquery-ui.js', 'js/bootstrap.min.js')
-main_css = Bundle('css/normalize.css', 'css/bootstrap.min.css')
+main_css = Bundle('css/bootstrap.min.css', 'css/base.css')
 players_css = Bundle('css/players.css')
 foos_js = Bundle('js/foosview.js')
 foos_css = Bundle('css/foosview.css')
@@ -82,12 +82,12 @@ def teamup(id):
         msg = td.ValidateInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data)
         if msg is None:
             if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
-                flash('Invite to %s sent!' % (profile_name), 'info')
+                flash('Invite to %s sent!' % (profile_name), 'alert-success')
             else:
-                flash('Error sending invite!', 'error')
+                flash('Error sending invite!', 'alert-danger')
             return redirect(url_for('home'))
         else:
-            flash(msg)
+            flash(msg, 'alert-warning')
             return redirect(url_for('home'))
     return render_template('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
 
@@ -102,14 +102,14 @@ def show_invites():
 @login_required
 def teamup_accept(invite_id):
     if td.AcceptInvite(invite_id, current_user.id):
-        flash('You dun teamed up!')
+        flash('You dun teamed up!', 'alert-success')
     return redirect(request.referrer)
 
 @app.route('/teamup/decline/<int:invite_id>')
 @login_required
 def teamup_decline(invite_id):
     if td.DeclineInvite(invite_id, current_user.id):
-        flash('Invite cancelled.')
+        flash('Invite cancelled.', 'alert-warning')
     return redirect(request.referrer)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -120,7 +120,7 @@ def login():
         if auth.Login(**request.form.to_dict()):
             player=auth.GetPlayerByEmail(form.email.data)
             login_user(player)
-            flash('Welcome back to FoosView %s!' % (player.name))
+            flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
             #TODO: figure out a better way to redirect post login
             return redirect(request.args.get("next") or url_for('home'))
     else:
@@ -130,7 +130,7 @@ def login():
 def logout():
     auth.Logout(current_user)
     logout_user()
-    flash('Logged out')
+    flash('Logged out', 'alert-info')
     return redirect(url_for('home'))
 
 @app.route('/players')

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block title %} Teams {% endblock %}
 {% block content %}
+<h1>Teams</h1>
 {% if teams %}
     <table id='team-list'>
         {% for p_one_id, p_one_name, p_two_id, p_two_name, team_id, team_name in teams %}
