@@ -24,8 +24,10 @@ api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhistjson')
 
 assets = Environment(app)
-main_js = Bundle('js/modernizr-2.6.2.min.js', 'js/jquery-latest.min.js', 'js/jquery-ui.js')
-main_css = Bundle('css/normalize.css', 'css/main.css')
+#main_js = Bundle('js/modernizr-2.6.2.min.js', 'js/jquery-latest.min.js', 'js/jquery-ui.js')
+#main_css = Bundle('css/normalize.css', 'css/main.css')
+main_js = Bundle('js/jquery-latest.min.js', 'js/jquery-ui.js', 'js/bootstrap.min.js')
+main_css = Bundle('css/normalize.css', 'css/bootstrap.min.css')
 players_css = Bundle('css/players.css')
 foos_js = Bundle('js/foosview.js')
 foos_css = Bundle('css/foosview.css')
@@ -41,6 +43,7 @@ assets.register('hist_css', hist_css)
 assets.register('players_css', players_css)
 
 lm = LoginManager()
+lm.login_view = '/login'
 lm.init_app(app)
 
 csrf = CsrfProtect()
@@ -72,9 +75,8 @@ def teamlist():
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
 def teamup(id):
-    #TODO: don't allow the same two players to form more than one team
     data = rd.Get(current_user)
-    profile_name = pd._get_name_by_id(id)
+    profile_name = pd.GetNameByID(id)
     form = TeamupForm(request.form)
     if request.method == 'POST' and form.validate():
         msg = td.ValidateInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data)
@@ -119,7 +121,8 @@ def login():
             player=auth.GetPlayerByEmail(form.email.data)
             login_user(player)
             flash('Welcome back to FoosView %s!' % (player.name))
-            return redirect(url_for('home'))
+            #TODO: figure out a better way to redirect post login
+            return redirect(request.args.get("next") or url_for('home'))
     else:
         return render_template('login.html', form=form, **data)
 

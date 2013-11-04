@@ -52,7 +52,7 @@ class PlayerData():
         if email is not None:
             return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().lower()).hexdigest(), int(size)
 
-    def _get_name_by_id(self, player_id):
+    def GetNameByID(self, player_id):
         if player_id == -1:
             player_name = 'None'
         else:
@@ -75,8 +75,8 @@ class PlayerData():
         retvals = []
 
         for team in teams:
-            p_one_name = self._get_name_by_id(team.player_one)
-            p_two_name = self._get_name_by_id(team.player_two)
+            p_one_name = self.GetNameByID(team.player_one)
+            p_two_name = self.GetNameByID(team.player_two)
             retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.name, team.status))
 
         return retvals
@@ -102,13 +102,13 @@ class PlayerData():
             if id == -1:
                 return 'None'
             else:
-                return self._get_name_by_id(id)
+                return self.GetNameByID(id)
 
         if type(id) == dict:
-            id['bo'] = self._get_name_by_id(id['bo'])
-            id['bd'] = self._get_name_by_id(id['bd'])
-            id['ro'] = self._get_name_by_id(id['ro'])
-            id['rd'] = self._get_name_by_id(id['rd'])
+            id['bo'] = self.GetNameByID(id['bo'])
+            id['bd'] = self.GetNameByID(id['bd'])
+            id['ro'] = self.GetNameByID(id['ro'])
+            id['rd'] = self.GetNameByID(id['rd'])
             return id
 
     def GetAllPlayers(self):
@@ -136,7 +136,7 @@ class PlayerData():
             log.error('Failed to get wins from db for id %s with error %s' % (str(id), repr(e)))
             return
 
-        profile['profile_name'] = self._get_name_by_id(id)
+        profile['profile_name'] = self.GetNameByID(id)
         profile['profile_id'] = id
         profile['gravatar_url'] = self._get_gravatar_url_by_id(id)
         profile['hist_url'] = '/playerhistjson/' + str(id)
@@ -165,10 +165,10 @@ class PlayerData():
             retvals = []
             for game in game_history:
                 game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
-                ro = "<a href='/players/%s'>%s</a>" % (game.red_off, self._get_name_by_id(game.red_off))
-                rd = "<a href='/players/%s'>%s</a>" % (game.red_def, self._get_name_by_id(game.red_def))
-                bo = "<a href='/players/%s'>%s</a>" % (game.blue_off, self._get_name_by_id(game.blue_off))
-                bd = "<a href='/players/%s'>%s</a>" % (game.blue_def, self._get_name_by_id(game.blue_def))
+                ro = "<a href='/players/%s'>%s</a>" % (game.red_off, self.GetNameByID(game.red_off))
+                rd = "<a href='/players/%s'>%s</a>" % (game.red_def, self.GetNameByID(game.red_def))
+                bo = "<a href='/players/%s'>%s</a>" % (game.blue_off, self.GetNameByID(game.blue_off))
+                bd = "<a href='/players/%s'>%s</a>" % (game.blue_def, self.GetNameByID(game.blue_def))
                 retvals.append([ro, rd, bo, bd,
                     game.red_score, game.blue_score, \
                     datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \
@@ -194,8 +194,8 @@ class TeamData():
         #TODO: add standings data & gravatar for teams
         retvals = []
         for team in teams:
-            p_one_name = self.pd._get_name_by_id(team.player_one)
-            p_two_name = self.pd._get_name_by_id(team.player_two)
+            p_one_name = self.pd.GetNameByID(team.player_one)
+            p_two_name = self.pd.GetNameByID(team.player_two)
             retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name))
 
         return retvals
@@ -213,7 +213,7 @@ class TeamData():
             return
 
         if team_check1 or team_check2:
-            return "You and %s are already a team!" % (self.pd._get_name_by_id(to_player))
+            return "You and %s are already a team!" % (self.pd.GetNameByID(to_player))
 
         try:
             name_check = self.session.query(Team).filter(Team.name == team_name).all()
@@ -241,8 +241,8 @@ class TeamData():
 
         retvals = []
         for invite in invites:
-            p_one_name = self.pd._get_name_by_id(invite.player_one)
-            p_two_name = self.pd._get_name_by_id(invite.player_two)
+            p_one_name = self.pd.GetNameByID(invite.player_one)
+            p_two_name = self.pd.GetNameByID(invite.player_two)
             retvals.append((invite.player_one, p_one_name, invite.player_two, p_two_name, invite.name, invite.id))
 
         return retvals
