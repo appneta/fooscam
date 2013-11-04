@@ -1,0 +1,11 @@
+#main-menu{
+    position: absolute;
+    top: 0;
+}
+
+#messages{
+   position: absolute;
+   top: 16px;
+   right: 0px;
+   z-index: 1;
+}
