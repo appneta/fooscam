@@ -7,8 +7,8 @@
     <h1>FoosBallas!</a>
     {% if all_players|length < 5 %}
         <table class='player-list'><tr>
-        {% for name, gravatar_url in all_players %}
-            <td class='player-box'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></td>
+        {% for id, name, gravatar_url in all_players %}
+            <td class='player-box'><img src='{{ gravatar_url }}'><br><a href='players/{{ id }}'><span class='player-name'>{{ name }}</span></a></td>
         {% endfor %}
         </tr></table>
     {% else %}
