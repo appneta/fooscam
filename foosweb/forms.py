@@ -5,7 +5,7 @@ from gettext import gettext
 import pdb
 
 class LoginForm(Form):
-    email = TextField('email', description={'default': 'email'}, validators = [DataRequired(message=gettext("Enter your email address."))])
+    email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
     password = TextField('password', validators = [DataRequired(message=gettext("Enter your password."))])
 
 class TeamupForm(Form):
