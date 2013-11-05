@@ -61,7 +61,6 @@ class Score(Resource):
 
 class Players(Resource):
     def __init__(self):
-        pdb.set_trace()
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('team', type = list, required = True, help = 'No team data provided', location = 'json')
         super(Players, self).__init__()
