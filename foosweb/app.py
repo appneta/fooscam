@@ -60,9 +60,9 @@ def render_pretty(template_name, **kwargs):
 
 @app.route('/')
 def home():
-    form = LoginForm(request.form)
+    loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/')
-    return render_pretty('foosview.html',form=form, debug_image='static/img/table.png', **data)
+    return render_pretty('foosview.html', loginform=loginform, debug_image='static/img/table.png', **data)
     #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
     #return render_pretty('foosview.html', menu=all_but('Home'))
 
@@ -130,7 +130,7 @@ def login():
             #TODO: figure out a better way to redirect post login
             return redirect(request.args.get("next") or url_for('home'))
     else:
-        return render_pretty('login.html', form=form, **data)
+        return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
