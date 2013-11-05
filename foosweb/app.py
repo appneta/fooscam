@@ -54,10 +54,15 @@ auth = Auth()
 pd = PlayerData()
 td = TeamData()
 
+def render_pretty(template_name, **kwargs):
+    soup = bs(render_template(template_name, **kwargs)).prettify()
+    return soup
+
 @app.route('/')
 def home():
     data = rd.Get(current_user, '/')
-    return render_template('foosview.html', debug_image='static/img/table.png', **data)
+    return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
+    #return render_template('foosview.html', debug_image='static/img/table.png', **data)
     #return render_template('foosview.html', menu=all_but('Home'))
 
 @app.route('/admin')
