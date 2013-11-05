@@ -55,7 +55,7 @@
             {% if messages %}
                 {% for category, message in messages %}
                     <div id='message' class="alert {{ category }}">
-                        <span>{{ message }}</span><br>
+                        <span class='alert-text'>{{ message }}</span><br>
                     </div>
                 {% endfor %}
             {% endif %}
