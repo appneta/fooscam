@@ -62,20 +62,20 @@ def render_pretty(template_name, **kwargs):
 def home():
     data = rd.Get(current_user, '/')
     return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
-    #return render_template('foosview.html', debug_image='static/img/table.png', **data)
-    #return render_template('foosview.html', menu=all_but('Home'))
+    #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
+    #return render_pretty('foosview.html', menu=all_but('Home'))
 
 @app.route('/admin')
 @auth.RequiresAdmin
 def admin():
     data = rd.Get(current_user, '/admin')
-    return render_template('admin.html', **data)
+    return render_pretty('admin.html', **data)
 
 @app.route('/teams')
 def teamlist():
     data = rd.Get(current_user, '/teams')
     teams = td.TeamList()
-    return render_template('teamlist.html', teams=teams, **data)
+    return render_pretty('teamlist.html', teams=teams, **data)
 
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -94,14 +94,14 @@ def teamup(id):
         else:
             flash(msg, 'alert-warning')
             return redirect(url_for('home'))
-    return render_template('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
+    return render_pretty('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
 
 @app.route('/teamup/invites')
 @login_required
 def show_invites():
     data = rd.Get(current_user, '/teamup/invites')
     invites = td.GetInvitesFor(current_user.id)
-    return render_template('teamup_invites.html', invites=invites, **data)
+    return render_pretty('teamup_invites.html', invites=invites, **data)
 
 @app.route('/teamup/accept/<int:invite_id>')
 @login_required
@@ -129,7 +129,7 @@ def login():
             #TODO: figure out a better way to redirect post login
             return redirect(request.args.get("next") or url_for('home'))
     else:
-        return render_template('login.html', form=form, **data)
+        return render_pretty('login.html', form=form, **data)
 
 @app.route('/logout')
 def logout():
@@ -142,23 +142,23 @@ def logout():
 def players():
     data = rd.Get(current_user, '/players')
     players = pd.GetAllPlayers()
-    return render_template('players.html', **dict(players.items() + data.items()))
+    return render_pretty('players.html', **dict(players.items() + data.items()))
 
 @app.route('/players/<int:id>')
 def player(id):
     data = rd.Get(current_user, '/players/%s' % (str(id)))
     profile = pd.GetProfile(id)
-    return render_template('player_view.html', **dict(profile.items() + data.items()))
+    return render_pretty('player_view.html', **dict(profile.items() + data.items()))
 
 @app.route('/history')
 def live_hist():
     data = rd.Get(current_user, '/history')
-    return render_template('history_view.html', hist_url='/livehistjson', **data)
+    return render_pretty('history_view.html', hist_url='/livehistjson', **data)
 
 @app.route('/readme')
 def readme():
     data = rd.Get(current_user, '/readme')
-    return render_template('readme.html', **data)
+    return render_pretty('readme.html', **data)
 
 @lm.user_loader
 def user_loader(id):
