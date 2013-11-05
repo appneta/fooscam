@@ -30,16 +30,22 @@
                     {% endfor %}
                 </ul>
                 <ul class='nav navbar-nav navbar-right'>
-                    <li class='dropdown'>
-                    <a href='#' class='dropdown-toggle' data-toggle='dropdown'>Account<b class='caret'></b></a>
-                    <ul class='dropdown-menu'>
-                        {% if anonymous %}
-                            {{ render_menu_item('Login', '/login', current_view) }}
-                        {% else %}
-                            {{ render_menu_item(user_name, user_profile_url, current_view) }}
-                            {{ render_menu_item('Logout', '/logout', current_view) }}
-                        {% endif %}
-                        <li><a href='/readme'>About</a>
+                    {% if anonymous %}
+                        {#{{ render_menu_item('Login', '/login', current_view) }}#}
+                        {% from '_formhelpers.html' import render_login_field %}
+                        <form class='navbar-form' method='post' action='/login'>
+                            {{ form.csrf_token }}
+                            {{ render_login_field(form.email, class='form-control', placeholder='email') }}
+                            {{ render_login_field(form.password, type='password', class='form-control', placeholder='password') }}
+                            <button type='submit' class='btn btn-default btn-sm'>Login</button>
+                        </form>
+                    {% else %}
+                        <li class='dropdown'>
+                        <a href='#' class='dropdown-toggle' data-toggle='dropdown'>Account<b class='caret'></b></a>
+                        <ul class='dropdown-menu'>
+                        {{ render_menu_item(user_name, user_profile_url, current_view) }}
+                        {{ render_menu_item('Logout', '/logout', current_view) }}
+                    {% endif %}
                     </ul>
                 </ul>
             </div>

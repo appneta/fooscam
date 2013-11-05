@@ -60,8 +60,9 @@ def render_pretty(template_name, **kwargs):
 
 @app.route('/')
 def home():
+    form = LoginForm(request.form)
     data = rd.Get(current_user, '/')
-    return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
+    return render_pretty('foosview.html',form=form, debug_image='static/img/table.png', **data)
     #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
     #return render_pretty('foosview.html', menu=all_but('Home'))
 
