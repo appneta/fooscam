@@ -1,14 +1,19 @@
-#main-menu{
-    position: absolute;
-    top: 0;
+body {
+  padding-top: 40px;
 }
-
+@media (max-width: 979px) {
+  body {
+    padding-top: 0px;
+  }
+}
 #messages{
    position: absolute;
-   top: 16px;
+   top: 60px;
    right: 0px;
+   width: 20%;
    z-index: 1;
 }
-input.form-control{
-   max-width: 20%;
+span.alert-text{
+    float: none;
+    text-align: center;
 }

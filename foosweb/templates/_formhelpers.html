@@ -10,3 +10,17 @@
   {% endif %}
   </dd>
 {% endmacro %}
+{% macro render_login_field(field) %}
+  <div class='form-group'>
+  {#{{ field.label }}#}
+  {{ field(**kwargs)|safe }}
+  </div>
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{% endmacro %}
