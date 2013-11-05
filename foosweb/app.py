@@ -24,8 +24,6 @@ api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhistjson')
 
 assets = Environment(app)
-#main_js = Bundle('js/modernizr-2.6.2.min.js', 'js/jquery-latest.min.js', 'js/jquery-ui.js')
-#main_css = Bundle('css/normalize.css', 'css/main.css')
 main_js = Bundle('js/jquery-latest.min.js', 'js/jquery-ui.js', 'js/bootstrap.min.js')
 main_css = Bundle('css/bootstrap.min.css', 'css/base.css')
 players_css = Bundle('css/players.css')

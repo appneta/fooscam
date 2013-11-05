@@ -2,9 +2,12 @@ from flask.ext.restful import Resource, reqparse
 from foosweb import GameWatch
 from controllers import PlayerData
 
+import pdb
 import logging
 
 log = logging.getLogger('gamewatch')
+
+#TODO: for some reason POST'ing to any of these endpoints seems broken, throw this out, write new classes and tidy up URL routing
 
 #Flask-Restful API endpoints
 class PlayerHistory(Resource):
@@ -58,20 +61,10 @@ class Score(Resource):
 
 class Players(Resource):
     def __init__(self):
+        pdb.set_trace()
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('team', type = list, required = True, help = 'No team data provided', location = 'json')
         super(Players, self).__init__()
-
-    def get(self):
-        gw = GameWatch()
-        pd = PlayerData()
-        ids = gw.CurrentPlayerIDs()
-        names = pd.GetNames(gw.CurrentPlayerIDs())
-        gravatars = pd.GetGravatarURLs(gw.CurrentPlayerIDs())
-        return  {'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},
-                 'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},
-                 'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},
-                 'rd': {'name': names['rd'], 'id': ids['rd'], 'gravatar': gravatars['rd']}}
 
     def post(self):
         log.debug('players posted')
@@ -84,11 +77,21 @@ class Players(Resource):
                 red_def = int(args['team'][1]['red']['defense'])
             except (KeyError, IndexError):
                 return {'status': 'invalid JSON data'}, 400
-
             log.debug('ids = [' + str(blue_off) + ', ' + str(blue_def) + ', ' + str(red_off) + ', ' + str(red_def) + ']')
             gw = GameWatch()
             gw.UpdatePlayers({'bo': blue_off, 'bd': blue_def, 'ro': red_off, 'rd': red_def})
             return {'status': 'accepted'}, 201
         else:
             return {'status': 'invalid JSON data (only TWO teams in foosball!)'}, 400
+
+    def get(self):
+        gw = GameWatch()
+        pd = PlayerData()
+        ids = gw.CurrentPlayerIDs()
+        names = pd.GetNames(gw.CurrentPlayerIDs())
+        gravatars = pd.GetGravatarURLs(gw.CurrentPlayerIDs())
+        return  {'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},
+                 'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},
+                 'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},
+                 'rd': {'name': names['rd'], 'id': ids['rd'], 'gravatar': gravatars['rd']}}
 
