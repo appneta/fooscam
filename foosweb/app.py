@@ -58,13 +58,14 @@ def render_pretty(template_name, **kwargs):
     soup = bs(render_template(template_name, **kwargs)).prettify()
     return soup
 
+#TODO: get all this prerender data prep sorted out!
+
 @app.route('/')
 def home():
     loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/')
     return render_pretty('foosview.html', loginform=loginform, debug_image='static/img/table.png', **data)
     #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
-    #return render_pretty('foosview.html', menu=all_but('Home'))
 
 @app.route('/admin')
 @auth.RequiresAdmin
@@ -74,9 +75,10 @@ def admin():
 
 @app.route('/teams')
 def teamlist():
+    loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/teams')
     teams = td.TeamList()
-    return render_pretty('teamlist.html', teams=teams, **data)
+    return render_pretty('teamlist.html', loginform=loginform, teams=teams, **data)
 
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -128,7 +130,7 @@ def login():
             login_user(player)
             flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
             #TODO: figure out a better way to redirect post login
-            return redirect(request.args.get("next") or url_for('home'))
+            return redirect(request.referrer)
     else:
         return redirect(url_for('home'))
 
@@ -141,25 +143,29 @@ def logout():
 
 @app.route('/players')
 def players():
+    loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/players')
     players = pd.GetAllPlayers()
-    return render_pretty('players.html', **dict(players.items() + data.items()))
+    return render_pretty('players.html',loginform=loginform, **dict(players.items() + data.items()))
 
 @app.route('/players/<int:id>')
 def player(id):
+    loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/players/%s' % (str(id)))
     profile = pd.GetProfile(id)
-    return render_pretty('player_view.html', **dict(profile.items() + data.items()))
+    return render_pretty('player_view.html',loginform=loginform, **dict(profile.items() + data.items()))
 
 @app.route('/history')
 def live_hist():
+    loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/history')
-    return render_pretty('history_view.html', hist_url='/livehistjson', **data)
+    return render_pretty('history_view.html', loginform=loginform, hist_url='/livehistjson', **data)
 
 @app.route('/readme')
 def readme():
+    loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/readme')
-    return render_pretty('readme.html', **data)
+    return render_pretty('readme.html', loginform=loginform, **data)
 
 @lm.user_loader
 def user_loader(id):
