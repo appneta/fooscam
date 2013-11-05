@@ -50,7 +50,7 @@
                 </ul>
             </div>
         </nav>
-        <div id='messages'>
+        <div id='messages' class='pull-right'>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}

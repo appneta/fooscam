@@ -111,14 +111,14 @@ def show_invites():
 def teamup_accept(invite_id):
     if td.AcceptInvite(invite_id, current_user.id):
         flash('You dun teamed up!', 'alert-success')
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/teamup/decline/<int:invite_id>')
 @login_required
 def teamup_decline(invite_id):
     if td.DeclineInvite(invite_id, current_user.id):
         flash('Invite cancelled.', 'alert-warning')
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for(home))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -130,7 +130,7 @@ def login():
             login_user(player)
             flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
             #TODO: figure out a better way to redirect post login
-            return redirect(request.referrer)
+            return redirect(request.referrer or url_for('home'))
     else:
         return redirect(url_for('home'))
 
@@ -139,7 +139,7 @@ def logout():
     auth.Logout(current_user)
     logout_user()
     flash('Logged out', 'alert-info')
-    return redirect(url_for('home'))
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/players')
 def players():
