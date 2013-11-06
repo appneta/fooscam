@@ -183,7 +183,7 @@ class TeamData():
         self.pd = PlayerData()
 
     def TeamList(self):
-        teams = self.session.query(Team).all()
+        teams = self.session.query(Team).filter(Team.status == Team.STATUS_COMPLETE).all()
 
         #TODO: add standings data & gravatar for teams
         retvals = []
@@ -196,10 +196,14 @@ class TeamData():
 
     def ValidateInvite(self, from_player=-1, to_player=-1, team_name=''):
         """return None if invite checks out, returns error message if not"""
+        if from_player == to_player:
+            return 'One is the loneliest number ...'
+
         #sanity
         auth = Auth()
         if (auth.GetPlayerByID(from_player) is None or auth.GetPlayerByID(to_player) is None):
             return
+
         try:
             team_check1 = self.session.query(Team).filter(Team.player_one == from_player).filter(Team.player_two == to_player).all()
             team_check2 = self.session.query(Team).filter(Team.player_one == to_player).filter(Team.player_two == from_player).all()
