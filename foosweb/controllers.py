@@ -1,13 +1,14 @@
 from flask import redirect, url_for
 from flask.ext.login import current_user
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from datetime import datetime, timedelta
 from hashlib import md5
 from functools import wraps
-from models import Player, Team, Game
+from models import Player, Team, Game, Admin
+from db import get_db_session
+
+import pdb
 
 import logging
 log = logging.getLogger('gamewatch')
@@ -16,10 +17,7 @@ log = logging.getLogger('gamewatch')
 
 class PlayerData():
     def __init__(self):
-        db = create_engine('sqlite:///foosball.db')
-        Session = sessionmaker()
-        Session.configure(bind=db)
-        self.session = Session()
+        self.session = get_db_session()
 
     def _tidy_sa_results(self, result):
         retvals = []
@@ -181,15 +179,11 @@ class PlayerData():
 
 class TeamData():
     def __init__(self):
-        db = create_engine('sqlite:///foosball.db')
-        Session = sessionmaker()
-        Session.configure(bind=db)
-        self.session = Session()
-
+        self.session = get_db_session()
         self.pd = PlayerData()
 
     def TeamList(self):
-        teams = self.session.query(Team).all()
+        teams = self.session.query(Team).filter(Team.status == Team.STATUS_COMPLETE).all()
 
         #TODO: add standings data & gravatar for teams
         retvals = []
@@ -202,10 +196,17 @@ class TeamData():
 
     def ValidateInvite(self, from_player=-1, to_player=-1, team_name=''):
         """return None if invite checks out, returns error message if not"""
+        if from_player == to_player:
+            return 'One is the loneliest number ...'
+
+        if team_name == '' or team_name is None:
+            return 'Gonna need to call yourselves something!'
+
         #sanity
         auth = Auth()
         if (auth.GetPlayerByID(from_player) is None or auth.GetPlayerByID(to_player) is None):
             return
+
         try:
             team_check1 = self.session.query(Team).filter(Team.player_one == from_player).filter(Team.player_two == to_player).all()
             team_check2 = self.session.query(Team).filter(Team.player_one == to_player).filter(Team.player_two == from_player).all()
@@ -305,10 +306,7 @@ class RenderData():
 
 class Auth():
     def __init__(self):
-        db = create_engine('sqlite:///foosball.db')
-        Session = sessionmaker()
-        Session.configure(bind=db)
-        self.session = Session()
+        self.session = get_db_session()
 
     def _is_admin(self, id):
         try:

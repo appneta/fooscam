@@ -1,12 +1,15 @@
-from flask import Flask, redirect, render_template, url_for, abort, request, flash
+from flask import Flask
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
-from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask.ext.login import LoginManager
 from flask_wtf.csrf import CsrfProtect
-from BeautifulSoup import BeautifulSoup as bs
-from views import LiveHistory, Score, Players, Status, PlayerHistory
-from forms import LoginForm, TeamupForm
-from controllers import PlayerData, TeamData, RenderData, Auth
+#old ajax views
+from views import LiveHistory, Status, PlayerHistory
+#new ajax views
+from views import AjaxScoreView, AjaxPlayersView
+#template rendered views
+from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView
+from controllers import Auth
 import logging
 import pdb
 
@@ -17,8 +20,7 @@ log.addHandler(logging.StreamHandler())
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
 api = Api(app)
-api.add_resource(Score, '/score', endpoint = 'score')
-api.add_resource(Players, '/current_players', endpoint = 'current_players')
+#XXX: convert these read only JSON endpoints from flask-restful to flask-classy?
 api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhistjson')
@@ -40,134 +42,38 @@ assets.register('hist_js', hist_js)
 assets.register('hist_css', hist_css)
 assets.register('players_css', players_css)
 
+#TODO: customize login_required decorator behaviour for anon users
 lm = LoginManager()
-lm.login_view = '/login'
+lm.login_view = '/'
 lm.init_app(app)
-
-csrf = CsrfProtect()
-csrf.init_app(app)
-
-rd = RenderData()
 auth = Auth()
-pd = PlayerData()
-td = TeamData()
-
-def render_pretty(template_name, **kwargs):
-    soup = bs(render_template(template_name, **kwargs)).prettify()
-    return soup
-
-#TODO: get all this prerender data prep sorted out!
-
-@app.route('/')
-def home():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/')
-    return render_pretty('foosview.html', loginform=loginform, debug_image='static/img/table.png', **data)
-    #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
-
-@app.route('/admin')
-@auth.RequiresAdmin
-def admin():
-    data = rd.Get(current_user, '/admin')
-    return render_pretty('admin.html', **data)
-
-@app.route('/teams')
-def teamlist():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/teams')
-    teams = td.TeamList()
-    return render_pretty('teamlist.html', loginform=loginform, teams=teams, **data)
-
-@app.route('/teamup/<int:id>', methods=['GET', 'POST'])
-@login_required
-def teamup(id):
-    data = rd.Get(current_user, '')
-    profile_name = pd.GetNameByID(id)
-    form = TeamupForm(request.form)
-    if request.method == 'POST' and form.validate():
-        msg = td.ValidateInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data)
-        if msg is None:
-            if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
-                flash('Invite to %s sent!' % (profile_name), 'alert-success')
-            else:
-                flash('Error sending invite!', 'alert-danger')
-            return redirect(url_for('home'))
-        else:
-            flash(msg, 'alert-warning')
-            return redirect(url_for('home'))
-    return render_pretty('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
-
-@app.route('/teamup/invites')
-@login_required
-def show_invites():
-    data = rd.Get(current_user, '/teamup/invites')
-    invites = td.GetInvitesFor(current_user.id)
-    return render_pretty('teamup_invites.html', invites=invites, **data)
-
-@app.route('/teamup/accept/<int:invite_id>')
-@login_required
-def teamup_accept(invite_id):
-    if td.AcceptInvite(invite_id, current_user.id):
-        flash('You dun teamed up!', 'alert-success')
-    return redirect(request.referrer or url_for('home'))
-
-@app.route('/teamup/decline/<int:invite_id>')
-@login_required
-def teamup_decline(invite_id):
-    if td.DeclineInvite(invite_id, current_user.id):
-        flash('Invite cancelled.', 'alert-warning')
-    return redirect(request.referrer or url_for(home))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    data = rd.Get(current_user, '/login')
-    form = LoginForm(request.form)
-    if request.method == 'POST' and form.validate():
-        if auth.Login(**request.form.to_dict()):
-            player=auth.GetPlayerByEmail(form.email.data)
-            login_user(player)
-            flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
-            #TODO: figure out a better way to redirect post login
-            return redirect(request.referrer or url_for('home'))
-    else:
-        return redirect(url_for('home'))
-
-@app.route('/logout')
-def logout():
-    auth.Logout(current_user)
-    logout_user()
-    flash('Logged out', 'alert-info')
-    return redirect(request.referrer or url_for('home'))
-
-@app.route('/players')
-def players():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/players')
-    players = pd.GetAllPlayers()
-    return render_pretty('players.html',loginform=loginform, **dict(players.items() + data.items()))
-
-@app.route('/players/<int:id>')
-def player(id):
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/players/%s' % (str(id)))
-    profile = pd.GetProfile(id)
-    return render_pretty('player_view.html',loginform=loginform, **dict(profile.items() + data.items()))
-
-@app.route('/history')
-def live_hist():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/history')
-    return render_pretty('history_view.html', loginform=loginform, hist_url='/livehistjson', **data)
-
-@app.route('/readme')
-def readme():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/readme')
-    return render_pretty('readme.html', loginform=loginform, **data)
-
+#TODO: define this somewhere else
 @lm.user_loader
 def user_loader(id):
     return auth.GetPlayerByID(id)
+
+csrf = CsrfProtect()
+csrf.init_app(app)
+#TODO: protect these endpoints from being POSTed by anything but foostools
+csrf._exempt_views.add('views.score_post')
+csrf._exempt_views.add('views.players_post')
+
+#register view classes
+FoosView.register(app)
+AuthView.register(app)
+PlayersView.register(app)
+TeamsView.register(app)
+HistoryView.register(app)
+ReadmeView.register(app)
+AdminView.register(app)
+TeamupView.register(app)
+AjaxScoreView.register(app)
+AjaxPlayersView.register(app)
+
+@csrf.exempt
+@app.route('/test')
+def test():
+    pdb.set_trace()
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)

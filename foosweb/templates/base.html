@@ -31,7 +31,6 @@
                 </ul>
                 <ul class='nav navbar-nav navbar-right'>
                     {% if anonymous %}
-                        {#{{ render_menu_item('Login', '/login', current_view) }}#}
                         {% from '_formhelpers.html' import render_login_field %}
                         <form class='navbar-form' method='post' action='/login'>
                             {{ loginform.csrf_token }}
@@ -42,7 +41,7 @@
                     {% else %}
                         <li class='dropdown'>
                         <a href='#' class='dropdown-toggle' data-toggle='dropdown'>Account<b class='caret'></b></a>
-                        <ul class='dropdown-menu'>
+                        <ul class='dropdown-menu dropdown-inverse'>
                         {{ render_menu_item(user_name, user_profile_url, current_view) }}
                         {{ render_menu_item('Logout', '/logout', current_view) }}
                     {% endif %}
