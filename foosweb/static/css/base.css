@@ -17,3 +17,10 @@ span.alert-text{
     float: none;
     text-align: center;
 }
+.dropdown-inverse {
+  background-color: #222222;
+  border-color: #080808;
+}
+a.dropdown-link-inverse{
+  color: #999999;
+}

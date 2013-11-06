@@ -199,6 +199,9 @@ class TeamData():
         if from_player == to_player:
             return 'One is the loneliest number ...'
 
+        if team_name == '' or team_name is None:
+            return 'Gonna need to call yourselves something!'
+
         #sanity
         auth = Auth()
         if (auth.GetPlayerByID(from_player) is None or auth.GetPlayerByID(to_player) is None):

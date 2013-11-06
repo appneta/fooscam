@@ -139,6 +139,7 @@ class TeamupView(FlaskView):
         td = TeamData()
         profile_name = pd.GetNameByID(id)
         form = TeamupForm(request.form)
+        pdb.set_trace()
         if form.validate():
             msg = td.ValidateInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data)
             if msg is None:
@@ -150,6 +151,9 @@ class TeamupView(FlaskView):
             else:
                 flash(msg, 'alert-warning')
                 return redirect(url_for('FoosView:index'))
+        else:
+            flash('Error processing form', 'alert-danger')
+            return redirect(request.referrer or url_for('FoosView:index'))
 
     @route('/teamup/invites')
     @login_required

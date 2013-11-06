@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired
 from gettext import gettext
 import pdb
 
+#TODO: these errors stopped working again :/
 class LoginForm(Form):
     email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
     password = TextField('password', validators = [DataRequired(message=gettext("Enter your password."))])

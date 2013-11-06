@@ -5,10 +5,10 @@ from flask.ext.login import LoginManager
 from flask_wtf.csrf import CsrfProtect
 #old ajax views
 from views import LiveHistory, Status, PlayerHistory
-#template rendered views
-from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView
 #new ajax views
 from views import AjaxScoreView, AjaxPlayersView
+#template rendered views
+from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView
 from controllers import Auth
 import logging
 import pdb
@@ -54,7 +54,7 @@ def user_loader(id):
 
 csrf = CsrfProtect()
 csrf.init_app(app)
-#XXX: this is probably really bad!
+#TODO: protect these endpoints from being POSTed by anything but foostools
 csrf._exempt_views.add('views.score_post')
 csrf._exempt_views.add('views.players_post')
 
