@@ -4,7 +4,8 @@ from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CsrfProtect
 from BeautifulSoup import BeautifulSoup as bs
-from views import LiveHistory, Score, Players, Status, PlayerHistory, PlayersView, TeamsView
+from views import LiveHistory, Score, Players, Status, PlayerHistory
+from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView
 from forms import LoginForm, TeamupForm
 from controllers import PlayerData, TeamData, RenderData, Auth
 import logging
@@ -44,11 +45,20 @@ lm = LoginManager()
 lm.login_view = '/login'
 lm.init_app(app)
 
+@lm.user_loader
+def user_loader(id):
+    return auth.GetPlayerByID(id)
+
 csrf = CsrfProtect()
 csrf.init_app(app)
 
+FoosView.register(app)
+AuthView.register(app)
 PlayersView.register(app)
 TeamsView.register(app)
+HistoryView.register(app)
+ReadmeView.register(app)
+AdminView.register(app)
 
 rd = RenderData()
 auth = Auth()
@@ -58,28 +68,6 @@ td = TeamData()
 def render_pretty(template_name, **kwargs):
     soup = bs(render_template(template_name, **kwargs)).prettify()
     return soup
-
-#TODO: get all this prerender data prep sorted out!
-
-@app.route('/')
-def home():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/')
-    return render_pretty('foosview.html', loginform=loginform, debug_image='static/img/table.png', **data)
-    #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
-
-@app.route('/admin')
-@auth.RequiresAdmin
-def admin():
-    data = rd.Get(current_user, '/admin')
-    return render_pretty('admin.html', **data)
-
-"""@app.route('/teams')
-def teamlist():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/teams')
-    teams = td.TeamList()
-    return render_pretty('teamlist.html', loginform=loginform, teams=teams, **data)"""
 
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -121,7 +109,7 @@ def teamup_decline(invite_id):
         flash('Invite cancelled.', 'alert-warning')
     return redirect(request.referrer or url_for(home))
 
-@app.route('/login', methods=['GET', 'POST'])
+"""@app.route('/login', methods=['GET', 'POST'])
 def login():
     data = rd.Get(current_user, '/login')
     form = LoginForm(request.form)
@@ -130,47 +118,12 @@ def login():
             player=auth.GetPlayerByEmail(form.email.data)
             login_user(player)
             flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
+            flash('LOGIN MAIN', 'alert-info')
             #TODO: figure out a better way to redirect post login
             return redirect(request.referrer or url_for('home'))
     else:
-        return redirect(url_for('home'))
+        return redirect(url_for('home'))"""
 
-@app.route('/logout')
-def logout():
-    auth.Logout(current_user)
-    logout_user()
-    flash('Logged out', 'alert-info')
-    return redirect(request.referrer or url_for('home'))
-
-"""@app.route('/players')
-def players():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/players')
-    players = pd.GetAllPlayers()
-    return render_pretty('players.html',loginform=loginform, **dict(players.items() + data.items()))"""
-
-@app.route('/players/<int:id>')
-def player(id):
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/players/%s' % (str(id)))
-    profile = pd.GetProfile(id)
-    return render_pretty('player_view.html',loginform=loginform, **dict(profile.items() + data.items()))
-
-@app.route('/history')
-def live_hist():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/history')
-    return render_pretty('history_view.html', loginform=loginform, hist_url='/livehistjson', **data)
-
-@app.route('/readme')
-def readme():
-    loginform = LoginForm(request.form)
-    data = rd.Get(current_user, '/readme')
-    return render_pretty('readme.html', loginform=loginform, **data)
-
-@lm.user_loader
-def user_loader(id):
-    return auth.GetPlayerByID(id)
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)

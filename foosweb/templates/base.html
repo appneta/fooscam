@@ -31,7 +31,6 @@
                 </ul>
                 <ul class='nav navbar-nav navbar-right'>
                     {% if anonymous %}
-                        {#{{ render_menu_item('Login', '/login', current_view) }}#}
                         {% from '_formhelpers.html' import render_login_field %}
                         <form class='navbar-form' method='post' action='/login'>
                             {{ loginform.csrf_token }}

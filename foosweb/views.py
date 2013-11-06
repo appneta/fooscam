@@ -5,11 +5,11 @@ from BeautifulSoup import BeautifulSoup as bs
 
 from flask import Flask, redirect, render_template, url_for, abort, request, flash
 from flask.ext.classy import FlaskView, route
-from flask.ext.login import current_user
+from flask.ext.login import current_user, logout_user, login_user
 from flask import Response
 import json
 
-from controllers import PlayerData, RenderData, TeamData
+from controllers import PlayerData, RenderData, TeamData, Auth
 from forms import LoginForm
 
 import pdb
@@ -21,6 +21,15 @@ def render_pretty(template_name, **kwargs):
     soup = bs(render_template(template_name, **kwargs)).prettify()
     return soup
 
+class FoosView(FlaskView):
+    route_base = '/'
+    def index(self):
+        loginform = LoginForm()
+        rd = RenderData()
+        loginform = LoginForm(request.form)
+        data = rd.Get(current_user, '/')
+        return render_pretty('foosview.html', loginform=loginform, debug_image='static/img/table.png', **data)
+        #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
 
 class PlayersView(FlaskView):
     def index(self):
@@ -32,7 +41,12 @@ class PlayersView(FlaskView):
         return render_pretty('players.html', loginform=loginform, **dict(players.items() + data.items()))
 
     def get(self, id):
-        return str(id)
+        loginform = LoginForm()
+        pd = PlayerData()
+        rd = RenderData()
+        data = rd.Get(current_user, '/players/%s' % (str(id)))
+        profile = pd.GetProfile(id)
+        return render_pretty('player_view.html',loginform=loginform, **dict(profile.items() + data.items()))
 
 class TeamsView(FlaskView):
     def index(self):
@@ -46,6 +60,56 @@ class TeamsView(FlaskView):
 
     def get(self, id):
         return str(id)
+
+class HistoryView(FlaskView):
+    def index(self):
+        loginform = LoginForm()
+        rd = RenderData()
+        data = rd.Get(current_user, '/history')
+        return render_pretty('history_view.html', loginform=loginform, hist_url='/livehistjson', **data)
+
+class ReadmeView(FlaskView):
+    def index(self):
+        loginform = LoginForm()
+        rd = RenderData()
+        data = rd.Get(current_user, '/readme')
+        return render_pretty('readme.html', loginform=loginform, **data)
+
+class AdminView(FlaskView):
+    def index(self):
+        rd = RenderData()
+        data = rd.Get(current_user, '/admin')
+        return render_pretty('admin.html', **data)
+
+class AuthView(FlaskView):
+    route_base = '/'
+    def index(self):
+        return redirect(request.referrer or url_for('Foosview:index'))
+
+    @route('/login', methods = ['POST'])
+    def login(self):
+        rd = RenderData()
+        auth = Auth()
+        data = rd.Get(current_user, '/login')
+        loginform = LoginForm(request.form)
+        if loginform.validate():
+            if auth.Login(**request.form.to_dict()):
+                player=auth.GetPlayerByEmail(loginform.email.data)
+                login_user(player)
+                flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
+                flash('LOGIN CLASSY', 'alert-success')
+        return redirect(request.referrer or url_for('Foosview:index'))
+
+    def logout(self):
+        auth = Auth()
+        auth.Logout(current_user)
+        logout_user()
+        flash('Logged out', 'alert-info')
+        return redirect(request.referrer or url_for('Foosview:index'))
+
+class TeamupView(FlaskView):
+    def get(self, id):
+        pass
 
 #Flask-Restful API endpoints
 class PlayerHistory(Resource):
