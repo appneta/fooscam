@@ -4,7 +4,7 @@ from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CsrfProtect
 from BeautifulSoup import BeautifulSoup as bs
-from views import LiveHistory, Score, Players, Status, PlayerHistory, PlayersView
+from views import LiveHistory, Score, Players, Status, PlayerHistory, PlayersView, TeamsView
 from forms import LoginForm, TeamupForm
 from controllers import PlayerData, TeamData, RenderData, Auth
 import logging
@@ -48,6 +48,7 @@ csrf = CsrfProtect()
 csrf.init_app(app)
 
 PlayersView.register(app)
+TeamsView.register(app)
 
 rd = RenderData()
 auth = Auth()
@@ -73,12 +74,12 @@ def admin():
     data = rd.Get(current_user, '/admin')
     return render_pretty('admin.html', **data)
 
-@app.route('/teams')
+"""@app.route('/teams')
 def teamlist():
     loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/teams')
     teams = td.TeamList()
-    return render_pretty('teamlist.html', loginform=loginform, teams=teams, **data)
+    return render_pretty('teamlist.html', loginform=loginform, teams=teams, **data)"""
 
 @app.route('/teamup/<int:id>', methods=['GET', 'POST'])
 @login_required

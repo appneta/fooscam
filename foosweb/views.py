@@ -1,13 +1,15 @@
 from flask.ext.restful import Resource, reqparse
 from foosweb import GameWatch
 
-from flask import render_template
-from flask.ext.classy import FlaskView
+from BeautifulSoup import BeautifulSoup as bs
+
+from flask import Flask, redirect, render_template, url_for, abort, request, flash
+from flask.ext.classy import FlaskView, route
 from flask.ext.login import current_user
 from flask import Response
 import json
 
-from controllers import PlayerData, RenderData
+from controllers import PlayerData, RenderData, TeamData
 from forms import LoginForm
 
 import pdb
@@ -15,7 +17,10 @@ import logging
 
 log = logging.getLogger(__name__)
 
-#TODO: for some reason POST'ing to any of these endpoints seems broken, throw this out, write new classes and tidy up URL routing
+def render_pretty(template_name, **kwargs):
+    soup = bs(render_template(template_name, **kwargs)).prettify()
+    return soup
+
 
 class PlayersView(FlaskView):
     def index(self):
@@ -24,7 +29,20 @@ class PlayersView(FlaskView):
         rd = RenderData()
         data = rd.Get(current_user, '/players')
         players = pd.GetAllPlayers()
-        return render_template('players.html', loginform=loginform, **dict(players.items() + data.items()))
+        return render_pretty('players.html', loginform=loginform, **dict(players.items() + data.items()))
+
+    def get(self, id):
+        return str(id)
+
+class TeamsView(FlaskView):
+    def index(self):
+        loginform = LoginForm()
+        pd = PlayerData()
+        rd = RenderData()
+        td = TeamData()
+        data = rd.Get(current_user, '/teams')
+        teams = td.TeamList()
+        return render_pretty('teamlist.html', loginform=loginform, teams=teams, **data)
 
     def get(self, id):
         return str(id)
