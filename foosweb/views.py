@@ -5,12 +5,12 @@ from BeautifulSoup import BeautifulSoup as bs
 
 from flask import Flask, redirect, render_template, url_for, abort, request, flash
 from flask.ext.classy import FlaskView, route
-from flask.ext.login import current_user, logout_user, login_user
+from flask.ext.login import current_user, logout_user, login_user, login_required
 from flask import Response
 import json
 
 from controllers import PlayerData, RenderData, TeamData, Auth
-from forms import LoginForm
+from forms import LoginForm, TeamupForm
 
 import pdb
 import logging
@@ -21,8 +21,11 @@ def render_pretty(template_name, **kwargs):
     soup = bs(render_template(template_name, **kwargs)).prettify()
     return soup
 
+#TODO: modify redirect to referrer to understand /?next=etc
+
 class FoosView(FlaskView):
     route_base = '/'
+
     def index(self):
         loginform = LoginForm()
         rd = RenderData()
@@ -32,6 +35,9 @@ class FoosView(FlaskView):
         #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
 
 class PlayersView(FlaskView):
+    route_base = '/'
+
+    @route('/players')
     def index(self):
         loginform = LoginForm()
         pd = PlayerData()
@@ -40,12 +46,14 @@ class PlayersView(FlaskView):
         players = pd.GetAllPlayers()
         return render_pretty('players.html', loginform=loginform, **dict(players.items() + data.items()))
 
+    @route('/players/<int:id>', methods = ['GET'])
     def get(self, id):
         loginform = LoginForm()
         pd = PlayerData()
         rd = RenderData()
         data = rd.Get(current_user, '/players/%s' % (str(id)))
         profile = pd.GetProfile(id)
+        #pdb.set_trace()
         return render_pretty('player_view.html',loginform=loginform, **dict(profile.items() + data.items()))
 
 class TeamsView(FlaskView):
@@ -84,7 +92,7 @@ class AdminView(FlaskView):
 class AuthView(FlaskView):
     route_base = '/'
     def index(self):
-        return redirect(request.referrer or url_for('Foosview:index'))
+        return redirect(request.referrer or url_for('FoosView:index'))
 
     @route('/login', methods = ['POST'])
     def login(self):
@@ -97,19 +105,77 @@ class AuthView(FlaskView):
                 player=auth.GetPlayerByEmail(loginform.email.data)
                 login_user(player)
                 flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
-                flash('LOGIN CLASSY', 'alert-success')
-        return redirect(request.referrer or url_for('Foosview:index'))
+                return redirect(request.referrer or url_for('FoosView:index'))
+
+        flash('Invalid user id or password', 'alert-danger')
+        return redirect(request.referrer or url_for('FoosView:index'))
 
     def logout(self):
         auth = Auth()
         auth.Logout(current_user)
         logout_user()
         flash('Logged out', 'alert-info')
-        return redirect(request.referrer or url_for('Foosview:index'))
+        return redirect(request.referrer or url_for('FoosView:index'))
 
 class TeamupView(FlaskView):
-    def get(self, id):
-        pass
+    route_base = '/'
+
+    @route('/teamup/<int:id>', methods=['GET'])
+    @login_required
+    def show_teamup_form(self, id):
+        rd = RenderData()
+        pd = PlayerData()
+        data = rd.Get(current_user, '')
+        profile_name = pd.GetNameByID(id)
+        form = TeamupForm()
+        return render_pretty('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
+
+    @route('/teamup/<int:id>', methods=['POST'])
+    @login_required
+    def process_teamup_form(self, id):
+        rd = RenderData()
+        pd = PlayerData()
+        td = TeamData()
+        profile_name = pd.GetNameByID(id)
+        form = TeamupForm(request.form)
+        if form.validate():
+            msg = td.ValidateInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data)
+            if msg is None:
+                if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
+                    flash('Invite to %s sent!' % (profile_name), 'alert-success')
+                else:
+                    flash('Error sending invite!', 'alert-danger')
+                return redirect(url_for('FoosView:index'))
+            else:
+                flash(msg, 'alert-warning')
+                return redirect(url_for('FoosView:index'))
+
+    @route('/teamup/invites')
+    @login_required
+    def invites(self):
+        rd = RenderData()
+        td = TeamData()
+        data = rd.Get(current_user, '/teamup/invites')
+        invites = td.GetInvitesFor(current_user.id)
+        return render_pretty('teamup_invites.html', invites=invites, **data)
+
+    @route('/teamup/accept/<int:invite_id>')
+    @login_required
+    def teamup_accept_invite(self, invite_id):
+        td = TeamData()
+        if td.AcceptInvite(invite_id, current_user.id):
+            flash('You dun teamed up!', 'alert-success')
+        else:
+            flash('Error accepting invite!', 'alert-danger')
+        return redirect(request.referrer or url_for('FoosView:index'))
+
+    @route('/teamup/decline/<int:invite_id>')
+    @login_required
+    def teamup_decline_invite(self, invite_id):
+        td = TeamData()
+        if td.DeclineInvite(invite_id, current_user.id):
+            flash('Invite cancelled.', 'alert-warning')
+        return redirect(request.referrer or url_for('FoosView:index'))
 
 #Flask-Restful API endpoints
 class PlayerHistory(Resource):

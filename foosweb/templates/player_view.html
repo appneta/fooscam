@@ -50,9 +50,11 @@
           {% elif profile_id == p_two_id %}
             <li> {{ profile_name }} &amp; <a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> are team: {{ team_name }}</li>
           {% else %}
+            <b>some sort of error ocurred gathering team data</b>
             profile_id {{ profile_id }}
             p_one_id {{ p_one_id }}
             p_two_id {{ p_two_id }}
+            team_status {{ team_status }}
           {% endif %}
         {% endif %}
       {% endfor %}

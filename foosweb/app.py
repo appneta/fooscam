@@ -1,13 +1,11 @@
-from flask import Flask, redirect, render_template, url_for, abort, request, flash
+from flask import Flask
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
-from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask.ext.login import LoginManager
 from flask_wtf.csrf import CsrfProtect
-from BeautifulSoup import BeautifulSoup as bs
 from views import LiveHistory, Score, Players, Status, PlayerHistory
-from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView
-from forms import LoginForm, TeamupForm
-from controllers import PlayerData, TeamData, RenderData, Auth
+from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView
+from controllers import Auth
 import logging
 import pdb
 
@@ -41,9 +39,12 @@ assets.register('hist_js', hist_js)
 assets.register('hist_css', hist_css)
 assets.register('players_css', players_css)
 
+#TODO: customize login_required decorator behaviour for anon users
 lm = LoginManager()
-lm.login_view = '/login'
+lm.login_view = '/'
 lm.init_app(app)
+
+auth = Auth()
 
 @lm.user_loader
 def user_loader(id):
@@ -59,71 +60,11 @@ TeamsView.register(app)
 HistoryView.register(app)
 ReadmeView.register(app)
 AdminView.register(app)
+TeamupView.register(app)
 
-rd = RenderData()
-auth = Auth()
-pd = PlayerData()
-td = TeamData()
-
-def render_pretty(template_name, **kwargs):
-    soup = bs(render_template(template_name, **kwargs)).prettify()
-    return soup
-
-@app.route('/teamup/<int:id>', methods=['GET', 'POST'])
-@login_required
-def teamup(id):
-    data = rd.Get(current_user, '')
-    profile_name = pd.GetNameByID(id)
-    form = TeamupForm(request.form)
-    if request.method == 'POST' and form.validate():
-        msg = td.ValidateInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data)
-        if msg is None:
-            if td.SendInvite(from_player=current_user.id, to_player=id, team_name=form.team_name.data):
-                flash('Invite to %s sent!' % (profile_name), 'alert-success')
-            else:
-                flash('Error sending invite!', 'alert-danger')
-            return redirect(url_for('home'))
-        else:
-            flash(msg, 'alert-warning')
-            return redirect(url_for('home'))
-    return render_pretty('teamup.html', form=form, profile_id=id, profile_name=profile_name, **data)
-
-@app.route('/teamup/invites')
-@login_required
-def show_invites():
-    data = rd.Get(current_user, '/teamup/invites')
-    invites = td.GetInvitesFor(current_user.id)
-    return render_pretty('teamup_invites.html', invites=invites, **data)
-
-@app.route('/teamup/accept/<int:invite_id>')
-@login_required
-def teamup_accept(invite_id):
-    if td.AcceptInvite(invite_id, current_user.id):
-        flash('You dun teamed up!', 'alert-success')
-    return redirect(request.referrer or url_for('home'))
-
-@app.route('/teamup/decline/<int:invite_id>')
-@login_required
-def teamup_decline(invite_id):
-    if td.DeclineInvite(invite_id, current_user.id):
-        flash('Invite cancelled.', 'alert-warning')
-    return redirect(request.referrer or url_for(home))
-
-"""@app.route('/login', methods=['GET', 'POST'])
-def login():
-    data = rd.Get(current_user, '/login')
-    form = LoginForm(request.form)
-    if request.method == 'POST' and form.validate():
-        if auth.Login(**request.form.to_dict()):
-            player=auth.GetPlayerByEmail(form.email.data)
-            login_user(player)
-            flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
-            flash('LOGIN MAIN', 'alert-info')
-            #TODO: figure out a better way to redirect post login
-            return redirect(request.referrer or url_for('home'))
-    else:
-        return redirect(url_for('home'))"""
-
+@app.route('/test')
+def test():
+    pdb.set_trace()
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
