@@ -4,7 +4,7 @@ from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CsrfProtect
 from BeautifulSoup import BeautifulSoup as bs
-from views import LiveHistory, Score, Players, Status, PlayerHistory
+from views import LiveHistory, Score, Players, Status, PlayerHistory, PlayersView
 from forms import LoginForm, TeamupForm
 from controllers import PlayerData, TeamData, RenderData, Auth
 import logging
@@ -46,6 +46,8 @@ lm.init_app(app)
 
 csrf = CsrfProtect()
 csrf.init_app(app)
+
+PlayersView.register(app)
 
 rd = RenderData()
 auth = Auth()
@@ -139,12 +141,12 @@ def logout():
     flash('Logged out', 'alert-info')
     return redirect(request.referrer or url_for('home'))
 
-@app.route('/players')
+"""@app.route('/players')
 def players():
     loginform = LoginForm(request.form)
     data = rd.Get(current_user, '/players')
     players = pd.GetAllPlayers()
-    return render_pretty('players.html',loginform=loginform, **dict(players.items() + data.items()))
+    return render_pretty('players.html',loginform=loginform, **dict(players.items() + data.items()))"""
 
 @app.route('/players/<int:id>')
 def player(id):

@@ -1,13 +1,33 @@
 from flask.ext.restful import Resource, reqparse
 from foosweb import GameWatch
-from controllers import PlayerData
+
+from flask import render_template
+from flask.ext.classy import FlaskView
+from flask.ext.login import current_user
+from flask import Response
+import json
+
+from controllers import PlayerData, RenderData
+from forms import LoginForm
 
 import pdb
 import logging
 
-log = logging.getLogger('gamewatch')
+log = logging.getLogger(__name__)
 
 #TODO: for some reason POST'ing to any of these endpoints seems broken, throw this out, write new classes and tidy up URL routing
+
+class PlayersView(FlaskView):
+    def index(self):
+        loginform = LoginForm()
+        pd = PlayerData()
+        rd = RenderData()
+        data = rd.Get(current_user, '/players')
+        players = pd.GetAllPlayers()
+        return render_template('players.html', loginform=loginform, **dict(players.items() + data.items()))
+
+    def get(self, id):
+        return str(id)
 
 #Flask-Restful API endpoints
 class PlayerHistory(Resource):
