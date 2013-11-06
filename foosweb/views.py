@@ -1,10 +1,10 @@
-from flask.ext.restful import Resource, reqparse
+from flask.ext.restful import Resource
 
 from BeautifulSoup import BeautifulSoup as bs
 
 from werkzeug.exceptions import BadRequest
 
-from flask import Flask, Response, redirect, render_template, url_for, abort, request, flash
+from flask import Response, redirect, render_template, url_for, abort, request, flash
 from flask.ext.classy import FlaskView, route
 from flask.ext.login import current_user, logout_user, login_user, login_required
 from flask import Response
@@ -201,11 +201,11 @@ class Status(Resource):
             else:
                 return {'status': 'gameoff'}
 
-class ScoreView(FlaskView):
+class AjaxScoreView(FlaskView):
     route_base = '/'
 
     @route('/score', methods=['GET'])
-    def score(self):
+    def score_get(self):
         gw = GameWatch()
         if not gw.IsGameOn():
             return Response(json.dumps({'score': {'red': '', 'blue': ''}}), content_type='application/json')
@@ -228,72 +228,49 @@ class ScoreView(FlaskView):
         except (KeyError, ValueError):
             log.warn('Invalid JSON payload posted to score update endpoint!')
             log.debug('Invalid JSON: %s' % (request.json))
-            abort(400, 'invalid JSON data')
+            abort(400, 'Invalid JSON Data')
 
         gw = GameWatch()
         #TODO: this method call doesn't need a dict
         gw.UpdateScore({'red': red_score, 'blue': blue_score})
         return (json.dumps({'status': 'accepted'}), 201, {'Content-Type': 'application/json'})
 
-class Score(Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('score', type = dict, required = True, help = 'No score data provided', location = 'json')
-        super(Score, self).__init__()
+class AjaxPlayersView(FlaskView):
+    route_base='/'
 
-    def get(self):
-        gw = GameWatch()
-        if not gw.IsGameOn():
-            return {'score': {'red' : '', 'blue': ''}}
-        else:
-            red_score, blue_score = gw.GetScore()
-            return {'score': {'red': red_score, 'blue': blue_score}}
-
-    def post(self):
-        log.debug('score posted')
-        args = self.reqparse.parse_args()
-        try:
-            red_score = int(args['score']['red'])
-            blue_score = int(args['score']['blue'])
-        except (KeyError, ValueError):
-            return {'status': 'invalid JSON data'}, 400
-
-        gw = GameWatch()
-        gw.UpdateScore({'red': red_score, 'blue': blue_score})
-        return {'status': 'accepted'}, 201
-
-class Players(Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('team', type = list, required = True, help = 'No team data provided', location = 'json')
-        super(Players, self).__init__()
-
-    def post(self):
-        log.debug('players posted')
-        args = self.reqparse.parse_args()
-        if len(args['team']) == 2:
-            try:
-                blue_off = int(args['team'][0]['blue']['offense'])
-                blue_def = int(args['team'][0]['blue']['defense'])
-                red_off = int(args['team'][1]['red']['offense'])
-                red_def = int(args['team'][1]['red']['defense'])
-            except (KeyError, IndexError):
-                return {'status': 'invalid JSON data'}, 400
-            log.debug('ids = [' + str(blue_off) + ', ' + str(blue_def) + ', ' + str(red_off) + ', ' + str(red_def) + ']')
-            gw = GameWatch()
-            gw.UpdatePlayers({'bo': blue_off, 'bd': blue_def, 'ro': red_off, 'rd': red_def})
-            return {'status': 'accepted'}, 201
-        else:
-            return {'status': 'invalid JSON data (only TWO teams in foosball!)'}, 400
-
-    def get(self):
+    @route('/current_players', methods = ['GET'])
+    def players_get(self):
         gw = GameWatch()
         pd = PlayerData()
         ids = gw.CurrentPlayerIDs()
         names = pd.GetNames(gw.CurrentPlayerIDs())
         gravatars = pd.GetGravatarURLs(gw.CurrentPlayerIDs())
-        return  {'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},
-                 'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},
-                 'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},
-                 'rd': {'name': names['rd'], 'id': ids['rd'], 'gravatar': gravatars['rd']}}
+        return  (json.dumps({'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},\
+                 'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},\
+                 'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},\
+                 'rd': {'name': names['rd'], 'id': ids['rd'], 'gravatar': gravatars['rd']}}), 200, {'Content-Type': 'application/json'})
 
+    @route('/current_players', methods = ['POST'])
+    def players_post(self):
+        try:
+            json_dict = request.json
+        except BadRequest, e:
+            log.warn('non-JSON payload posted to score update endpoint!')
+            log.debug('Invalid data: %s' % (request.data))
+            raise
+
+        if json_dict.has_key(u'team'):
+            if len(json_dict[u'team']) == 2:
+                try:
+                    blue_off = int(json_dict['team'][0]['blue']['offense'])
+                    blue_def = int(json_dict['team'][0]['blue']['defense'])
+                    red_off = int(json_dict['team'][1]['red']['offense'])
+                    red_def = int(json_dict['team'][1]['red']['defense'])
+                except (KeyError, IndexError):
+                    abort(400, 'Invalid JSON Data')
+
+            gw = GameWatch()
+            gw.UpdatePlayers({'bo': blue_off, 'bd': blue_def, 'ro': red_off, 'rd': red_def})
+            return (json.dumps({'status': 'accepted'}), 201, {'Content-Type': 'application/json'})
+
+        abort(400, 'Invalid JSON Data')

@@ -3,16 +3,15 @@ from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager
 from flask_wtf.csrf import CsrfProtect
-from views import LiveHistory, Score, Players, Status, PlayerHistory
+#old ajax views
+from views import LiveHistory, Status, PlayerHistory
 #template rendered views
 from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView
-#ajax views
-from views import ScoreView
+#new ajax views
+from views import AjaxScoreView, AjaxPlayersView
 from controllers import Auth
 import logging
 import pdb
-
-from flask.ext.classy import FlaskView
 
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
@@ -21,8 +20,7 @@ log.addHandler(logging.StreamHandler())
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
 api = Api(app)
-#api.add_resource(Score, '/score', endpoint = 'score')
-api.add_resource(Players, '/current_players', endpoint = 'current_players')
+#XXX: convert these read only JSON endpoints from flask-restful to flask-classy?
 api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhistjson')
@@ -48,9 +46,8 @@ assets.register('players_css', players_css)
 lm = LoginManager()
 lm.login_view = '/'
 lm.init_app(app)
-
 auth = Auth()
-
+#TODO: define this somewhere else
 @lm.user_loader
 def user_loader(id):
     return auth.GetPlayerByID(id)
@@ -59,7 +56,9 @@ csrf = CsrfProtect()
 csrf.init_app(app)
 #XXX: this is probably really bad!
 csrf._exempt_views.add('views.score_post')
+csrf._exempt_views.add('views.players_post')
 
+#register view classes
 FoosView.register(app)
 AuthView.register(app)
 PlayersView.register(app)
@@ -68,7 +67,8 @@ HistoryView.register(app)
 ReadmeView.register(app)
 AdminView.register(app)
 TeamupView.register(app)
-ScoreView.register(app)
+AjaxScoreView.register(app)
+AjaxPlayersView.register(app)
 
 @csrf.exempt
 @app.route('/test')
