@@ -7,7 +7,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from datetime import datetime, timedelta
 from hashlib import md5
 from functools import wraps
-from models import Player, Team, Game
+from models import Player, Team, Game, Admin
 
 import logging
 log = logging.getLogger('gamewatch')
