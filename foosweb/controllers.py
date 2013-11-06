@@ -1,13 +1,14 @@
 from flask import redirect, url_for
 from flask.ext.login import current_user
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from datetime import datetime, timedelta
 from hashlib import md5
 from functools import wraps
 from models import Player, Team, Game, Admin
+from db import get_db_session
+
+import pdb
 
 import logging
 log = logging.getLogger('gamewatch')
@@ -16,10 +17,7 @@ log = logging.getLogger('gamewatch')
 
 class PlayerData():
     def __init__(self):
-        db = create_engine('sqlite:///foosball.db')
-        Session = sessionmaker()
-        Session.configure(bind=db)
-        self.session = Session()
+        self.session = get_db_session()
 
     def _tidy_sa_results(self, result):
         retvals = []
@@ -181,11 +179,7 @@ class PlayerData():
 
 class TeamData():
     def __init__(self):
-        db = create_engine('sqlite:///foosball.db')
-        Session = sessionmaker()
-        Session.configure(bind=db)
-        self.session = Session()
-
+        self.session = get_db_session()
         self.pd = PlayerData()
 
     def TeamList(self):
@@ -305,10 +299,7 @@ class RenderData():
 
 class Auth():
     def __init__(self):
-        db = create_engine('sqlite:///foosball.db')
-        Session = sessionmaker()
-        Session.configure(bind=db)
-        self.session = Session()
+        self.session = get_db_session()
 
     def _is_admin(self, id):
         try:
