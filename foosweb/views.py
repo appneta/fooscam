@@ -1,21 +1,24 @@
 from flask.ext.restful import Resource, reqparse
-from foosweb import GameWatch
 
 from BeautifulSoup import BeautifulSoup as bs
 
-from flask import Flask, redirect, render_template, url_for, abort, request, flash
+from werkzeug.exceptions import BadRequest
+
+from flask import Flask, Response, redirect, render_template, url_for, abort, request, flash
 from flask.ext.classy import FlaskView, route
 from flask.ext.login import current_user, logout_user, login_user, login_required
 from flask import Response
+
 import json
 
 from controllers import PlayerData, RenderData, TeamData, Auth
+from foosweb import GameWatch
 from forms import LoginForm, TeamupForm
 
 import pdb
 import logging
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('gamewatch')
 
 def render_pretty(template_name, **kwargs):
     soup = bs(render_template(template_name, **kwargs)).prettify()
@@ -29,7 +32,6 @@ class FoosView(FlaskView):
     def index(self):
         loginform = LoginForm()
         rd = RenderData()
-        loginform = LoginForm(request.form)
         data = rd.Get(current_user, '/')
         return render_pretty('foosview.html', loginform=loginform, debug_image='static/img/table.png', **data)
         #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
@@ -53,7 +55,6 @@ class PlayersView(FlaskView):
         rd = RenderData()
         data = rd.Get(current_user, '/players/%s' % (str(id)))
         profile = pd.GetProfile(id)
-        #pdb.set_trace()
         return render_pretty('player_view.html',loginform=loginform, **dict(profile.items() + data.items()))
 
 class TeamsView(FlaskView):
@@ -199,6 +200,40 @@ class Status(Resource):
                 return {'status': 'gameon'}
             else:
                 return {'status': 'gameoff'}
+
+class ScoreView(FlaskView):
+    route_base = '/'
+
+    @route('/score', methods=['GET'])
+    def score(self):
+        gw = GameWatch()
+        if not gw.IsGameOn():
+            return Response(json.dumps({'score': {'red': '', 'blue': ''}}), content_type='application/json')
+        else:
+            red_score, blue_score = gw.GetScore()
+            return Response(json.dumps({'score': {'red': red_score, 'blue': blue_score}}), content_type='application/json')
+
+    @route('/score', methods=['POST'])
+    def score_post(self):
+        try:
+            json_dict = request.json
+        except BadRequest, e:
+            log.warn('non-JSON payload posted to score update endpoint!')
+            log.debug('Invalid data: %s' % (request.data))
+            raise
+
+        try:
+            red_score = int(json_dict['score']['red'])
+            blue_score = int(json_dict['score']['blue'])
+        except (KeyError, ValueError):
+            log.warn('Invalid JSON payload posted to score update endpoint!')
+            log.debug('Invalid JSON: %s' % (request.json))
+            abort(400, 'invalid JSON data')
+
+        gw = GameWatch()
+        #TODO: this method call doesn't need a dict
+        gw.UpdateScore({'red': red_score, 'blue': blue_score})
+        return (json.dumps({'status': 'accepted'}), 201, {'Content-Type': 'application/json'})
 
 class Score(Resource):
     def __init__(self):

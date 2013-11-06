@@ -4,10 +4,15 @@ from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager
 from flask_wtf.csrf import CsrfProtect
 from views import LiveHistory, Score, Players, Status, PlayerHistory
+#template rendered views
 from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView
+#ajax views
+from views import ScoreView
 from controllers import Auth
 import logging
 import pdb
+
+from flask.ext.classy import FlaskView
 
 log = logging.getLogger('gamewatch')
 log.setLevel(logging.DEBUG)
@@ -16,7 +21,7 @@ log.addHandler(logging.StreamHandler())
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
 api = Api(app)
-api.add_resource(Score, '/score', endpoint = 'score')
+#api.add_resource(Score, '/score', endpoint = 'score')
 api.add_resource(Players, '/current_players', endpoint = 'current_players')
 api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
@@ -52,6 +57,8 @@ def user_loader(id):
 
 csrf = CsrfProtect()
 csrf.init_app(app)
+#XXX: this is probably really bad!
+csrf._exempt_views.add('views.score_post')
 
 FoosView.register(app)
 AuthView.register(app)
@@ -61,7 +68,9 @@ HistoryView.register(app)
 ReadmeView.register(app)
 AdminView.register(app)
 TeamupView.register(app)
+ScoreView.register(app)
 
+@csrf.exempt
 @app.route('/test')
 def test():
     pdb.set_trace()
