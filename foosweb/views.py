@@ -19,10 +19,6 @@ from forms import LoginForm, TeamupForm
 import pdb
 import logging
 
-class RenderData():
-    def __init(self):
-        pass
-
 log = logging.getLogger('gamewatch')
 
 def render_pretty(template_name, **kwargs):
@@ -30,7 +26,6 @@ def render_pretty(template_name, **kwargs):
     return soup
 
 #TODO: modify redirect to referrer to understand /?next=etc
-
 
 class FoosView(FlaskView):
     route_base = '/'

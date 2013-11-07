@@ -247,7 +247,6 @@ class TeamData():
     def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
         team = Team(from_player, to_player, team_name)
         self.session.add(team)
-        #TODO: global db session? wrap commit() for table locks
         self.session.commit()
         return True
 
@@ -371,6 +370,7 @@ class Auth():
             player = self.session.query(Player).filter_by(email=email).one()
         except NoResultFound:
             return
+
         return player
 
     def GetPlayerByID(self, id):
@@ -394,8 +394,17 @@ class Auth():
         """decorator to protect views to admins only"""
         @wraps(func)
         def wrapper(*args, **kwargs):
+            db_session = get_db_session()
             if current_user.is_authenticated():
-                if self._is_admin(current_user.id):
+                try:
+                    admin = self.session.query(Admin).filter_by(player_id=id).one()
+                except NoResultFound:
+                    return redirect(url_for('FoosView:index'))
+                except Exception, e:
+                    log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
+                    return redirect(url_for('FoosView:index'))
+
+                if admin is not None:
                     return func(*args, **kwargs)
             return redirect(url_for('FoosView:index'))
         return wrapper
