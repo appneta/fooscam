@@ -5,9 +5,9 @@
     <h1>Aw YEAH you should team up with {{ profile_name }}</h1>
     {% from "_formhelpers.html" import render_field %}
     <form method=post action='/teamup/{{ profile_id }}'>
-        {{ form.csrf_token }}
+        {{ teamup_form.csrf_token }}
         What you crazy kids gonna call yourselves?
-        {{ render_field(form.team_name, class='form-control', placeholder='Team Name') }}
+        {{ render_field(teamup_form.team_name, class='form-control', placeholder='Team Name') }}
         <p><button type='submit' class='btn btn-default'>Team Up</button>
     </form>
 {% endblock %}
