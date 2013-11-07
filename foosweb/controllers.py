@@ -5,6 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from datetime import datetime, timedelta
 from hashlib import md5
 from functools import wraps
+from forms import LoginForm, TeamupForm
 from models import Player, Team, Game, Admin
 from db import get_db_session
 
@@ -18,6 +19,7 @@ log = logging.getLogger('gamewatch')
 class PlayerData():
     def __init__(self):
         self.session = get_db_session()
+        self.bd = BaseData()
 
     def _tidy_sa_results(self, result):
         retvals = []
@@ -109,39 +111,41 @@ class PlayerData():
             id['rd'] = self.GetNameByID(id['rd'])
             return id
 
-    def GetAllPlayers(self):
-        players = {}
-        players['all_players'] = []
+    def GetAllPlayersData(self, current_user, current_view):
+        data = {}
+        data['all_players'] = []
         all_players = self.session.query(Player).all()
-        #all_players = self.session.query(Player).filter(Player.id<6).all()
 
         for player in all_players:
             if player.id != -1 and player.name != 'Guest':
-                players['all_players'].append((player.id, player.name,  self._get_gravatar_url_by_id(player.id, size=200)))
+                data['all_players'].append((player.id, player.name,  self._get_gravatar_url_by_id(player.id, size=200)))
 
-        return players
+        base_data = self.bd.GetBaseData(current_user, current_view)
 
-    #def GetProfile(self, id, user_id):
-    def GetProfile(self, id):
+        return dict(data.items() + base_data.items())
+
+    def GetProfileData(self, current_user, current_view, profile_id):
         """Get profile data for id and show it to user_id"""
         profile = {}
         try:
-            profile['ro_wins'] = self.session.query(Game).filter(Game.red_off == id).filter(Game.winner == 'red').count()
-            profile['rd_wins'] = self.session.query(Game).filter(Game.red_def == id).filter(Game.winner == 'red').count()
-            profile['bo_wins'] = self.session.query(Game).filter(Game.blue_off == id).filter(Game.winner == 'blue').count()
-            profile['bd_wins'] = self.session.query(Game).filter(Game.blue_def == id).filter(Game.winner == 'blue').count()
+            profile['ro_wins'] = self.session.query(Game).filter(Game.red_off == profile_id).filter(Game.winner == 'red').count()
+            profile['rd_wins'] = self.session.query(Game).filter(Game.red_def == profile_id).filter(Game.winner == 'red').count()
+            profile['bo_wins'] = self.session.query(Game).filter(Game.blue_off == profile_id).filter(Game.winner == 'blue').count()
+            profile['bd_wins'] = self.session.query(Game).filter(Game.blue_def == profile_id).filter(Game.winner == 'blue').count()
         except Exception, e:
             log.error('Failed to get wins from db for id %s with error %s' % (str(id), repr(e)))
             return
 
-        profile['profile_name'] = self.GetNameByID(id)
-        profile['profile_id'] = id
-        profile['gravatar_url'] = self._get_gravatar_url_by_id(id)
-        profile['hist_url'] = '/playerhistjson/' + str(id)
-        profile['total_games'] = self.GetHistory(id=id, count=True)
-        profile['teams'] = self._get_teams_by_player_id(id)
+        profile['profile_name'] = self.GetNameByID(profile_id)
+        profile['profile_id'] = profile_id
+        profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id)
+        profile['hist_url'] = '/playerhistjson/' + str(profile_id)
+        profile['total_games'] = self.GetHistory(id=profile_id, count=True)
+        profile['teams'] = self._get_teams_by_player_id(profile_id)
 
-        return profile
+        base_data = self.bd.GetBaseData(current_user, current_view)
+
+        return dict(profile.items() + base_data.items())
 
     def GetHistory(self,id=None, formatted=False, count=False):
         game_history = []
@@ -181,18 +185,31 @@ class TeamData():
     def __init__(self):
         self.session = get_db_session()
         self.pd = PlayerData()
+        self.bd = BaseData()
 
-    def TeamList(self):
+    def GetTeamsData(self, current_user, current_view):
         teams = self.session.query(Team).filter(Team.status == Team.STATUS_COMPLETE).all()
 
         #TODO: add standings data & gravatar for teams
-        retvals = []
+        retvals = {}
+        retvals['teams'] = []
         for team in teams:
             p_one_name = self.pd.GetNameByID(team.player_one)
             p_two_name = self.pd.GetNameByID(team.player_two)
-            retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name))
+            retvals['teams'].append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name))
 
-        return retvals
+        base_data = self.bd.GetBaseData(current_user, current_view)
+
+        return dict(retvals.items() + base_data.items())
+
+    def GetTeamupData(self, current_user, current_view, teamup_with_id):
+        retvals = {}
+        base_data = self.bd.GetBaseData(current_user, current_view)
+        retvals['profile_name'] = self.pd.GetNameByID(teamup_with_id)
+        retvals['profile_id'] = teamup_with_id
+        retvals['teamup_form'] = TeamupForm()
+
+        return dict(retvals.items() + base_data.items())
 
     def ValidateInvite(self, from_player=-1, to_player=-1, team_name=''):
         """return None if invite checks out, returns error message if not"""
@@ -214,6 +231,7 @@ class TeamData():
             log.error('Something horrible happened trying to verify teams for p_id %s & p_id %s' % (from_player, to_player))
             return
 
+        #TODO: customize message to team status (Pending AND Cancelled)
         if team_check1 or team_check2:
             return "You and %s are already a team!" % (self.pd.GetNameByID(to_player))
 
@@ -229,25 +247,27 @@ class TeamData():
     def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
         team = Team(from_player, to_player, team_name)
         self.session.add(team)
-        #TODO: global db session? wrap commit() for table locks
         self.session.commit()
         return True
 
-    def GetInvitesFor(self, id):
+    def GetInvitesData(self, current_user, current_view):
         try:
             invites = self.session.query(Team).filter(Team.status == Team.STATUS_PENDING).\
-                filter((Team.player_one == id) | (Team.player_two == id)).all()
+                filter((Team.player_one == current_user.id) | (Team.player_two == current_user.id)).all()
         except Exception, e:
-            log.error('something horrible happened whily trying to find invites for id %s' % (str(id)))
+            log.error('something horrible happened whily trying to find invites for id %s' % (str(current_user.id)))
             return
 
-        retvals = []
+        retvals = {}
+        retvals['invites'] = []
         for invite in invites:
             p_one_name = self.pd.GetNameByID(invite.player_one)
             p_two_name = self.pd.GetNameByID(invite.player_two)
-            retvals.append((invite.player_one, p_one_name, invite.player_two, p_two_name, invite.name, invite.id))
+            retvals['invites'].append((invite.player_one, p_one_name, invite.player_two, p_two_name, invite.name, invite.id))
 
-        return retvals
+        base_data = self.bd.GetBaseData(current_user, current_view)
+
+        return dict(retvals.items() + base_data.items())
 
     def AcceptInvite(self, invite_id, user_id):
         try:
@@ -280,25 +300,26 @@ class TeamData():
             self.session.commit()
             return True
 
-class RenderData():
-    """base data to customize views for current user"""
+class BaseData():
+    """base data, populates base.html template based on current user"""
     menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('History', '/history'), ('Readme', '/readme'))
 
     def __init__(self):
         self.auth = Auth()
 
-    def Get(self, user, current_view):
+    def GetBaseData(self, current_user, current_view):
         data = {}
         data['menu'] = self.menu_items
-        if user.is_authenticated():
-            data['user_profile_url'] = '/players/%s' % (str(user.id))
-            data['user_name'] = user.name
-            data['user_id'] = user.id
-            if self.auth._is_admin(user.id):
+        if current_user.is_authenticated():
+            data['user_profile_url'] = '/players/%s' % (str(current_user.id))
+            data['user_name'] = current_user.name
+            data['user_id'] = current_user.id
+            if self.auth._is_admin(current_user.id):
                 data['admin'] = True
         else:
             data['anonymous'] = True
             data['id'] = -1
+            data['loginform'] = LoginForm()
 
         data['current_view'] = current_view
 
@@ -349,6 +370,7 @@ class Auth():
             player = self.session.query(Player).filter_by(email=email).one()
         except NoResultFound:
             return
+
         return player
 
     def GetPlayerByID(self, id):
@@ -367,12 +389,22 @@ class Auth():
 
         return player
 
-    def RequiresAdmin(self, func):
+    @classmethod
+    def RequiresAdmin(cls, func):
         """decorator to protect views to admins only"""
         @wraps(func)
         def wrapper(*args, **kwargs):
+            db_session = get_db_session()
             if current_user.is_authenticated():
-                if self._is_admin(current_user.id):
+                try:
+                    admin = self.session.query(Admin).filter_by(player_id=id).one()
+                except NoResultFound:
+                    return redirect(url_for('FoosView:index'))
+                except Exception, e:
+                    log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
+                    return redirect(url_for('FoosView:index'))
+
+                if admin is not None:
                     return func(*args, **kwargs)
-            return redirect(url_for('home'))
+            return redirect(url_for('FoosView:index'))
         return wrapper
