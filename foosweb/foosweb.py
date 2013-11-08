@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+#from sqlalchemy.orm import sessionmaker
+from db import get_db_session
 from datetime import datetime
 from models import GameState, Player, Game, ORMBase
 import os
@@ -14,11 +15,9 @@ class GameWatch():
     main game logic lives in here
     """
     def __init__(self):
-        db = create_engine('sqlite:///foosball.db')
-        Session = sessionmaker()
-        Session.configure(bind=db)
-        self.session = Session()
+        self.session = get_db_session()
 
+        #TODO: move this somewhere else and fix it up
         if not os.path.exists('./foosball.db'):
             self.InitializeDB(db)
 

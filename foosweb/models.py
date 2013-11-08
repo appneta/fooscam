@@ -92,7 +92,33 @@ class Team(ORMBase):
         self.player_two = player_two
         self.name = name
 
+class PasswordResets(ORMBase):
+    __tablename__ = 'pw_resets'
+    id = Column(Integer, primary_key=True)
+    player_id = Column(Integer, ForeignKey(Player.id), nullable=False)
+    reset_hash = Column(String, nullable=False)
+
 class Admin(ORMBase):
     __tablename__ = 'admins'
     id = Column(Integer, primary_key=True)
     player_id = Column(Integer, ForeignKey(Player.id), nullable=False)
+
+if __name__ == '__main__':
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    import pdb
+
+    db = create_engine('sqlite:///foosball.db')
+    ORMBase.metadata.create_all(db)
+    Session = sessionmaker()
+    Session.configure(bind=db)
+
+    init_session = Session()
+
+    init_state = GameState()
+    anon_player = Player('Anonymous')
+    anon_player.id = -1
+    init_session.add(init_state)
+    init_session.add(anon_player)
+    init_session.commit()

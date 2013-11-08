@@ -1,7 +1,7 @@
 from flask import redirect, url_for
 from flask.ext.login import current_user
+from flask.ext.mail import Message
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-
 from datetime import datetime, timedelta
 from hashlib import md5
 from ssapin_crypt import make_hash, check_hash #straight up jacked from https://github.com/SimonSapin/snippets/blob/master/hashing_passwords.py
@@ -367,6 +367,15 @@ class Auth():
         self.session.add(player)
         self.session.commit()
 
+    def ForgotPassword(self, mail_io):
+        msg = Message('your password reset link is ...', recipients = ['rob@salmond.ca'])
+        try:
+            mail_io.send(msg)
+        except:
+            return
+
+        return True
+
     def GetPlayerByEmail(self, email):
         email = str(email).strip().lower()
         try:
@@ -406,7 +415,6 @@ class Auth():
                 except Exception, e:
                     log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
                     return redirect(url_for('FoosView:index'))
-                log.debug('checking admin status')
                 if admin is not None:
                     return func(*args, **kwargs)
             return redirect(url_for('FoosView:index'))

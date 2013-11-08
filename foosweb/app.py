@@ -1,8 +1,10 @@
 from flask import Flask
+from flask.ext.mail import Mail
 from flask.ext.restful import Api
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager
 from flask_wtf.csrf import CsrfProtect
+
 #old ajax views
 from views import LiveHistory, Status, PlayerHistory
 #new ajax views
@@ -20,10 +22,12 @@ log.addHandler(logging.StreamHandler())
 app = Flask(__name__)
 app.secret_key = 'my socrates note'
 api = Api(app)
+
 #XXX: convert these read only JSON endpoints from flask-restful to flask-classy?
 api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhistjson')
+
 
 assets = Environment(app)
 main_js = Bundle('js/jquery-latest.min.js', 'js/jquery-ui.js', 'js/bootstrap.min.js')
@@ -70,10 +74,15 @@ TeamupView.register(app)
 AjaxScoreView.register(app)
 AjaxPlayersView.register(app)
 
-@csrf.exempt
 @app.route('/test')
 def test():
-    pdb.set_trace()
+    auth = Auth()
+    if auth.ForgotPassword(mail):
+        return 'cool'
+    else:
+        return 'weak'
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.config.from_object('config.Dev')
+    mail = Mail(app)
+    app.run()
