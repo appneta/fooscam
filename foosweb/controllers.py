@@ -4,6 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from datetime import datetime, timedelta
 from hashlib import md5
+from ssapin_crypt import make_hash, check_hash #straight up jacked from https://github.com/SimonSapin/snippets/blob/master/hashing_passwords.py
 from functools import wraps
 from forms import LoginForm, TeamupForm
 from models import Player, Team, Game, Admin
@@ -329,34 +330,36 @@ class Auth():
     def __init__(self):
         self.session = get_db_session()
 
-    def _is_admin(self, id):
+    def _is_admin(self, user_id):
         try:
-            id = int(id)
+            user_id = int(user_id)
         except ValueError, e:
             return
 
         try:
-            admin = self.session.query(Admin).filter_by(player_id=id).one()
+            admin = self.session.query(Admin).filter_by(player_id=user_id).one()
         except NoResultFound:
             return
         except Exception, e:
-            log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
+            log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(user_id)))
             return
 
-        return True
+        if admin is not None:
+            return True
 
     def Login(self, **kwargs):
-        password = md5(kwargs['password']).hexdigest()
+        password = kwargs['password']
         email = str(kwargs['email']).strip().lower()
         try:
-            player = self.session.query(Player).filter_by(email=email).filter_by(password=password).one()
+            player = self.session.query(Player).filter_by(email=email).one()
         except NoResultFound:
             return
 
-        player.authenticated = True
-        self.session.add(player)
-        self.session.commit()
-        return True
+        if check_hash(password, player.password):
+            player.authenticated = True
+            self.session.add(player)
+            self.session.commit()
+            return True
 
     def Logout(self, current_player):
         player = self.GetPlayerByEmail(current_player.email)
@@ -397,13 +400,13 @@ class Auth():
             db_session = get_db_session()
             if current_user.is_authenticated():
                 try:
-                    admin = self.session.query(Admin).filter_by(player_id=id).one()
+                    admin = db_session.query(Admin).filter_by(player_id = current_user.id).one()
                 except NoResultFound:
                     return redirect(url_for('FoosView:index'))
                 except Exception, e:
                     log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
                     return redirect(url_for('FoosView:index'))
-
+                log.debug('checking admin status')
                 if admin is not None:
                     return func(*args, **kwargs)
             return redirect(url_for('FoosView:index'))

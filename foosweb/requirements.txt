@@ -1,6 +1,7 @@
 BeautifulSoup==3.2.1
 Flask==0.10.1
 Flask-Assets==0.8
+Flask-Classy==0.6.6
 Flask-Login==0.2.7
 Flask-RESTful==0.2.5
 Flask-WTF==0.9.3
@@ -11,6 +12,7 @@ WTForms==1.0.5
 Werkzeug==0.9.4
 argparse==1.2.1
 itsdangerous==0.23
+simple-pbkdf2==1.0
 six==1.4.1
 webassets==0.8
 wsgiref==0.1.2
