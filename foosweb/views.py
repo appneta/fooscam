@@ -14,7 +14,7 @@ import json
 #from controllers import PlayerData, RenderData, TeamData, Auth
 from controllers import PlayerData, BaseData, TeamData, Auth
 from foosweb import GameWatch
-from forms import LoginForm, TeamupForm, PasswordResetForm
+from forms import LoginForm, TeamupForm, PasswordResetForm, RequestResetForm
 
 import pdb
 import logging
@@ -111,8 +111,28 @@ class AuthView(FlaskView):
 class PassResetView(FlaskView):
     route_base = '/'
 
+    @route('/pw_reset')
+    def request_password_reset(self):
+        pdb.set_trace()
+        bd = BaseData()
+        data = bd.GetBaseData(current_user, '/pw_reset')
+        request_reset_form = RequestResetForm()
+        return render_pretty('request_reset.html', request_reset_form = request_reset_form, **data)
+
+    @route('/pw_reset/request', methods=['POST'])
+    def create_password_reset(self):
+        request_reset_form = RequestResetForm(request.form)
+        if request_reset_form.validate():
+            auth = Auth()
+            #TODO: figure out how to get mail and app in here from app.py :/
+            if auth.ForgotPassword(mail, request_reset_form.email.data, app.config['SERVER_NAME']):
+                flash('Password reset sent')
+            else:
+                flash('User not found')
+        return redirect(url_for('FoosView:index'))
+
     @route('/pw_reset/<string:reset_hash>', methods=['GET'])
-    def show_reset_form(self, reset_hash):
+    def new_password_form(self, reset_hash):
         bd = BaseData()
         data = bd.GetBaseData(current_user, '/pw_reset')
         auth = Auth()
@@ -124,7 +144,7 @@ class PassResetView(FlaskView):
             auth.InvalidatePasswordResets(player.id)
             flash('Hi %s, should go change your password right now!' % (player.name), 'alert-danger')
         return redirect(url_for('FoosView:index'))
-            #return render_pretty('password_reset.html', player_name = player_name, reset_form = PasswordResetForm())
+            #return render_pretty('new_password.html', player_name = player_name, reset_form = PasswordResetForm())
 
 class TeamupView(FlaskView):
     route_base = '/'

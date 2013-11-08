@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %} Password Reset {% endblock %}
+{% block content %}
+<div id='request-reset'>
+    <h1>Enter your email address to request a password reset.</h1>
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post action='/pw_reset'>
+        {{ request_reset_form.csrf_token }}
+        {{ render_field(request_reset_form.email, class='form-control', placeholder='New Password') }}
+        <p><button type='submit' class='btn btn-default'>Reset Password</button>
+    </form>
+{% endblock %}
