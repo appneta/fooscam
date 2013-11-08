@@ -10,7 +10,7 @@ from views import LiveHistory, Status, PlayerHistory
 #new ajax views
 from views import AjaxScoreView, AjaxPlayersView
 #template rendered views
-from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView
+from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView, PassResetView
 from controllers import Auth
 import logging
 import pdb
@@ -71,13 +71,14 @@ HistoryView.register(app)
 ReadmeView.register(app)
 AdminView.register(app)
 TeamupView.register(app)
+PassResetView.register(app)
 AjaxScoreView.register(app)
 AjaxPlayersView.register(app)
 
 @app.route('/test')
 def test():
     auth = Auth()
-    if auth.ForgotPassword(mail):
+    if auth.ForgotPassword(mail, 'guest@appneta.com', app.config['SERVER_NAME']):
         return 'cool'
     else:
         return 'weak'

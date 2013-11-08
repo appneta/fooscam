@@ -92,11 +92,15 @@ class Team(ORMBase):
         self.player_two = player_two
         self.name = name
 
-class PasswordResets(ORMBase):
+class PasswordReset(ORMBase):
     __tablename__ = 'pw_resets'
     id = Column(Integer, primary_key=True)
     player_id = Column(Integer, ForeignKey(Player.id), nullable=False)
     reset_hash = Column(String, nullable=False)
+
+    def __init__(self, player_id, reset_hash):
+        self.player_id = player_id
+        self.reset_hash = reset_hash
 
 class Admin(ORMBase):
     __tablename__ = 'admins'

@@ -14,7 +14,7 @@ import json
 #from controllers import PlayerData, RenderData, TeamData, Auth
 from controllers import PlayerData, BaseData, TeamData, Auth
 from foosweb import GameWatch
-from forms import LoginForm, TeamupForm
+from forms import LoginForm, TeamupForm, PasswordResetForm
 
 import pdb
 import logging
@@ -92,7 +92,7 @@ class AuthView(FlaskView):
         data = bd.GetBaseData(current_user, '/login')
         loginform = LoginForm(request.form)
         if loginform.validate():
-            if auth.Login(**request.form.to_dict()):
+            if auth.ValidateLogin(**request.form.to_dict()):
                 player=auth.GetPlayerByEmail(loginform.email.data)
                 login_user(player)
                 flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
@@ -107,6 +107,24 @@ class AuthView(FlaskView):
         logout_user()
         flash('Logged out', 'alert-info')
         return redirect(request.referrer or url_for('FoosView:index'))
+
+class PassResetView(FlaskView):
+    route_base = '/'
+
+    @route('/pw_reset/<string:reset_hash>', methods=['GET'])
+    def show_reset_form(self, reset_hash):
+        bd = BaseData()
+        data = bd.GetBaseData(current_user, '/pw_reset')
+        auth = Auth()
+        pd = PlayerData()
+        player = auth.GetPlayerByResetHash(reset_hash)
+        if player is not None:
+            login_user(player)
+            auth.Login(player)
+            auth.InvalidatePasswordResets(player.id)
+            flash('Hi %s, should go change your password right now!' % (player.name), 'alert-danger')
+        return redirect(url_for('FoosView:index'))
+            #return render_pretty('password_reset.html', player_name = player_name, reset_form = PasswordResetForm())
 
 class TeamupView(FlaskView):
     route_base = '/'
