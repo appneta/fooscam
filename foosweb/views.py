@@ -1,3 +1,4 @@
+from flask import current_app
 from flask.ext.restful import Resource
 
 from BeautifulSoup import BeautifulSoup as bs
@@ -113,7 +114,6 @@ class PassResetView(FlaskView):
 
     @route('/pw_reset')
     def request_password_reset(self):
-        pdb.set_trace()
         bd = BaseData()
         data = bd.GetBaseData(current_user, '/pw_reset')
         request_reset_form = RequestResetForm()
@@ -124,11 +124,11 @@ class PassResetView(FlaskView):
         request_reset_form = RequestResetForm(request.form)
         if request_reset_form.validate():
             auth = Auth()
-            #TODO: figure out how to get mail and app in here from app.py :/
-            if auth.ForgotPassword(mail, request_reset_form.email.data, app.config['SERVER_NAME']):
-                flash('Password reset sent')
+            mail = current_app.extensions['mail']
+            if auth.ForgotPassword(mail, request_reset_form.email.data, current_app.config['SERVER_NAME']):
+                flash('Password reset sent.', 'alert-success')
             else:
-                flash('User not found')
+                flash('User not found.', 'alert-danger')
         return redirect(url_for('FoosView:index'))
 
     @route('/pw_reset/<string:reset_hash>', methods=['GET'])

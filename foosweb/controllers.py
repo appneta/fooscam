@@ -408,7 +408,8 @@ class Auth():
 
         try:
             mail_io.send(msg)
-        except:
+        except Exception, e:
+            log.error('Error sending password reset email to %s' % (player.email))
             return
 
         return True
