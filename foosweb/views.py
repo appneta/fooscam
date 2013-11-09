@@ -146,6 +146,15 @@ class PassResetView(FlaskView):
         return redirect(url_for('FoosView:index'))
             #return render_pretty('new_password.html', player_name = player_name, reset_form = PasswordResetForm())
 
+class SettingsView(FlaskView):
+    route_base = '/'
+
+    @route('/settings', methods=['GET'])
+    def show_settings(self):
+        bd = BaseData()
+        data = bd.GetBaseData(current_user, '/settings')
+        return render_pretty('player_settings.html', **data)
+
 class TeamupView(FlaskView):
     route_base = '/'
 

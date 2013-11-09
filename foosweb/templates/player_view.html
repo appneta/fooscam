@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block title %} {{ profile_name }} {% endblock %}
 {% block content %}
+<div class='container'>
 <div id='player_info'>
   <span><h1>{{ profile_name }} has logged {{ total_games }} games!</h1></span>
   <span><img src="{{ gravatar_url }}"></span>
@@ -29,7 +30,7 @@
   </table>
 </div>
 <div id='player_teams'>
-  <span id='team-title'>{{ profile_name }}'s Teams</span>
+  <h2><span id='team-title'>Teams</span></h2>
   <ul id='team-list'>
     {% if teams %}
       {% for p_one_id, p_one_name, p_two_id, p_two_name, team_name, team_status in teams %}
@@ -71,5 +72,7 @@
     {% endif %}
   </ul>
 </div>
+<h2>Game History</h2>
 {% include '_history.html' %}
+</div>
 {% endblock %}
