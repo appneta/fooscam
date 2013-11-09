@@ -21,6 +21,6 @@ span.alert-text{
   background-color: #222222;
   border-color: #080808;
 }
-a.dropdown-link-inverse{
+.dropdown-bright>li>a {
   color: #999999;
 }
