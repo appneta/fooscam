@@ -99,7 +99,7 @@ class AuthView(FlaskView):
                 flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
                 return redirect(request.referrer or url_for('FoosView:index'))
 
-        flash('Invalid user id or password', 'alert-danger')
+        flash('Invalid user id or password.', 'alert-danger')
         return redirect(request.referrer or url_for('FoosView:index'))
 
     def logout(self):
