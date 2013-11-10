@@ -43,7 +43,6 @@ class PlayersView(FlaskView):
     def index(self):
         pd = PlayerData()
         data = pd.GetAllPlayersData(current_user, '/players')
-        pdb.set_trace()
         return render_pretty('players.html', **data)
 
     @route('/players/<int:profile_id>', methods = ['GET'])

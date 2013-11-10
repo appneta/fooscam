@@ -198,6 +198,26 @@ class TeamData():
         self.pd = PlayerData()
         self.bd = BaseData()
 
+    def _get_team_total_wins(self, team):
+        try:
+           red_games1 = self.session.query(Game).filter(Game.red_off == team.player_one).\
+                filter(Game.red_def == team.player_two).\
+                filter(Game.winner == 'red').count()
+           red_games2 = self.session.query(Game).filter(Game.red_off == team.player_two).\
+                filter(Game.red_def == team.player_one).\
+                filter(Game.winner == 'red').count()
+           blue_games1 = self.session.query(Game).filter(Game.blue_off == team.player_one).\
+                filter(Game.blue_def == team.player_two).\
+                filter(Game.winner == 'blue').count()
+           blue_games2 = self.session.query(Game).filter(Game.blue_off == team.player_two).\
+                filter(Game.blue_def == team.player_one).\
+                filter(Game.winner == 'blue').count()
+        except Exception, e:
+            log.error('Exception %s occurred looking up games for team %s' % (repr(e), team.id))
+            return
+
+        return red_games1 + red_games2 + blue_games1 + blue_games2
+
     def GetTeamsData(self, current_user, current_view):
         teams = self.session.query(Team).filter(Team.status == Team.STATUS_COMPLETE).all()
 
@@ -207,7 +227,11 @@ class TeamData():
         for team in teams:
             p_one_name = self.pd.GetNameByID(team.player_one)
             p_two_name = self.pd.GetNameByID(team.player_two)
-            retvals['teams'].append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name))
+            team_total_wins = self._get_team_total_wins(team)
+            retvals['teams'].append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name, team_total_wins))
+
+        #sort teams by number of wins descending
+        retvals['teams'].sort(key=lambda tup: tup[6], reverse=True)
 
         base_data = self.bd.GetBaseData(current_user, current_view)
 

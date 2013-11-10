@@ -1,20 +1,20 @@
 {% extends 'base.html' %}
 {% block title %} Teams {% endblock %}
 {% block content %}
+<div class='container'>
 <h1>Teams</h1>
 {% if teams %}
-    <table id='team-list'>
-        {% for p_one_id, p_one_name, p_two_id, p_two_name, team_id, team_name in teams %}
-            <tr>
-                <td><a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a></td>
-                <td> + </td>
-                <td><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a></td>
-                <td> = <a href='/teams/{{ team_id }}'>{{ team_name }}</a></td>
-            </tr>
+        {% for p_one_id, p_one_name, p_two_id, p_two_name, team_id, team_name, total_wins in teams %}
+        <div class='row'><h3>
+                <a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> + 
+                <a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a>
+                 = <a href='/teams/{{ team_id }}'><span class='label label-default'>{{ team_name }}</span></a>
+                &nbsp; Wins: {{ total_wins }}
+        </h3></div>
         {% endfor %}
-    </table>
 {% else %}
     <h1>Not even ONE team!?</h1>
     Better go <a href='/players'>team up</a>!
 {% endif %}
+</div>
 {% endblock %}
