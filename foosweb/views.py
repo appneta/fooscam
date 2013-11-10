@@ -15,7 +15,7 @@ import json
 #from controllers import PlayerData, RenderData, TeamData, Auth
 from controllers import PlayerData, BaseData, TeamData, Auth
 from foosweb import GameWatch
-from forms import LoginForm, TeamupForm, PasswordResetForm, RequestResetForm
+from forms import LoginForm, TeamupForm, PasswordResetForm, RequestResetForm, SettingsForm
 
 import pdb
 import logging
@@ -43,6 +43,7 @@ class PlayersView(FlaskView):
     def index(self):
         pd = PlayerData()
         data = pd.GetAllPlayersData(current_user, '/players')
+        pdb.set_trace()
         return render_pretty('players.html', **data)
 
     @route('/players/<int:profile_id>', methods = ['GET'])
@@ -150,10 +151,11 @@ class SettingsView(FlaskView):
     route_base = '/'
 
     @route('/settings', methods=['GET'])
+    @login_required
     def show_settings(self):
-        bd = BaseData()
-        data = bd.GetBaseData(current_user, '/settings')
-        return render_pretty('player_settings.html', **data)
+        pd = PlayerData()
+        data = pd.GetSettingsData(current_user, '/settings')
+        return render_pretty('player_settings.html',  **data)
 
 class TeamupView(FlaskView):
     route_base = '/'

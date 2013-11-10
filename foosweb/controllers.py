@@ -7,7 +7,7 @@ import os
 from hashlib import md5
 from ssapin_crypt import make_hash, check_hash #straight up jacked from https://github.com/SimonSapin/snippets/blob/master/hashing_passwords.py
 from functools import wraps
-from forms import LoginForm, TeamupForm
+from forms import LoginForm, TeamupForm, SettingsForm
 from models import Player, Team, Game, Admin, PasswordReset
 from db import get_db_session
 
@@ -148,6 +148,15 @@ class PlayerData():
         base_data = self.bd.GetBaseData(current_user, current_view)
 
         return dict(profile.items() + base_data.items())
+
+    def GetSettingsData(self, current_user, current_view):
+        settings = {}
+        settings['settings_form'] = SettingsForm()
+
+        settings['settings_form'].email.data = self._get_email_by_id(current_user.id)
+        base_data= self.bd.GetBaseData(current_user, current_view)
+
+        return dict(settings.items() + base_data.items())
 
     def GetHistory(self,id=None, formatted=False, count=False):
         game_history = []

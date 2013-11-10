@@ -18,3 +18,8 @@ class PasswordResetForm(Form):
 
 class RequestResetForm(Form):
     email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
+
+class SettingsForm(Form):
+    email = TextField('email', validators = [DataRequired(message=gettext("Change your email address"))])
+    password = TextField('password', validators = [DataRequired(message=gettext("Change your password"))])
+    confirm_pass = TextField('confirm_pass', validators = [EqualTo('password', message=gettext("Passwords must match"))])
