@@ -199,6 +199,8 @@ class PlayerData():
 
         if signup_form.email.data == '':
             return 'Please enter your email address'
+        elif signup_form.email.data.find('@') < 0:
+            return 'Please enter a valid email address'
         else:
             try:
                 check = self.session.query(Player).filter(Player.email == signup_form.name.email).all()
