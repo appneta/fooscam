@@ -170,7 +170,10 @@ class PassResetView(FlaskView):
             auth.Login(player)
             auth.InvalidatePasswordResets(player.id)
             flash('Hi %s, you should change your password right now!' % (player.name), 'alert-danger')
-        return redirect(url_for('SettingsView:show_settings'))
+            return redirect(url_for('SettingsView:show_settings'))
+        else:
+            flash('That reset link has expired', 'alert-warning')
+            return redirect(url_for('FoosView:index'))
 
 class SettingsView(FlaskView):
     route_base = '/'
