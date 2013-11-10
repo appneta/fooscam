@@ -12,10 +12,6 @@ class LoginForm(Form):
 class TeamupForm(Form):
     team_name = TextField('Team Name', validators = [DataRequired(message=gettext("Please enter a team name"))])
 
-class PasswordResetForm(Form):
-    password = TextField('password', validators = [DataRequired(message=gettext("Enter new password."))])
-    confirm_pass = TextField('confirm_pass', validators = [EqualTo('password', message=gettext("Passwords must match"))])
-
 class RequestResetForm(Form):
     email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address."))])
 
