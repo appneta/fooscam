@@ -142,9 +142,8 @@ class PassResetView(FlaskView):
             login_user(player)
             auth.Login(player)
             auth.InvalidatePasswordResets(player.id)
-            flash('Hi %s, should go change your password right now!' % (player.name), 'alert-danger')
-        return redirect(url_for('FoosView:index'))
-            #return render_pretty('new_password.html', player_name = player_name, reset_form = PasswordResetForm())
+            flash('Hi %s, you should change your password right now!' % (player.name), 'alert-danger')
+        return redirect(url_for('SettingsView:show_settings'))
 
 class SettingsView(FlaskView):
     route_base = '/'
@@ -155,6 +154,17 @@ class SettingsView(FlaskView):
         pd = PlayerData()
         data = pd.GetSettingsData(current_user, '/settings')
         return render_pretty('player_settings.html',  **data)
+
+    @route('/settings', methods=['POST'])
+    def process_settings(self):
+        pd = PlayerData()
+        settings_form = SettingsForm(request.form)
+        if settings_form.validate():
+            if pd.SetSettingsData(settings_form, current_user):
+                flash('Settings saved', 'alert-success')
+        else:
+            flash('Invalid settings', 'alert-danger')
+        return redirect(url_for('SettingsView:show_settings'))
 
 class TeamupView(FlaskView):
     route_base = '/'

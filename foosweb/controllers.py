@@ -158,6 +158,26 @@ class PlayerData():
 
         return dict(settings.items() + base_data.items())
 
+    def SetSettingsData(self, settings_form, current_player):
+        #return true if data has actually changed
+        changed = False
+        if current_player.email != settings_form.email.data:
+            if current_player.email != settings_form.email.data:
+                changed = True
+                current_player.email = settings_form.email.data
+
+        if settings_form.password.data != '':
+            if settings_form.password.data == settings_form.confirm_pass.data:
+                if not check_hash(settings_form.password.data, current_player.password):
+                    changed = True
+                    current_player.password = make_hash(settings_form.password.data)
+
+        if changed:
+            self.session.add(current_player)
+            self.session.commit()
+
+        return changed
+
     def GetHistory(self,id=None, formatted=False, count=False):
         game_history = []
         if id is not None:
