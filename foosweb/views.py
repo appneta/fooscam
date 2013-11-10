@@ -15,7 +15,7 @@ import json
 #from controllers import PlayerData, RenderData, TeamData, Auth
 from controllers import PlayerData, BaseData, TeamData, Auth
 from foosweb import GameWatch
-from forms import LoginForm, TeamupForm, PasswordResetForm, RequestResetForm, SettingsForm
+from forms import LoginForm, TeamupForm, RequestResetForm, SettingsForm, SignupForm
 
 import pdb
 import logging
@@ -80,6 +80,32 @@ class AdminView(FlaskView):
         data = bd.GetBaseData(current_user, '/admin')
         return render_pretty('admin.html', **data)
 
+class SignupView(FlaskView):
+    route_base = '/'
+
+    @route('/signup', methods = ['GET'])
+    def show_signup(self):
+        pd = PlayerData()
+        data = pd.GetSignupData(current_user, '/signup')
+        return render_pretty('signup.html', **data)
+
+    @route('/signup', methods = ['POST'])
+    def process_signup(self):
+        pd = PlayerData()
+        auth = Auth()
+        signup_form = SignupForm(request.form)
+        if signup_form.validate():
+            new_player = pd.ValidateNewPlayer(signup_form)
+            if isinstance(new_player, basestring):
+                flash(new_player, 'alert-warning')
+                return redirect(url_for('SignupView:show_signup'))
+            else:
+                if new_player is not None:
+                    login_user(new_player)
+                    auth.Login(new_player)
+                    flash('Welcome to FoosView %s!' % (new_player.name))
+                    return redirect(url_for('FoosView:index'))
+
 class AuthView(FlaskView):
     """process logins and logouts"""
     route_base = '/'
@@ -96,6 +122,7 @@ class AuthView(FlaskView):
             if auth.ValidateLogin(**request.form.to_dict()):
                 player=auth.GetPlayerByEmail(loginform.email.data)
                 login_user(player)
+                auth.Login(player)
                 flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
                 return redirect(request.referrer or url_for('FoosView:index'))
 

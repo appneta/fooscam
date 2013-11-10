@@ -10,7 +10,7 @@ from views import LiveHistory, Status, PlayerHistory
 #new ajax views
 from views import AjaxScoreView, AjaxPlayersView
 #template rendered views
-from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView, PassResetView, SettingsView
+from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView, PassResetView, SettingsView, SignupView
 from controllers import Auth
 import logging
 import pdb
@@ -72,6 +72,7 @@ AdminView.register(app)
 TeamupView.register(app)
 PassResetView.register(app)
 SettingsView.register(app)
+SignupView.register(app)
 AjaxScoreView.register(app)
 AjaxPlayersView.register(app)
 

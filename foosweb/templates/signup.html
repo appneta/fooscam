@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %} Sign Up {% endblock %}
+{% block head %}{% endblock %}
+{% block content %}
+<div id='signup' class='container'>
+<h1>Sign Up For FoosView</h1>
+{% from '_formhelpers.html' import render_field %}
+<form id='signup-form' method='post' action='/signup'>
+{{ signup_form.csrf_token }}
+<div class="row"><div class='col-lg-3'>
+{{ render_field(signup_form.name, class='form-control', placeholder='Enter your name') }}
+</div></div>
+<div class="row"><div class='col-lg-3'>
+{{ render_field(signup_form.email, class='form-control', placeholder='Enter your email address') }}
+</div></div>
+<div class="row"><div class='col-lg-3'>
+{{ render_field(signup_form.password, class='form-control', type='password', placeholder='Create a password') }}
+</div></div>
+<div class="row"><div class='col-lg-3'>
+{{ render_field(signup_form.confirm_pass, class='form-control', type='password', placeholder='Confirm new password') }}
+</div></div>
+<button type='submit' class='btn btn-default'>Sign Up</button>
+</form>
+</div>
+{% endblock %}

@@ -19,3 +19,9 @@ class SettingsForm(Form):
     email = TextField('email', validators = [DataRequired(message=gettext("Change your email address"))])
     password = TextField('password')
     confirm_pass = TextField('confirm_pass', validators = [EqualTo('password', message=gettext("Passwords must match"))])
+
+class SignupForm(Form):
+    email = TextField('email', validators = [DataRequired(message=gettext("Enter your email address"))])
+    name = TextField('name', validators = [DataRequired(message=gettext("Enter your name"))])
+    password = TextField('password')
+    confirm_pass = TextField('confirm_pass', validators = [EqualTo('password', message=gettext("Passwords must match"))])

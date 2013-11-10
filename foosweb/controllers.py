@@ -7,7 +7,7 @@ import os
 from hashlib import md5
 from ssapin_crypt import make_hash, check_hash #straight up jacked from https://github.com/SimonSapin/snippets/blob/master/hashing_passwords.py
 from functools import wraps
-from forms import LoginForm, TeamupForm, SettingsForm
+from forms import LoginForm, TeamupForm, SettingsForm, SignupForm
 from models import Player, Team, Game, Admin, PasswordReset
 from db import get_db_session
 
@@ -154,7 +154,7 @@ class PlayerData():
         settings['settings_form'] = SettingsForm()
 
         settings['settings_form'].email.data = self._get_email_by_id(current_user.id)
-        base_data= self.bd.GetBaseData(current_user, current_view)
+        base_data = self.bd.GetBaseData(current_user, current_view)
 
         return dict(settings.items() + base_data.items())
 
@@ -177,6 +177,45 @@ class PlayerData():
             self.session.commit()
 
         return changed
+
+    def GetSignupData(self, current_player, current_view):
+        base_data = self.bd.GetBaseData(current_user, current_view)
+        base_data['signup_form'] = SignupForm()
+
+        return base_data
+
+    def ValidateNewPlayer(self, signup_form):
+        check = None
+        if signup_form.name.data == '':
+            return 'Please enter your name'
+        else:
+            try:
+                check = self.session.query(Player).filter(Player.name == signup_form.name.data).all()
+            except Exception, e:
+                log.error('Exception %s thrown trying to validate new player name %s' % (repr(e), signup_form.name.data))
+
+        if len(check) > 0:
+            return 'A player by that name is already registered, please choose another name'
+
+        if signup_form.email.data == '':
+            return 'Please enter your email address'
+        else:
+            try:
+                check = self.session.query(Player).filter(Player.email == signup_form.name.email).all()
+            except Exception, e:
+                log.error('Exception %s thrown trying to validate new player email %s' % (repr(e), signup_form.email.data))
+
+        if len(check) > 0:
+            return 'An account with that email address already exists, try a password reset?'
+
+        if signup_form.password.data != '':
+            if signup_form.password.data == signup_form.confirm_pass.data:
+                hashed_pass = make_hash(signup_form.password.data)
+
+        new_player = Player(signup_form.name.data, signup_form.email.data, hashed_pass)
+        self.session.add(new_player)
+        self.session.commit()
+        return new_player
 
     def GetHistory(self,id=None, formatted=False, count=False):
         game_history = []
@@ -434,7 +473,6 @@ class Auth():
             return
 
         if check_hash(password, player.password):
-            self.Login(player)
             return True
 
     def Login(self, player):
