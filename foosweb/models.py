@@ -14,6 +14,7 @@ class Player(ORMBase):
     email = Column(String)
     password = Column(String)
     authenticated = Column(Boolean)
+    challonge_id = Column(String)
 
     def __init__(self, name, email, password):
         self.name = name
@@ -103,6 +104,12 @@ class PasswordReset(ORMBase):
     def __init__(self, player_id, reset_hash):
         self.player_id = player_id
         self.reset_hash = reset_hash
+
+class Tournaments(ORMBase):
+    __tablename__ = 'tournaments'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
 
 class Admin(ORMBase):
     __tablename__ = 'admins'
