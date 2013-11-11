@@ -398,7 +398,7 @@ class TeamData():
 
 class BaseData():
     """base data, populates base.html template based on current user"""
-    menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('History', '/history'), ('Readme', '/readme'))
+    menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('Tournaments', '/tournaments'), ('History', '/history'), ('Readme', '/readme'))
 
     def __init__(self):
         self.auth = Auth()

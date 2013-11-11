@@ -61,6 +61,12 @@ class TeamsView(FlaskView):
     def get(self, team_id):
         return str(team_id)
 
+class TournamentsView(FlaskView):
+    def index(self):
+        bd = BaseData()
+        data = bd.GetBaseData(current_user, '/tournaments')
+        return render_pretty('tournaments.html', **data)
+
 class HistoryView(FlaskView):
     def index(self):
         bd = BaseData()
