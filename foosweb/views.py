@@ -109,7 +109,7 @@ class SignupView(FlaskView):
                 if new_player is not None:
                     login_user(new_player)
                     auth.Login(new_player)
-                    flash('Welcome to FoosView %s!' % (new_player.name))
+                    flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
                     return redirect(url_for('FoosView:index'))
         else:
             return render_pretty('signup.html', signup_form=signup_form)

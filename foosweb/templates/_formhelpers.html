@@ -3,11 +3,9 @@
   <dd>{{ field(**kwargs)|safe }}
   </div>
   {% if field.errors %}
-    <ul class=errors>
     {% for error in field.errors %}
-      <li class='alert-danger'>{{ error }}</li>
+      <div class='alert alert-danger'>{{ error }}</div>
     {% endfor %}
-    </ul>
   {% endif %}
   </dd>
 {% endmacro %}

@@ -130,7 +130,7 @@ if __name__ == '__main__':
     init_session = Session()
 
     init_state = GameState()
-    anon_player = Player('Anonymous')
+    anon_player = Player('Anonymous', 'anon@anon.com', '')
     anon_player.id = -1
     init_session.add(init_state)
     init_session.add(anon_player)

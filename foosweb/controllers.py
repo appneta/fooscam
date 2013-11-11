@@ -194,8 +194,9 @@ class PlayerData():
             except Exception, e:
                 log.error('Exception %s thrown trying to validate new player name %s' % (repr(e), signup_form.name.data))
 
-        if len(check) > 0:
-            return 'A player by that name is already registered, please choose another name'
+        if check is not None:
+            if len(check) > 0:
+                return 'A player by that name is already registered, please choose another name'
 
         if signup_form.email.data == '':
             return 'Please enter your email address'
@@ -207,8 +208,9 @@ class PlayerData():
             except Exception, e:
                 log.error('Exception %s thrown trying to validate new player email %s' % (repr(e), signup_form.email.data))
 
-        if len(check) > 0:
-            return 'An account with that email address already exists, try a password reset?'
+        if check is not None:
+            if len(check) > 0:
+                return 'An account with that email address already exists, try a password reset?'
 
         if signup_form.password.data != '':
             if signup_form.password.data == signup_form.confirm_pass.data:
