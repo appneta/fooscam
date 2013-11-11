@@ -111,6 +111,8 @@ class SignupView(FlaskView):
                     auth.Login(new_player)
                     flash('Welcome to FoosView %s!' % (new_player.name))
                     return redirect(url_for('FoosView:index'))
+        else:
+            return render_pretty('signup.html', signup_form=signup_form)
 
 class AuthView(FlaskView):
     """process logins and logouts"""
