@@ -4,6 +4,7 @@
 {% assets "players_css" %}<link rel="stylesheet" href="{{ ASSET_URL }}">{% endassets %}
 {% endblock %}
 {% block content %}
+    <div class='container'>
     <h1>FoosBallas!</a>
     {% if all_players|length < 5 %}
         <table class='player-list'><tr>
@@ -26,4 +27,5 @@
         {% endfor %}
         </table>
     {% endif %}
+    </div>
 {% endblock %}

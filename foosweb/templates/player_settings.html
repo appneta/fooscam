@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %} Settings {% endblock %}
+{% block head %}{% endblock %}
+{% block content %}
+<div id='settings' class='container'>
+<h1>Account Settings</h1>
+{% from '_formhelpers.html' import render_field %}
+<form id='settings-form' method='post' action='/settings'>
+{{ settings_form.csrf_token }}
+<div class="row"><div class='col-lg-3'>
+{{ render_field(settings_form.email, class='form-control form-settings') }}
+</div></div>
+<div class="row"><div class='col-lg-3'>
+{{ render_field(settings_form.password, class='form-control form-settings', type='password', placeholder='Change your password') }}
+</div></div>
+<div class="row"><div class='col-lg-3'>
+{{ render_field(settings_form.confirm_pass, class='form-control form-settings', type='password', placeholder='Confirm new password') }}
+</div></div>
+<button type='submit' class='btn btn-default'>Update</button>
+</form>
+</div>
+{% endblock %}

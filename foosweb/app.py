@@ -10,7 +10,8 @@ from views import LiveHistory, Status, PlayerHistory
 #new ajax views
 from views import AjaxScoreView, AjaxPlayersView
 #template rendered views
-from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView, PassResetView
+from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView
+from views import AuthView, TeamupView, PassResetView, SettingsView, SignupView, TournamentsView
 from controllers import Auth
 import logging
 import pdb
@@ -27,7 +28,6 @@ api = Api(app)
 api.add_resource(Status, '/status', endpoint = 'status')
 api.add_resource(LiveHistory, '/livehistjson', endpoint = 'livehistjson')
 api.add_resource(PlayerHistory, '/playerhistjson/<int:id>', endpoint = 'playerhistjson')
-
 
 assets = Environment(app)
 main_js = Bundle('js/jquery-latest.min.js', 'js/jquery-ui.js', 'js/bootstrap.min.js')
@@ -71,11 +71,15 @@ HistoryView.register(app)
 ReadmeView.register(app)
 AdminView.register(app)
 TeamupView.register(app)
+TournamentsView.register(app)
 PassResetView.register(app)
+SettingsView.register(app)
+SignupView.register(app)
 AjaxScoreView.register(app)
 AjaxPlayersView.register(app)
 
 if __name__ == '__main__':
     app.config.from_object('config.Dev')
+    #flask-mail must be created after config is loaded
     mail = Mail(app)
     app.run()

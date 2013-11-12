@@ -14,9 +14,12 @@ class Player(ORMBase):
     email = Column(String)
     password = Column(String)
     authenticated = Column(Boolean)
+    challonge_id = Column(String)
 
-    def __init__(self, name):
+    def __init__(self, name, email, password):
         self.name = name
+        self.email = email
+        self.password = password
 
     def is_active(self):
         return True
@@ -102,6 +105,12 @@ class PasswordReset(ORMBase):
         self.player_id = player_id
         self.reset_hash = reset_hash
 
+class Tournaments(ORMBase):
+    __tablename__ = 'tournaments'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+
 class Admin(ORMBase):
     __tablename__ = 'admins'
     id = Column(Integer, primary_key=True)
@@ -121,7 +130,7 @@ if __name__ == '__main__':
     init_session = Session()
 
     init_state = GameState()
-    anon_player = Player('Anonymous')
+    anon_player = Player('Anonymous', 'anon@anon.com', '')
     anon_player.id = -1
     init_session.add(init_state)
     init_session.add(anon_player)

@@ -7,7 +7,7 @@ import os
 from hashlib import md5
 from ssapin_crypt import make_hash, check_hash #straight up jacked from https://github.com/SimonSapin/snippets/blob/master/hashing_passwords.py
 from functools import wraps
-from forms import LoginForm, TeamupForm
+from forms import LoginForm, TeamupForm, SettingsForm, SignupForm
 from models import Player, Team, Game, Admin, PasswordReset
 from db import get_db_session
 
@@ -149,6 +149,78 @@ class PlayerData():
 
         return dict(profile.items() + base_data.items())
 
+    def GetSettingsData(self, current_user, current_view):
+        settings = {}
+        settings['settings_form'] = SettingsForm()
+
+        settings['settings_form'].email.data = self._get_email_by_id(current_user.id)
+        base_data = self.bd.GetBaseData(current_user, current_view)
+
+        return dict(settings.items() + base_data.items())
+
+    def SetSettingsData(self, settings_form, current_player):
+        #return true if data has actually changed
+        changed = False
+        if current_player.email != settings_form.email.data:
+            if current_player.email != settings_form.email.data:
+                changed = True
+                current_player.email = settings_form.email.data
+
+        if settings_form.password.data != '':
+            if settings_form.password.data == settings_form.confirm_pass.data:
+                if not check_hash(settings_form.password.data, current_player.password):
+                    changed = True
+                    current_player.password = make_hash(settings_form.password.data)
+
+        if changed:
+            self.session.add(current_player)
+            self.session.commit()
+
+        return changed
+
+    def GetSignupData(self, current_player, current_view):
+        base_data = self.bd.GetBaseData(current_user, current_view)
+        base_data['signup_form'] = SignupForm()
+
+        return base_data
+
+    def ValidateNewPlayer(self, signup_form):
+        check = None
+        if signup_form.name.data == '':
+            return 'Please enter your name'
+        else:
+            try:
+                check = self.session.query(Player).filter(Player.name == signup_form.name.data).all()
+            except Exception, e:
+                log.error('Exception %s thrown trying to validate new player name %s' % (repr(e), signup_form.name.data))
+
+        if check is not None:
+            if len(check) > 0:
+                return 'A player by that name is already registered, please choose another name'
+
+        if signup_form.email.data == '':
+            return 'Please enter your email address'
+        elif signup_form.email.data.find('@') < 0:
+            return 'Please enter a valid email address'
+        else:
+            try:
+                check = self.session.query(Player).filter(Player.email == signup_form.name.email).all()
+            except Exception, e:
+                log.error('Exception %s thrown trying to validate new player email %s' % (repr(e), signup_form.email.data))
+
+        if check is not None:
+            if len(check) > 0:
+                return 'An account with that email address already exists, try a password reset?'
+
+        if signup_form.password.data != '':
+            if signup_form.password.data == signup_form.confirm_pass.data:
+                hashed_pass = make_hash(signup_form.password.data)
+
+        new_player = Player(signup_form.name.data, signup_form.email.data, hashed_pass)
+        self.session.add(new_player)
+        self.session.commit()
+        return new_player
+
     def GetHistory(self,id=None, formatted=False, count=False):
         game_history = []
         if id is not None:
@@ -189,6 +261,26 @@ class TeamData():
         self.pd = PlayerData()
         self.bd = BaseData()
 
+    def _get_team_total_wins(self, team):
+        try:
+           red_games1 = self.session.query(Game).filter(Game.red_off == team.player_one).\
+                filter(Game.red_def == team.player_two).\
+                filter(Game.winner == 'red').count()
+           red_games2 = self.session.query(Game).filter(Game.red_off == team.player_two).\
+                filter(Game.red_def == team.player_one).\
+                filter(Game.winner == 'red').count()
+           blue_games1 = self.session.query(Game).filter(Game.blue_off == team.player_one).\
+                filter(Game.blue_def == team.player_two).\
+                filter(Game.winner == 'blue').count()
+           blue_games2 = self.session.query(Game).filter(Game.blue_off == team.player_two).\
+                filter(Game.blue_def == team.player_one).\
+                filter(Game.winner == 'blue').count()
+        except Exception, e:
+            log.error('Exception %s occurred looking up games for team %s' % (repr(e), team.id))
+            return
+
+        return red_games1 + red_games2 + blue_games1 + blue_games2
+
     def GetTeamsData(self, current_user, current_view):
         teams = self.session.query(Team).filter(Team.status == Team.STATUS_COMPLETE).all()
 
@@ -198,7 +290,11 @@ class TeamData():
         for team in teams:
             p_one_name = self.pd.GetNameByID(team.player_one)
             p_two_name = self.pd.GetNameByID(team.player_two)
-            retvals['teams'].append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name))
+            team_total_wins = self._get_team_total_wins(team)
+            retvals['teams'].append((team.player_one, p_one_name, team.player_two, p_two_name, team.id, team.name, team_total_wins))
+
+        #sort teams by number of wins descending
+        retvals['teams'].sort(key=lambda tup: tup[6], reverse=True)
 
         base_data = self.bd.GetBaseData(current_user, current_view)
 
@@ -304,7 +400,7 @@ class TeamData():
 
 class BaseData():
     """base data, populates base.html template based on current user"""
-    menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('History', '/history'), ('Readme', '/readme'))
+    menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('Tournaments', '/tournaments'), ('History', '/history'), ('Readme', '/readme'))
 
     def __init__(self):
         self.auth = Auth()
@@ -381,7 +477,6 @@ class Auth():
             return
 
         if check_hash(password, player.password):
-            self.Login(player)
             return True
 
     def Login(self, player):
@@ -408,7 +503,8 @@ class Auth():
 
         try:
             mail_io.send(msg)
-        except:
+        except Exception, e:
+            log.error('Error sending password reset email to %s' % (player.email))
             return
 
         return True

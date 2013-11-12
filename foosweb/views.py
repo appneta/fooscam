@@ -1,3 +1,4 @@
+from flask import current_app
 from flask.ext.restful import Resource
 
 from BeautifulSoup import BeautifulSoup as bs
@@ -14,7 +15,7 @@ import json
 #from controllers import PlayerData, RenderData, TeamData, Auth
 from controllers import PlayerData, BaseData, TeamData, Auth
 from foosweb import GameWatch
-from forms import LoginForm, TeamupForm, PasswordResetForm, RequestResetForm
+from forms import LoginForm, TeamupForm, RequestResetForm, SettingsForm, SignupForm
 
 import pdb
 import logging
@@ -60,6 +61,12 @@ class TeamsView(FlaskView):
     def get(self, team_id):
         return str(team_id)
 
+class TournamentsView(FlaskView):
+    def index(self):
+        bd = BaseData()
+        data = bd.GetBaseData(current_user, '/tournaments')
+        return render_pretty('tournaments.html', **data)
+
 class HistoryView(FlaskView):
     def index(self):
         bd = BaseData()
@@ -79,6 +86,34 @@ class AdminView(FlaskView):
         data = bd.GetBaseData(current_user, '/admin')
         return render_pretty('admin.html', **data)
 
+class SignupView(FlaskView):
+    route_base = '/'
+
+    @route('/signup', methods = ['GET'])
+    def show_signup(self):
+        pd = PlayerData()
+        data = pd.GetSignupData(current_user, '/signup')
+        return render_pretty('signup.html', **data)
+
+    @route('/signup', methods = ['POST'])
+    def process_signup(self):
+        pd = PlayerData()
+        auth = Auth()
+        signup_form = SignupForm(request.form)
+        if signup_form.validate():
+            new_player = pd.ValidateNewPlayer(signup_form)
+            if isinstance(new_player, basestring):
+                flash(new_player, 'alert-warning')
+                return redirect(url_for('SignupView:show_signup'))
+            else:
+                if new_player is not None:
+                    login_user(new_player)
+                    auth.Login(new_player)
+                    flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
+                    return redirect(url_for('FoosView:index'))
+        else:
+            return render_pretty('signup.html', signup_form=signup_form)
+
 class AuthView(FlaskView):
     """process logins and logouts"""
     route_base = '/'
@@ -95,10 +130,11 @@ class AuthView(FlaskView):
             if auth.ValidateLogin(**request.form.to_dict()):
                 player=auth.GetPlayerByEmail(loginform.email.data)
                 login_user(player)
+                auth.Login(player)
                 flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
                 return redirect(request.referrer or url_for('FoosView:index'))
 
-        flash('Invalid user id or password', 'alert-danger')
+        flash('Invalid user id or password.', 'alert-danger')
         return redirect(request.referrer or url_for('FoosView:index'))
 
     def logout(self):
@@ -113,7 +149,6 @@ class PassResetView(FlaskView):
 
     @route('/pw_reset')
     def request_password_reset(self):
-        pdb.set_trace()
         bd = BaseData()
         data = bd.GetBaseData(current_user, '/pw_reset')
         request_reset_form = RequestResetForm()
@@ -124,11 +159,11 @@ class PassResetView(FlaskView):
         request_reset_form = RequestResetForm(request.form)
         if request_reset_form.validate():
             auth = Auth()
-            #TODO: figure out how to get mail and app in here from app.py :/
-            if auth.ForgotPassword(mail, request_reset_form.email.data, app.config['SERVER_NAME']):
-                flash('Password reset sent')
+            mail = current_app.extensions['mail']
+            if auth.ForgotPassword(mail, request_reset_form.email.data, current_app.config['SERVER_NAME']):
+                flash('Password reset sent.', 'alert-success')
             else:
-                flash('User not found')
+                flash('User not found.', 'alert-danger')
         return redirect(url_for('FoosView:index'))
 
     @route('/pw_reset/<string:reset_hash>', methods=['GET'])
@@ -142,9 +177,32 @@ class PassResetView(FlaskView):
             login_user(player)
             auth.Login(player)
             auth.InvalidatePasswordResets(player.id)
-            flash('Hi %s, should go change your password right now!' % (player.name), 'alert-danger')
-        return redirect(url_for('FoosView:index'))
-            #return render_pretty('new_password.html', player_name = player_name, reset_form = PasswordResetForm())
+            flash('Hi %s, you should change your password right now!' % (player.name), 'alert-danger')
+            return redirect(url_for('SettingsView:show_settings'))
+        else:
+            flash('That reset link has expired', 'alert-warning')
+            return redirect(url_for('FoosView:index'))
+
+class SettingsView(FlaskView):
+    route_base = '/'
+
+    @route('/settings', methods=['GET'])
+    @login_required
+    def show_settings(self):
+        pd = PlayerData()
+        data = pd.GetSettingsData(current_user, '/settings')
+        return render_pretty('player_settings.html',  **data)
+
+    @route('/settings', methods=['POST'])
+    def process_settings(self):
+        pd = PlayerData()
+        settings_form = SettingsForm(request.form)
+        if settings_form.validate():
+            if pd.SetSettingsData(settings_form, current_user):
+                flash('Settings saved', 'alert-success')
+        else:
+            flash('Invalid settings', 'alert-danger')
+        return redirect(url_for('SettingsView:show_settings'))
 
 class TeamupView(FlaskView):
     route_base = '/'

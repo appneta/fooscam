@@ -5,5 +5,7 @@ db = create_engine('sqlite:///foosball.db')
 Session = sessionmaker()
 Session.configure(bind=db)
 
+fv_session = Session()
+
 def get_db_session():
-    return Session()
+    return fv_session
