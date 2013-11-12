@@ -14,7 +14,7 @@ import json
 
 #from controllers import PlayerData, RenderData, TeamData, Auth
 from controllers import PlayerData, BaseData, TeamData, Auth
-from foosweb import GameWatch
+from gamewatch import GameWatch
 from forms import LoginForm, TeamupForm, RequestResetForm, SettingsForm, SignupForm
 
 import pdb
