@@ -1,0 +1,29 @@
+body {
+  padding-top: 40px;
+}
+@media (max-width: 979px) {
+  body {
+    padding-top: 0px;
+  }
+}
+#messages{
+   position: absolute;
+   top: 60px;
+   right: 0px;
+   width: 20%;
+   z-index: 1;
+}
+#content{
+   margin-top: 4px;
+}
+span.alert-text{
+    float: none;
+    text-align: center;
+}
+.dropdown-inverse {
+  background-color: #222222;
+  border-color: #080808;
+}
+.dropdown-bright>li>a {
+  color: #999999;
+}

@@ -1,0 +1,74 @@
+#foosview{
+    /*width: 1284px;*/
+    margin-left: auto;
+    margin-right: auto;
+}
+.foos-title{
+    margin-top: 4px;
+    width: 690px;
+}
+/* team and score */
+#game-info {
+    opacity: 0;
+    overflow: auto;
+}
+#score{
+    float: left;
+}
+.team, #team-divider{
+    font-weight: bold;
+    font-size: 24px;
+}
+#team-divider{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#teams{
+    float: right;
+}
+.team-red{
+    color:red;
+}
+.team-blue{
+    color:blue;
+}
+/* video frame and embedded name tags */
+#cam-frame{
+    position: relative;
+    width:1280px;
+}
+#table-video{
+    width: 1280px;
+    height: 628px;
+}
+.tag{
+    opacity: 0;
+    position: absolute;
+    font-size: 1.5em;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+#off-blue-tag{
+    bottom:4px;
+    right:4px;
+}
+#def-blue-tag{
+    bottom:4px;
+    left:4px;
+}
+#off-red-tag{
+    top:4px;
+    left:4px;
+}
+#def-red-tag{
+    top:4px;
+    right:4px;
+}
+#off-blue-a, #def-blue-a, #off-red-a, #def-red-a{
+    text-decoration: none;
+}
+#off-blue-a:visited, #def-blue-a:visited{
+    color: blue;
+}   
+#off-red-a:visited, #def-red-a:visited{
+    color: red;
+}   

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %} FoosView {% endblock %}
+{% block head %}
+{% assets "foos_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+{% assets "foos_css" %}<link rel="stylesheet" href="{{ ASSET_URL }}">{% endassets %}
+{% endblock %}
+{% block content %}
+        <div id='foosview' align='center'>
+            <h3>AppNeta Foos&beta;eta: <span class="status"></span></h3>
+            <div id="game-info">
+                <span id="score">
+                    <span class="team team-blue">
+                        Blue: <span id="score-blue"></span>
+                    </span>
+                    &nbsp;
+                    <span class="team team-red">
+                        Red: <span id="score-red"></span>
+                    </span>
+                </span>
+                <span id="teams">
+                    <span class="team team-blue">
+                    </span>
+                    <span id="team-divider">VS</span>
+                    <span class="team team-red">
+                    </span>
+                </span>
+            </div>
+            <div id="cam-frame">
+                <span id="off-blue-tag" class="off-blue tag team-blue">
+                    <img src='' id='off-blue-g'/>
+                    <a href='#' id='off-blue-a' class='team-blue'></a>
+                </span>
+                <span id="def-blue-tag" class="def-blue tag team-blue">
+                    <a href='#' id='def-blue-a' class='teab-blue'></a>
+                    <img src='' id='def-blue-g'/>
+                </span>
+                <span id="off-red-tag" class="off-red tag team-red" >
+                    <a href='#' id='off-red-a' class='team-red'></a>
+                    <img src='' id='off-red-g'/>
+                </span>
+                <span id="def-red-tag" class="def-red tag team-red">
+                    <img src='' id='def-red-g'/>
+                    <a href='#' id='def-red-a' class='team-red'></a>
+                </span>
+                {% if debug_image is defined %}
+                <img id="table-video" src="{{ debug_image }}">
+                {% else %}
+                <img id="table-video" src="http://foosview:8082/v.mjpg">
+                {% endif %}
+            </div>
+        </div>
+{% endblock %}

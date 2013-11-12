@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %} {{ profile_name }} {% endblock %}
+{% block content %}
+<div class='container'>
+<div id='player_info'>
+  <span><h1>{{ profile_name }} has logged {{ total_games }} games!</h1></span>
+  <span><img src="{{ gravatar_url }}"></span>
+</div>
+<div id='player_stats'>
+  <h2>Stats</h2>
+  <table id='win-stats' cellpadding='10' cellspacing='2' border='1'>
+    <thead>
+      <tr>
+        <th id='tb-title'>Total Wins</th>
+        <th id='tb-blue-head'>Blue</th>
+        <th id='tb-red-head'>Red</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Offense</b></td>
+        <td><span id='bo-wins'>{{ bo_wins }}</span></td>
+        <td><span id='ro-wins'>{{ ro_wins }}</span></td>
+      </tr>
+      <tr><td><b>Defense</b></td>
+        <td><span id='bd-wins'>{{ bd_wins }}</span></td>
+        <td><span id='rd-wins'>{{ rd_wins }}</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div id='player_teams'>
+  <h2><span id='team-title'>Teams</span></h2>
+  <ul id='team-list'>
+    {% if teams %}
+      {% for p_one_id, p_one_name, p_two_id, p_two_name, team_name, team_status in teams %}
+        {# STATUS 1 == pending 2 == confirmed -- only show pending invites to users looking at their own profile#}
+        {% if team_status == 1 and profile_id == user_id %}
+          {# invites are sent by player_one to player_two -- show invitees their invite #}
+          {% if user_id == p_two_id %}
+            <li><a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> has <a href='/teamup/invites'>invited you to join team {{ team_name }}</a>!</li>
+          {% elif user_id == p_one_id %}
+            <li><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> hasn't responded to <a href='/teamup/invites'>your invite</a> yet.</li>
+          {% endif %}
+        {% endif %}
+        {# show accepted team invites to everyone #}
+        {% if team_status == 2 %}
+          {% if profile_id == p_one_id %}
+            {#TODO: link to team page from here #}
+            <li> {{ profile_name }} &amp; <a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> are team: {{ team_name }}</li>
+          {% elif profile_id == p_two_id %}
+            <li> {{ profile_name }} &amp; <a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> are team: {{ team_name }}</li>
+          {% else %}
+            <b>some sort of error ocurred gathering team data</b>
+            profile_id {{ profile_id }}
+            p_one_id {{ p_one_id }}
+            p_two_id {{ p_two_id }}
+            team_status {{ team_status }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      {% if profile_id == user_id %}
+        <li> You are not on any teams! Ask someone to <a href='/players'>team up?</a></li>
+      {% else %}
+        {% if anonymous %}
+            <li> {{ profile_name }} is not on any teams.
+        {% else %}
+            <li> {{ profile_name }} is not on any teams, why not <a href='/teamup/{{ profile_id }}'>team up?</a>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  </ul>
+</div>
+<h2>Game History</h2>
+{% include '_history.html' %}
+</div>
+{% endblock %}
