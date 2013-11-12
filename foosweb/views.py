@@ -95,24 +95,18 @@ class SignupView(FlaskView):
         data = pd.GetSignupData(current_user, '/signup')
         return render_pretty('signup.html', **data)
 
+    #TODO: protect this route from logged in users
     @route('/signup', methods = ['POST'])
     def process_signup(self):
-        pd = PlayerData()
-        auth = Auth()
+        bd = BaseData()
+        data = bd.GetBaseData(current_user, '/signup')
         signup_form = SignupForm(request.form)
         if signup_form.validate():
-            new_player = pd.ValidateNewPlayer(signup_form)
-            if isinstance(new_player, basestring):
-                flash(new_player, 'alert-warning')
-                return redirect(url_for('SignupView:show_signup'))
-            else:
-                if new_player is not None:
-                    login_user(new_player)
-                    auth.Login(new_player)
-                    flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
-                    return redirect(url_for('FoosView:index'))
+            new_player = pd.AddNewPlayer(request.form)
+            flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
+            return redirect(url_for('FoosView:index'))
         else:
-            return render_pretty('signup.html', signup_form=signup_form)
+            return render_pretty('signup.html', signup_form=signup_form, **data)
 
 class AuthView(FlaskView):
     """process logins and logouts"""
@@ -127,7 +121,7 @@ class AuthView(FlaskView):
         data = bd.GetBaseData(current_user, '/login')
         loginform = LoginForm(request.form)
         if loginform.validate():
-            if auth.ValidateLogin(**request.form.to_dict()):
+            if loginform.validate_login():
                 player=auth.GetPlayerByEmail(loginform.email.data)
                 login_user(player)
                 auth.Login(player)
@@ -217,24 +211,17 @@ class TeamupView(FlaskView):
     @route('/teamup/<int:teamup_with_id>', methods=['POST'])
     @login_required
     def process_teamup_form(self, teamup_with_id):
-        pd = PlayerData()
         td = TeamData()
-        profile_name = pd.GetNameByID(teamup_with_id)
-        teamup_form = TeamupForm(request.form)
-        if teamup_form.validate():
-            msg = td.ValidateInvite(from_player=current_user.id, to_player=teamup_with_id, team_name=teamup_form.team_name.data)
-            if msg is None:
-                if td.SendInvite(from_player=current_user.id, to_player=teamup_with_id, team_name=teamup_form.team_name.data):
-                    flash('%s has been invited to join you on team %s!' % (profile_name, teamup_form.team_name.data), 'alert-success')
-                else:
-                    flash('Error sending invite!', 'alert-danger')
-                return redirect(url_for('FoosView:index'))
+        data = td.GetTeamupData(current_user, '/teamup/%s' % (str(teamup_with_id)), teamup_with_id)
+        data['teamup_form'] = TeamupForm(request.form)
+        if data['teamup_form'].validate() and data['teamup_form'].validate_invite(current_user.id, teamup_with_id):
+            if td.SendInvite(from_player=current_user.id, to_player=teamup_with_id, team_name=teamup_form.team_name.data):
+                flash('%s has been invited to join you on team %s!' % (profile_name, teamup_form.team_name.data), 'alert-success')
             else:
-                flash(msg, 'alert-warning')
-                return redirect(url_for('FoosView:index'))
+                flash('Error sending invite!', 'alert-danger')
+            return redirect(url_for('FoosView:index'))
         else:
-            flash('Error processing form', 'alert-danger')
-            return redirect(request.referrer or url_for('FoosView:index'))
+            return render_pretty('teamup.html', **data)
 
     @route('/teamup/invites')
     @login_required

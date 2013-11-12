@@ -184,39 +184,12 @@ class PlayerData():
 
         return base_data
 
-    def ValidateNewPlayer(self, signup_form):
-        check = None
-        if signup_form.name.data == '':
-            return 'Please enter your name'
-        else:
-            try:
-                check = self.session.query(Player).filter(Player.name == signup_form.name.data).all()
-            except Exception, e:
-                log.error('Exception %s thrown trying to validate new player name %s' % (repr(e), signup_form.name.data))
+    def AddNewPlayer(self, signup_form):
+        if signup_form['password'] != '':
+            if signup_form['password'] == signup_form['confirm_pass']:
+                hashed_pass = make_hash(signup_form['password'])
 
-        if check is not None:
-            if len(check) > 0:
-                return 'A player by that name is already registered, please choose another name'
-
-        if signup_form.email.data == '':
-            return 'Please enter your email address'
-        elif signup_form.email.data.find('@') < 0:
-            return 'Please enter a valid email address'
-        else:
-            try:
-                check = self.session.query(Player).filter(Player.email == signup_form.name.email).all()
-            except Exception, e:
-                log.error('Exception %s thrown trying to validate new player email %s' % (repr(e), signup_form.email.data))
-
-        if check is not None:
-            if len(check) > 0:
-                return 'An account with that email address already exists, try a password reset?'
-
-        if signup_form.password.data != '':
-            if signup_form.password.data == signup_form.confirm_pass.data:
-                hashed_pass = make_hash(signup_form.password.data)
-
-        new_player = Player(signup_form.name.data, signup_form.email.data, hashed_pass)
+        new_player = Player(signup_form['name'], signup_form['email'], hashed_pass)
         self.session.add(new_player)
         self.session.commit()
         return new_player
@@ -308,39 +281,6 @@ class TeamData():
         retvals['teamup_form'] = TeamupForm()
 
         return dict(retvals.items() + base_data.items())
-
-    def ValidateInvite(self, from_player=-1, to_player=-1, team_name=''):
-        """return None if invite checks out, returns error message if not"""
-        if from_player == to_player:
-            return 'One is the loneliest number ...'
-
-        if team_name == '' or team_name is None:
-            return 'Gonna need to call yourselves something!'
-
-        #sanity
-        auth = Auth()
-        if (auth.GetPlayerByID(from_player) is None or auth.GetPlayerByID(to_player) is None):
-            return
-
-        try:
-            team_check1 = self.session.query(Team).filter(Team.player_one == from_player).filter(Team.player_two == to_player).all()
-            team_check2 = self.session.query(Team).filter(Team.player_one == to_player).filter(Team.player_two == from_player).all()
-        except Exception, e:
-            log.error('Something horrible happened trying to verify teams for p_id %s & p_id %s' % (from_player, to_player))
-            return
-
-        #TODO: customize message to team status (Pending AND Cancelled)
-        if team_check1 or team_check2:
-            return "You and %s are already a team!" % (self.pd.GetNameByID(to_player))
-
-        try:
-            name_check = self.session.query(Team).filter(Team.name == team_name).all()
-        except Exception, e:
-            log.error('Something horrible happened trying to verify team name %s' % (team_name))
-            return
-
-        if name_check:
-            return "Sorry, there's already a team called %s" % (team_name)
 
     def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
         team = Team(from_player, to_player, team_name)
@@ -467,17 +407,6 @@ class Auth():
 
         reset_link = 'http://%s/pw_reset/%s' % (server_name, reset_hash)
         return reset_link
-
-    def ValidateLogin(self, **kwargs):
-        password = kwargs['password']
-        email = str(kwargs['email']).strip().lower()
-        try:
-            player = self.session.query(Player).filter_by(email=email).one()
-        except NoResultFound:
-            return
-
-        if check_hash(password, player.password):
-            return True
 
     def Login(self, player):
         player.authenticated = True
