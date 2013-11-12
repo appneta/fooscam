@@ -75,14 +75,6 @@ PassResetView.register(app)
 AjaxScoreView.register(app)
 AjaxPlayersView.register(app)
 
-@app.route('/test')
-def test():
-    auth = Auth()
-    if auth.ForgotPassword(mail, 'guest@appneta.com', app.config['SERVER_NAME']):
-        return 'cool'
-    else:
-        return 'weak'
-
 if __name__ == '__main__':
     app.config.from_object('config.Dev')
     mail = Mail(app)
