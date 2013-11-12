@@ -5,12 +5,7 @@ from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager
 from flask_wtf.csrf import CsrfProtect
 
-#old ajax views
-from views import LiveHistory, Status, PlayerHistory
-#new ajax views
-from views import AjaxScoreView, AjaxPlayersView
-#template rendered views
-from views import PlayersView, TeamsView, FoosView, HistoryView, ReadmeView, AdminView, AuthView, TeamupView, PassResetView, TournamentsView
+from views import *
 from controllers import Auth
 import logging
 import pdb
@@ -73,6 +68,7 @@ AdminView.register(app)
 TeamupView.register(app)
 TournamentsView.register(app)
 PassResetView.register(app)
+SettingsView.register(app)
 AjaxScoreView.register(app)
 AjaxPlayersView.register(app)
 

@@ -1,11 +1,10 @@
 import unittest
-from foosweb import views
-
-pdb.set_trace()
+import pdb
+from foosweb.app import app
 
 class FoosTest(unittest.TestCase):
     def setUp(self):
-        pass
+        app.config['TESTING'] = True
 
     def tearDown(self):
         pass
