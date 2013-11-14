@@ -6,6 +6,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(_basedir, 'foosball.db')
+    SECRET_KEY = 'too many secrets'
 
 class Dev(Config):
     DEBUG = True

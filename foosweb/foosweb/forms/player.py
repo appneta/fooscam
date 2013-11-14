@@ -2,6 +2,9 @@ from flask import flash
 from flask.ext.wtf import Form
 from wtforms import TextField, IntegerField, PasswordField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
+from werkzeug import check_password_hash
+
+from foosweb.models.player import Player
 
 import logging
 import pdb
@@ -14,14 +17,10 @@ class LoginForm(Form):
 
     def validate_login(self):
         email = str(self.email.data).strip().lower()
-        session = get_db_session()
-        try:
-            player = session.query(Player).filter_by(email=email).one()
-        except NoResultFound:
-            return
-
-        if check_hash(self.password.data, player.password):
-            return True
+        player = Player.query.filter_by(email=email).one()
+        if player is not None:
+            if check_password_hash(player.password, self.password.data):
+                return True
 
 class RequestResetForm(Form):
     email = TextField('Email address', validators = [DataRequired(), Email(message='Please enter a valid email address.')])

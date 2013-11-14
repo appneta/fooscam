@@ -7,6 +7,7 @@ from flask.ext.login import current_user, logout_user, login_user, login_require
 from foosweb.app import db
 from foosweb.forms.player import LoginForm, SignupForm
 from foosweb.models.player import Player
+from foosweb.controllers.base import BaseData
 
 mod = Blueprint('players', __name__, url_prefix='/players')
 
@@ -26,18 +27,20 @@ def render_pretty(template_name, **kwargs):
 def self_profile():
     return render_pretty('profile.html')
 
-"""@mod.route('/')
-def index(self):
-    pd = PlayerData()
-    data = pd.GetAllPlayersData(current_user, '/players')
+@mod.route('/')
+def index():
+    data = BaseData.GetBaseData()
+    #pd = PlayerData()
+    #data = pd.GetAllPlayersData(current_user, '/players')
     return render_pretty('players.html', **data)
-@route('/players/<int:profile_id>', methods = ['GET'])
-def get(self, profile_id):
-    pd = PlayerData()
-    profile = pd.GetProfileData(current_user, '/players/%s' % (str(profile_id)), profile_id)
-    return render_pretty('player_view.html', **profile)
 
-class SignupView(FlaskView):
+@mod.route('/<int:profile_id>')
+def get(profile_id):
+    #pd = PlayerData()
+    #profile = pd.GetProfileData(current_user, '/players/%s' % (str(profile_id)), profile_id)
+    return render_pretty('player_view.html')
+
+"""class SignupView(FlaskView):
     route_base = '/'
 
     @route('/signup', methods = ['GET'])

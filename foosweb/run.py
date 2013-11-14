@@ -1,2 +1,2 @@
-from foosweb.app import foosapp
-foosapp.run(debug=True)
+from foosweb.app import app
+app.run(debug=True)
