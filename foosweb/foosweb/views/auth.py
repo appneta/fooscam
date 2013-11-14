@@ -42,29 +42,23 @@ def logout():
     flash('Logged out', 'alert-info')
     return redirect(request.referrer or url_for('FoosView:index'))
 
-"""class SignupView(FlaskView):
-    route_base = '/'
+@mod.route('/signup', methods = ['GET'])
+def show_signup(self):
+    pd = PlayerData()
+    data = pd.GetSignupData(current_user, '/signup')
+    return render_pretty('signup.html', **data)
 
-    @route('/signup', methods = ['GET'])
-    def show_signup(self):
-        pd = PlayerData()
-        data = pd.GetSignupData(current_user, '/signup')
-        return render_pretty('signup.html', **data)
-
-    #TODO: protect this route from logged in users
-    @route('/signup', methods = ['POST'])
-    def process_signup(self):
-        pd = PlayerData()
-        bd = BaseData()
-        data = bd.GetBaseData(current_user, '/signup')
-        signup_form = SignupForm(request.form)
-        if signup_form.validate():
-            new_player = pd.AddNewPlayer(request.form)
-            flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
-            return redirect(url_for('FoosView:index'))
-        else:
-            return render_pretty('signup.html', signup_form=signup_form, **data)"""
-
+#TODO: protect this route from logged in users
+@mod.route('/signup', methods = ['POST'])
+def process_signup(self):
+    pd = PlayerData()
+    signup_form = SignupForm(request.form)
+    if signup_form.validate():
+        new_player = pd.AddNewPlayer(request.form)
+        flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
+        return redirect(url_for('FoosView:index'))
+    else:
+        return render_pretty('signup.html', signup_form=signup_form, **data)
 
 """class PassResetView(FlaskView):
     route_base = '/'
