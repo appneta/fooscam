@@ -39,6 +39,7 @@ assets.register('players_css', players_css)
 #import this after db is initualized above
 from foosweb.views.player import mod as playersModule
 from foosweb.views.auth import mod as authModule
+from foosweb.views.foos import mod as foosModule
 from foosweb.models.player import Player
 
 @lm.user_loader
@@ -47,3 +48,4 @@ def user_loader(id):
 
 app.register_blueprint(playersModule)
 app.register_blueprint(authModule)
+app.register_blueprint(foosModule)

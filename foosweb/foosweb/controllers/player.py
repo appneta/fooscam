@@ -179,7 +179,7 @@ class PlayerData():
         return base_data
 
     def AddNewPlayer(self, signup_form):
-        hashed_pass = generate_password_hash(signup_form['password'])
+        hashed_pass = generate_password_hash(signup_form['password'], method='pbkdf2:sha256:10000')
         new_player = Player(signup_form['name'], signup_form['email'], hashed_pass)
         db.session.add(new_player)
         db.session.commit()

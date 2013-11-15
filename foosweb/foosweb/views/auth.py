@@ -42,25 +42,7 @@ def logout():
     flash('Logged out', 'alert-info')
     return redirect(request.referrer or url_for('FoosView:index'))
 
-"""@mod.route('/signup', methods = ['GET'])
-def show_signup(self):
-    pd = PlayerData()
-    data = pd.GetSignupData(current_user, '/signup')
-    return render_pretty('signup.html', **data)
-
-#TODO: protect this route from logged in users
-@mod.route('/signup', methods = ['POST'])
-def process_signup(self):
-    pd = PlayerData()
-    signup_form = SignupForm(request.form)
-    if signup_form.validate():
-        new_player = pd.AddNewPlayer(request.form)
-        flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
-        return redirect(url_for('FoosView:index'))
-    else:
-        return render_pretty('signup.html', signup_form=signup_form, **data)
-
-class PassResetView(FlaskView):
+"""class PassResetView(FlaskView):
     route_base = '/'
 
     @route('/pw_reset')
@@ -99,23 +81,3 @@ class PassResetView(FlaskView):
             flash('That reset link has expired', 'alert-warning')
             return redirect(url_for('FoosView:index'))"""
 
-"""class SettingsView(FlaskView):
-    route_base = '/'
-
-    @route('/settings', methods=['GET'])
-    @login_required
-    def show_settings(self):
-        pd = PlayerData()
-        data = pd.GetSettingsData(current_user, '/settings')
-        return render_pretty('player_settings.html',  **data)
-
-    @route('/settings', methods=['POST'])
-    def process_settings(self):
-        pd = PlayerData()
-        settings_form = SettingsForm(request.form)
-        if settings_form.validate():
-            if pd.SetSettingsData(settings_form, current_user):
-                flash('Settings saved', 'alert-success')
-        else:
-            flash('Invalid settings', 'alert-danger')
-        return redirect(url_for('SettingsView:show_settings'))"""
