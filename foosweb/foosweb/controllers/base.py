@@ -1,3 +1,4 @@
+from flask import g
 from foosweb.forms.player import LoginForm
 from flask.ext.login import current_user
 
@@ -14,7 +15,7 @@ class BaseData():
         #self.auth = Auth()
 
     @classmethod
-    def GetBaseData(self, current_view=None):
+    def GetBaseData(self):
         data = {}
         data['menu'] = self.menu_items
         if current_user.is_authenticated():
@@ -27,7 +28,7 @@ class BaseData():
             data['anonymous'] = True
             data['id'] = -1
             data['loginform'] = LoginForm()
-
-        data['current_view'] = current_view
+        #TODO: fix this and templates to be consistent (menu_item > current_view)
+        data['current_view'] = g.get('menu_item', None)
 
         return data

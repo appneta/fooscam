@@ -42,7 +42,7 @@ def logout():
     flash('Logged out', 'alert-info')
     return redirect(request.referrer or url_for('FoosView:index'))
 
-@mod.route('/signup', methods = ['GET'])
+"""@mod.route('/signup', methods = ['GET'])
 def show_signup(self):
     pd = PlayerData()
     data = pd.GetSignupData(current_user, '/signup')
@@ -60,7 +60,7 @@ def process_signup(self):
     else:
         return render_pretty('signup.html', signup_form=signup_form, **data)
 
-"""class PassResetView(FlaskView):
+class PassResetView(FlaskView):
     route_base = '/'
 
     @route('/pw_reset')

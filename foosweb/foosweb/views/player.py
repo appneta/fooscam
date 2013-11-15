@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, flash, session, redirect, url_for
+from flask import Blueprint, request, render_template, flash, session, redirect, url_for, g
 
 from BeautifulSoup import BeautifulSoup as bs
 
@@ -6,8 +6,9 @@ from flask.ext.login import current_user, logout_user, login_user, login_require
 
 from foosweb.app import db
 from foosweb.forms.player import LoginForm, SignupForm
-from foosweb.models.player import Player
+#from foosweb.models.player import Player
 from foosweb.controllers.base import BaseData
+from foosweb.controllers.player import PlayerData
 
 mod = Blueprint('players', __name__, url_prefix='/players')
 
@@ -29,6 +30,7 @@ def self_profile():
 
 @mod.route('/')
 def index():
+    g.menu_item = '/players'
     data = BaseData.GetBaseData()
     #pd = PlayerData()
     #data = pd.GetAllPlayersData(current_user, '/players')
@@ -40,30 +42,26 @@ def get(profile_id):
     #profile = pd.GetProfileData(current_user, '/players/%s' % (str(profile_id)), profile_id)
     return render_pretty('player_view.html')
 
-"""class SignupView(FlaskView):
-    route_base = '/'
+@mod.route('/signup', methods = ['GET'])
+def show_signup():
+    data = PlayerData.GetSignupData()#current_user, '/signup')
+    return render_pretty('signup.html', **data)
 
-    @route('/signup', methods = ['GET'])
-    def show_signup(self):
-        pd = PlayerData()
-        data = pd.GetSignupData(current_user, '/signup')
-        return render_pretty('signup.html', **data)
+#TODO: protect this route from logged in users
+@mod.route('/signup', methods = ['POST'])
+def process_signup(self):
+    pd = PlayerData()
+    bd = BaseData()
+    data = bd.GetBaseData(current_user, '/signup')
+    signup_form = SignupForm(request.form)
+    if signup_form.validate():
+        new_player = pd.AddNewPlayer(request.form)
+        flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
+        return redirect(url_for('FoosView:index'))
+    else:
+        return render_pretty('signup.html', signup_form=signup_form, **data)
 
-    #TODO: protect this route from logged in users
-    @route('/signup', methods = ['POST'])
-    def process_signup(self):
-        pd = PlayerData()
-        bd = BaseData()
-        data = bd.GetBaseData(current_user, '/signup')
-        signup_form = SignupForm(request.form)
-        if signup_form.validate():
-            new_player = pd.AddNewPlayer(request.form)
-            flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
-            return redirect(url_for('FoosView:index'))
-        else:
-            return render_pretty('signup.html', signup_form=signup_form, **data)
-
-class AuthView(FlaskView):
+"""class AuthView(FlaskView):
     process logins and logouts
     route_base = '/'
     def index(self):
