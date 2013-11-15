@@ -5,7 +5,7 @@ from BeautifulSoup import BeautifulSoup as bs
 from flask.ext.login import current_user, logout_user, login_user, login_required
 
 from foosweb.app import db
-from foosweb.forms.player import LoginForm, SignupForm
+from foosweb.forms.player import LoginForm, SignupForm, RequestResetForm
 from foosweb.models.player import Player
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.auth import Auth
@@ -42,42 +42,37 @@ def logout():
     flash('Logged out', 'alert-info')
     return redirect(request.referrer or url_for('FoosView:index'))
 
-"""class PassResetView(FlaskView):
-    route_base = '/'
+@mod.route('/pw_reset')
+def request_password_reset():
+    data = BaseData.GetBaseData()
+    request_reset_form = RequestResetForm()
+    return render_pretty('request_reset.html', request_reset_form = request_reset_form, **data)
 
-    @route('/pw_reset')
-    def request_password_reset(self):
-        bd = BaseData()
-        data = bd.GetBaseData(current_user, '/pw_reset')
-        request_reset_form = RequestResetForm()
-        return render_pretty('request_reset.html', request_reset_form = request_reset_form, **data)
-
-    @route('/pw_reset/request', methods=['POST'])
-    def create_password_reset(self):
-        request_reset_form = RequestResetForm(request.form)
-        if request_reset_form.validate():
-            auth = Auth()
-            mail = current_app.extensions['mail']
-            if auth.ForgotPassword(mail, request_reset_form.email.data, current_app.config['SERVER_NAME']):
-                flash('Password reset sent.', 'alert-success')
-            else:
-                flash('User not found.', 'alert-danger')
-        return redirect(url_for('FoosView:index'))
-
-    @route('/pw_reset/<string:reset_hash>', methods=['GET'])
-    def new_password_form(self, reset_hash):
-        bd = BaseData()
-        data = bd.GetBaseData(current_user, '/pw_reset')
+@mod.route('/pw_reset/request', methods=['POST'])
+def create_password_reset(self):
+    request_reset_form = RequestResetForm(request.form)
+    if request_reset_form.validate():
         auth = Auth()
-        pd = PlayerData()
-        player = auth.GetPlayerByResetHash(reset_hash)
-        if player is not None:
-            login_user(player)
-            auth.Login(player)
-            auth.InvalidatePasswordResets(player.id)
-            flash('Hi %s, you should change your password right now!' % (player.name), 'alert-danger')
-            return redirect(url_for('SettingsView:show_settings'))
+        mail = current_app.extensions['mail']
+        if auth.ForgotPassword(mail, request_reset_form.email.data, current_app.config['SERVER_NAME']):
+            flash('Password reset sent.', 'alert-success')
         else:
-            flash('That reset link has expired', 'alert-warning')
-            return redirect(url_for('FoosView:index'))"""
+            flash('User not found.', 'alert-danger')
+    return redirect(url_for('FoosView:index'))
 
+@mod.route('/pw_reset/<string:reset_hash>', methods=['GET'])
+def new_password_form(self, reset_hash):
+    bd = BaseData()
+    data = bd.GetBaseData(current_user, '/pw_reset')
+    auth = Auth()
+    pd = PlayerData()
+    player = auth.GetPlayerByResetHash(reset_hash)
+    if player is not None:
+        login_user(player)
+        auth.Login(player)
+        auth.InvalidatePasswordResets(player.id)
+        flash('Hi %s, you should change your password right now!' % (player.name), 'alert-danger')
+        return redirect(url_for('SettingsView:show_settings'))
+    else:
+        flash('That reset link has expired', 'alert-warning')
+        return redirect(url_for('FoosView:index'))

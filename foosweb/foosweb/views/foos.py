@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, flash, session, redirect, url_for, g
+from flask import Blueprint, request, flash, session, redirect, url_for, g
 from flask.ext.login import current_user, logout_user, login_user, login_required
 from foosweb.utils import render_pretty
 
