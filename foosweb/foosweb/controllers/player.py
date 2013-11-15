@@ -1,6 +1,8 @@
+from foosweb.app import db
 from foosweb.models.player import Player
 from foosweb.controllers.base import BaseData
 from foosweb.forms.player import  SignupForm
+from werkzeug.security import generate_password_hash
 
 from hashlib import md5
 import pdb
@@ -177,13 +179,10 @@ class PlayerData():
         return base_data
 
     def AddNewPlayer(self, signup_form):
-        if signup_form['password'] != '':
-            if signup_form['password'] == signup_form['confirm_pass']:
-                hashed_pass = make_hash(signup_form['password'])
-
+        hashed_pass = generate_password_hash(signup_form['password'])
         new_player = Player(signup_form['name'], signup_form['email'], hashed_pass)
-        self.session.add(new_player)
-        self.session.commit()
+        db.session.add(new_player)
+        db.session.commit()
         return new_player
 
     def GetHistory(self,id=None, formatted=False, count=False):

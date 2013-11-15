@@ -2,10 +2,11 @@ from flask import Blueprint, request, render_template, flash, session, redirect,
 from flask.ext.login import current_user, logout_user, login_user, login_required
 from BeautifulSoup import BeautifulSoup as bs
 
-from foosweb.app import db
+#from foosweb.app import db
 from foosweb.forms.player import LoginForm, SignupForm
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
+from foosweb.controllers.auth import Auth
 
 mod = Blueprint('players', __name__, url_prefix='/players')
 
@@ -46,15 +47,17 @@ def show_signup():
 
 #TODO: protect this route from logged in users
 @mod.route('/signup', methods = ['POST'])
-def process_signup(self):
-    pd = PlayerData()
-    bd = BaseData()
-    data = bd.GetBaseData(current_user, '/signup')
+def process_signup():
+    data = BaseData.GetBaseData()
     signup_form = SignupForm(request.form)
     if signup_form.validate():
+        pd = PlayerData()
         new_player = pd.AddNewPlayer(request.form)
+        login_user(new_player)
+        Auth.Login(new_player)
         flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
-        return redirect(url_for('FoosView:index'))
+        #return redirect(url_for('FoosView:index'))
+        return redirect(url_for('players.index'))
     else:
         return render_pretty('signup.html', signup_form=signup_form, **data)
 

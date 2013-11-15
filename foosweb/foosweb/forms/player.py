@@ -48,10 +48,10 @@ class SettingsForm(Form):
 class SignupForm(Form):
     name = TextField('Name', validators = [DataRequired(message='Enter your name')])
     email = TextField('Email address', validators = [DataRequired(message='Change your email address.'), Email(message='Please enter a valid email address.')])
-    password = PasswordField('Password')
+    password = PasswordField('Password', [DataRequired(message='You must create a password')])
     confirm_pass = PasswordField('Confirm password', validators = [ \
         DataRequired('Confirm your new password'),
-        EqualTo('Password', message='Passwords must match')])
+        EqualTo('password', message='Passwords must match')])
 
     def validate_name(self, name):
         check = Player.query.filter(Player.name == name.data).first()
