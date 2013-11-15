@@ -5,7 +5,7 @@
 <div id='signup' class='container'>
 <h1>Sign Up For FoosView</h1>
 {% from '_formhelpers.html' import render_field %}
-<form id='signup-form' method='post' action='/signup'>
+<form id='signup-form' method='post' action='/players/signup'>
 {{ signup_form.csrf_token }}
 <div class="row"><div class='col-lg-3'>
 {{ render_field(signup_form.name, class='form-control', placeholder='Enter your name') }}

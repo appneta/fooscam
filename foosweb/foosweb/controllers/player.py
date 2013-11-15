@@ -1,5 +1,8 @@
+from foosweb.models.player import Player
 from foosweb.controllers.base import BaseData
 from foosweb.forms.player import  SignupForm
+
+from hashlib import md5
 import pdb
 
 import logging
@@ -34,6 +37,10 @@ class PlayerData():
             return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
         else:
              return ''
+
+    def _player_gravatar_url(self, player, size=80):
+        g_hash = md5(player.email).hexdigest()
+        return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
 
     def _make_gravatar_url(self, email, size=80):
         if email is not None:
@@ -98,16 +105,16 @@ class PlayerData():
             id['rd'] = self.GetNameByID(id['rd'])
             return id
 
-    def GetAllPlayersData(self, current_user, current_view):
+    def GetAllPlayersData(self):
         data = {}
         data['all_players'] = []
-        all_players = self.session.query(Player).all()
+        all_players = Player.query.all()
 
         for player in all_players:
             if player.id != -1 and player.name != 'Guest':
-                data['all_players'].append((player.id, player.name,  self._get_gravatar_url_by_id(player.id, size=200)))
+                data['all_players'].append((player.id, player.name, self._player_gravatar_url(player, size=200)))
 
-        base_data = self.bd.GetBaseData(current_user, current_view)
+        base_data = BaseData.GetBaseData()
 
         return dict(data.items() + base_data.items())
 

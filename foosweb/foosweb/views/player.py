@@ -1,12 +1,9 @@
 from flask import Blueprint, request, render_template, flash, session, redirect, url_for, g
-
-from BeautifulSoup import BeautifulSoup as bs
-
 from flask.ext.login import current_user, logout_user, login_user, login_required
+from BeautifulSoup import BeautifulSoup as bs
 
 from foosweb.app import db
 from foosweb.forms.player import LoginForm, SignupForm
-#from foosweb.models.player import Player
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
 
@@ -18,23 +15,23 @@ import json
 import pdb
 import logging
 
-log = logging.getLogger('gamewatch')
+log = logging.getLogger(__name__)
 
 def render_pretty(template_name, **kwargs):
     soup = bs(render_template(template_name, **kwargs)).prettify()
     return soup
 
-@mod.route('/me')
-def self_profile():
-    return render_pretty('profile.html')
-
 @mod.route('/')
 def index():
     g.menu_item = '/players'
-    data = BaseData.GetBaseData()
-    #pd = PlayerData()
-    #data = pd.GetAllPlayersData(current_user, '/players')
+    #data = BaseData.GetBaseData()
+    pd = PlayerData()
+    data = pd.GetAllPlayersData()
     return render_pretty('players.html', **data)
+
+@mod.route('/me')
+def self_profile():
+    return render_pretty('profile.html')
 
 @mod.route('/<int:profile_id>')
 def get(profile_id):
