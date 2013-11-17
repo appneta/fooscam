@@ -10,9 +10,6 @@ from datetime import datetime, timedelta
 from hashlib import md5
 import pdb
 
-import logging
-log = logging.getLogger(__name__)
-
 #TODO: game state controller
 
 class PlayerData():

@@ -6,9 +6,6 @@ from foosweb.utils import render_pretty
 mod = Blueprint('readme', __name__)
 
 import pdb
-import logging
-
-log = logging.getLogger(__name__)
 
 @mod.route('/readme')
 def show_readme():

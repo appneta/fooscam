@@ -7,10 +7,7 @@ from werkzeug import check_password_hash
 
 from foosweb.models import Player, Team
 
-import logging
 import pdb
-
-log = logging.getLogger(__name__)
 
 class TeamupForm(Form):
     team_name = TextField('Team Name', validators = [DataRequired(message='Please enter a team name')])

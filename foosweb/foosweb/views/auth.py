@@ -13,9 +13,6 @@ from foosweb.controllers.auth import Auth
 mod = Blueprint('auth', __name__)
 
 import pdb
-import logging
-
-log = logging.getLogger(__name__)
 
 def render_pretty(template_name, **kwargs):
     soup = bs(render_template(template_name, **kwargs)).prettify()

@@ -9,10 +9,6 @@ from foosweb.utils import render_pretty
 import logging
 import pdb
 
-log = logging.getLogger('gamewatch')
-log.setLevel(logging.DEBUG)
-log.addHandler(logging.StreamHandler())
-
 app = Flask(__name__)
 app.config.from_object('config.Dev')
 

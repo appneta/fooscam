@@ -9,9 +9,6 @@ from foosweb.utils import render_pretty
 mod = Blueprint('teams', __name__, url_prefix='/teams')
 
 import pdb
-import logging
-
-log = logging.getLogger(__name__)
 
 @mod.route('/')
 def index():

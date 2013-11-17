@@ -4,11 +4,11 @@ from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
 from foosweb.forms.team import TeamupForm
 
+from flask import current_app
 from flask.ext.login import current_user
 import pdb
 
 import logging
-log = logging.getLogger(__name__)
 
 class TeamData():
     def __init__(self):
@@ -16,20 +16,20 @@ class TeamData():
 
     def _get_team_total_wins(self, team):
         try:
-           red_games1 = self.session.query(Game).filter(Game.red_off == team.player_one).\
+           red_games1 = Game.query.filter(Game.red_off == team.player_one).\
                 filter(Game.red_def == team.player_two).\
                 filter(Game.winner == 'red').count()
-           red_games2 = self.session.query(Game).filter(Game.red_off == team.player_two).\
+           red_games2 = Game.query.filter(Game.red_off == team.player_two).\
                 filter(Game.red_def == team.player_one).\
                 filter(Game.winner == 'red').count()
-           blue_games1 = self.session.query(Game).filter(Game.blue_off == team.player_one).\
+           blue_games1 = Game.query.filter(Game.blue_off == team.player_one).\
                 filter(Game.blue_def == team.player_two).\
                 filter(Game.winner == 'blue').count()
-           blue_games2 = self.session.query(Game).filter(Game.blue_off == team.player_two).\
+           blue_games2 = Game.query.filter(Game.blue_off == team.player_two).\
                 filter(Game.blue_def == team.player_one).\
                 filter(Game.winner == 'blue').count()
         except Exception, e:
-            log.error('Exception %s occurred looking up games for team %s' % (repr(e), team.id))
+            current_app.logger.error('Exception %s occurred looking up games for team %s' % (repr(e), team.id))
             return
 
         return red_games1 + red_games2 + blue_games1 + blue_games2

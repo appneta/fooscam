@@ -7,9 +7,6 @@ from foosweb.controllers.base import BaseData
 mod = Blueprint('foos', __name__)
 
 import pdb
-import logging
-
-log = logging.getLogger(__name__)
 
 @mod.route('/')
 def index():

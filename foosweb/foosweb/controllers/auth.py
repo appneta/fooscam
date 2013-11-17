@@ -8,8 +8,6 @@ import os
 from hashlib import md5
 
 import pdb
-import logging
-log = logging.getLogger('gamewatch')
 
 class Auth():
     def _is_admin(self, user_id):
@@ -23,7 +21,7 @@ class Auth():
         except NoResultFound:
             return
         except Exception, e:
-            log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(user_id)))
+            current_app.logger.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(user_id)))
             return
 
         if admin is not None:
@@ -68,7 +66,7 @@ class Auth():
         if player is not None:
             reset_link = self._make_pw_reset_link(player.id, server_name)
         else:
-            log.debug('player %s not found in player db' % (user_email))
+            current_app.logger.debug('player %s not found in player db' % (user_email))
             return
         msg = Message(subject='Foosview password reset', recipients = [user_email],\
             body='Your Foosview password reset link is %s' % (reset_link))
@@ -76,7 +74,7 @@ class Auth():
         try:
             mail.send(msg)
         except Exception, e:
-            log.error('Exception %s sending password reset email to %s' % (repr(e), player.email))
+            current_app.logger.error('Exception %s sending password reset email to %s' % (repr(e), player.email))
             return
 
         return True
@@ -120,7 +118,7 @@ class Auth():
                 except NoResultFound:
                     return redirect(url_for('FoosView:index'))
                 except Exception, e:
-                    log.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
+                    current_app.logger.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
                     return redirect(url_for('FoosView:index'))
                 if admin is not None:
                     return func(*args, **kwargs)

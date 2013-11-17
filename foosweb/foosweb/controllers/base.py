@@ -3,12 +3,12 @@ from foosweb.forms.player import LoginForm
 from flask.ext.login import current_user
 
 import pdb
-import logging
-log = logging.getLogger(__name__)
 
 class BaseData():
     """base data, populates base.html template based on current user"""
-    menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('Tournaments', '/tournaments'), ('History', '/history'), ('Readme', '/readme'))
+    #TODO: fix tourney view before adding it back in
+    #menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('Tournaments', '/tournaments'), ('History', '/history'), ('Readme', '/readme'))
+    menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('History', '/history'), ('Readme', '/readme'))
 
     def __init__(self):
         pass
