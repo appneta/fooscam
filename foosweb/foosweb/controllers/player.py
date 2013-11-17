@@ -1,5 +1,5 @@
 from foosweb.app import db
-from foosweb.models.player import Player
+from foosweb.models import Player, Game, Team
 from foosweb.controllers.base import BaseData
 from foosweb.forms.player import  SignupForm
 from werkzeug.security import generate_password_hash
@@ -26,10 +26,9 @@ class PlayerData():
         if player_id == -1:
             return
         else:
-            try:
-                return str(self.session.query(Player.email).filter_by(id=player_id).one()[0])
-            except NoResultFound:
-                return
+            email = Player.query.with_entities(Player.email).filter(Player.id == player_id).first()
+            if email is not None:
+                return email[0]
 
     def _get_gravatar_url_by_id(self, id, size=80):
         email = self._get_email_by_id(id)
@@ -48,31 +47,28 @@ class PlayerData():
         if email is not None:
             return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().lower()).hexdigest(), int(size)
 
-    def GetNameByID(self, player_id):
+    def _get_name_by_id(self, player_id):
         if player_id == -1:
             player_name = 'None'
         else:
-            try:
-                player_name = str(self.session.query(Player.name).filter_by(id=player_id).one()[0])
-            except NoResultFound:
+            player_name = Player.query.with_entities(Player.name).filter_by(id=player_id).first()
+            if player_name is not None:
+                player_name = player_name[0]
+            else:
                 player_name = 'Anonymous'
 
         return player_name
 
 
     def _get_teams_by_player_id(self, id):
-        try:
-            teams = self.session.query(Team).filter((Team.player_one == id) | (Team.player_two == id)).\
+        teams = Team.query.filter((Team.player_one == id) | (Team.player_two == id)).\
             filter(Team.status < Team.STATUS_DECLINED).all()
-        except Exception, e:
-            log.debug('Something horrible happened trying to find teams for player: %s' % (str(id)))
-            return
 
         retvals = []
 
         for team in teams:
-            p_one_name = self.GetNameByID(team.player_one)
-            p_two_name = self.GetNameByID(team.player_two)
+            p_one_name = self._get_name_by_id(team.player_one)
+            p_two_name = self._get_name_by_id(team.player_two)
             retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.name, team.status))
 
         return retvals
@@ -98,13 +94,13 @@ class PlayerData():
             if id == -1:
                 return 'None'
             else:
-                return self.GetNameByID(id)
+                return self._get_name_by_id(id)
 
         if type(id) == dict:
-            id['bo'] = self.GetNameByID(id['bo'])
-            id['bd'] = self.GetNameByID(id['bd'])
-            id['ro'] = self.GetNameByID(id['ro'])
-            id['rd'] = self.GetNameByID(id['rd'])
+            id['bo'] = self._get_name_by_id(id['bo'])
+            id['bd'] = self._get_name_by_id(id['bd'])
+            id['ro'] = self._get_name_by_id(id['ro'])
+            id['rd'] = self._get_name_by_id(id['rd'])
             return id
 
     def GetAllPlayersData(self):
@@ -120,26 +116,22 @@ class PlayerData():
 
         return dict(data.items() + base_data.items())
 
-    def GetProfileData(self, current_user, current_view, profile_id):
+    def GetProfileData(self, profile_id):
         """Get profile data for id and show it to user_id"""
         profile = {}
-        try:
-            profile['ro_wins'] = self.session.query(Game).filter(Game.red_off == profile_id).filter(Game.winner == 'red').count()
-            profile['rd_wins'] = self.session.query(Game).filter(Game.red_def == profile_id).filter(Game.winner == 'red').count()
-            profile['bo_wins'] = self.session.query(Game).filter(Game.blue_off == profile_id).filter(Game.winner == 'blue').count()
-            profile['bd_wins'] = self.session.query(Game).filter(Game.blue_def == profile_id).filter(Game.winner == 'blue').count()
-        except Exception, e:
-            log.error('Failed to get wins from db for id %s with error %s' % (str(id), repr(e)))
-            return
+        profile['ro_wins'] = Game.query.filter(Game.red_off == profile_id).filter(Game.winner == 'red').count()
+        profile['rd_wins'] = Game.query.filter(Game.red_def == profile_id).filter(Game.winner == 'red').count()
+        profile['bo_wins'] = Game.query.filter(Game.blue_off == profile_id).filter(Game.winner == 'blue').count()
+        profile['bd_wins'] = Game.query.filter(Game.blue_def == profile_id).filter(Game.winner == 'blue').count()
 
-        profile['profile_name'] = self.GetNameByID(profile_id)
+        profile['profile_name'] = self._get_name_by_id(profile_id)
         profile['profile_id'] = profile_id
         profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id)
         profile['hist_url'] = '/playerhistjson/' + str(profile_id)
         profile['total_games'] = self.GetHistory(id=profile_id, count=True)
         profile['teams'] = self._get_teams_by_player_id(profile_id)
 
-        base_data = self.bd.GetBaseData(current_user, current_view)
+        base_data = BaseData.GetBaseData()
 
         return dict(profile.items() + base_data.items())
 
@@ -189,26 +181,26 @@ class PlayerData():
         game_history = []
         if id is not None:
             if count:
-                return self.session.query(Game).filter(\
+                return Game.query.filter(\
                         (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
                         order_by(Game.id).count()
             else:
-                for game in self.session.query(Game).filter(\
+                for game in Game.query.filter(\
                         (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
                         order_by(Game.id):
                     game_history.append(game)
         else:
-            for game in self.session.query(Game).order_by(Game.id):
+            for game in Game.query.order_by(Game.id):
                 game_history.append(game)
 
         if formatted:
             retvals = []
             for game in game_history:
                 game_duration = datetime.fromtimestamp(game.ended) - datetime.fromtimestamp(game.started)
-                ro = "<a href='/players/%s'>%s</a>" % (game.red_off, self.GetNameByID(game.red_off))
-                rd = "<a href='/players/%s'>%s</a>" % (game.red_def, self.GetNameByID(game.red_def))
-                bo = "<a href='/players/%s'>%s</a>" % (game.blue_off, self.GetNameByID(game.blue_off))
-                bd = "<a href='/players/%s'>%s</a>" % (game.blue_def, self.GetNameByID(game.blue_def))
+                ro = "<a href='/players/%s'>%s</a>" % (game.red_off, self._get_name_by_id(game.red_off))
+                rd = "<a href='/players/%s'>%s</a>" % (game.red_def, self._get_name_by_id(game.red_def))
+                bo = "<a href='/players/%s'>%s</a>" % (game.blue_off, self._get_name_by_id(game.blue_off))
+                bd = "<a href='/players/%s'>%s</a>" % (game.blue_def, self._get_name_by_id(game.blue_def))
                 retvals.append([ro, rd, bo, bd,
                     game.red_score, game.blue_score, \
                     datetime.fromtimestamp(game.started).strftime('%Y-%m-%d %H:%M:%S'), \

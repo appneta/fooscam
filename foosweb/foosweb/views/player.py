@@ -28,9 +28,9 @@ def self_profile():
 
 @mod.route('/<int:profile_id>')
 def get(profile_id):
-    #pd = PlayerData()
-    #profile = pd.GetProfileData(current_user, '/players/%s' % (str(profile_id)), profile_id)
-    return render_pretty('player_view.html')
+    pd = PlayerData()
+    data = pd.GetProfileData(profile_id)
+    return render_pretty('player_view.html', **data)
 
 @mod.route('/signup', methods = ['GET'])
 def show_signup():

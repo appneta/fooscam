@@ -4,7 +4,7 @@ from wtforms import TextField, IntegerField, PasswordField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 from werkzeug import check_password_hash
 
-from foosweb.models.player import Player
+from foosweb.models import Player
 
 import logging
 import pdb

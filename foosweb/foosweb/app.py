@@ -40,7 +40,7 @@ assets.register('players_css', players_css)
 from foosweb.views.player import mod as playersModule
 from foosweb.views.auth import mod as authModule
 from foosweb.views.foos import mod as foosModule
-from foosweb.models.player import Player
+from foosweb.models import Player
 
 @lm.user_loader
 def user_loader(id):

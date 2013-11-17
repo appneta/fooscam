@@ -6,7 +6,7 @@ from flask.ext.login import current_user, logout_user, login_user, login_require
 
 from foosweb.app import db
 from foosweb.forms.player import LoginForm, SignupForm, RequestResetForm
-from foosweb.models.player import Player
+from foosweb.models import Player
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.auth import Auth
 
@@ -30,17 +30,17 @@ def login():
             login_user(player)
             Auth.Login(player)
             flash('Welcome back to FoosView %s!' % (player.name), 'alert-success')
-            return redirect(request.referrer or url_for('FoosView:index'))
+            return redirect(request.referrer or url_for('foos.index'))
 
     flash('Invalid user id or password.', 'alert-danger')
-    return redirect(request.referrer or url_for('FoosView:index'))
+    return redirect(request.referrer or url_for('foos.index'))
 
 @mod.route('/logout')
 def logout():
     Auth.Logout(current_user)
     logout_user()
     flash('Logged out', 'alert-info')
-    return redirect(request.referrer or url_for('FoosView:index'))
+    return redirect(request.referrer or url_for('foos.index'))
 
 @mod.route('/pw_reset')
 def request_password_reset():
@@ -58,7 +58,7 @@ def create_password_reset(self):
             flash('Password reset sent.', 'alert-success')
         else:
             flash('User not found.', 'alert-danger')
-    return redirect(url_for('FoosView:index'))
+    return redirect(url_for('foos.index'))
 
 @mod.route('/pw_reset/<string:reset_hash>', methods=['GET'])
 def new_password_form(self, reset_hash):
@@ -72,7 +72,7 @@ def new_password_form(self, reset_hash):
         auth.Login(player)
         auth.InvalidatePasswordResets(player.id)
         flash('Hi %s, you should change your password right now!' % (player.name), 'alert-danger')
-        return redirect(url_for('SettingsView:show_settings'))
+        return redirect(url_for('players.show_settings'))
     else:
         flash('That reset link has expired', 'alert-warning')
-        return redirect(url_for('FoosView:index'))
+        return redirect(url_for('foos.index'))
