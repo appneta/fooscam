@@ -2,6 +2,7 @@ from foosweb.app import db
 from foosweb.models import Game, Team
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
+from foosweb.forms.team import TeamupForm
 
 from flask.ext.login import current_user
 import pdb
@@ -52,10 +53,10 @@ class TeamData():
 
         return dict(retvals.items() + base_data.items())
 
-    def GetTeamupData(self, current_user, current_view, teamup_with_id):
+    def GetTeamupData(self, teamup_with_id):
         retvals = {}
-        base_data = self.bd.GetBaseData(current_user, current_view)
-        retvals['profile_name'] = self.pd.GetNameByID(teamup_with_id)
+        base_data = BaseData.GetBaseData()
+        retvals['profile_name'] = self.pd._get_name_by_id(teamup_with_id)
         retvals['profile_id'] = teamup_with_id
         retvals['teamup_form'] = TeamupForm()
 
@@ -63,56 +64,51 @@ class TeamData():
 
     def SendInvite(self, from_player=-1, to_player=-1, team_name=''):
         team = Team(from_player, to_player, team_name)
-        self.session.add(team)
-        self.session.commit()
+        db.session.add(team)
+        db.session.commit()
         return True
 
-    def GetInvitesData(self, current_user, current_view):
-        try:
-            invites = self.session.query(Team).filter(Team.status == Team.STATUS_PENDING).\
-                filter((Team.player_one == current_user.id) | (Team.player_two == current_user.id)).all()
-        except Exception, e:
-            log.error('something horrible happened whily trying to find invites for id %s' % (str(current_user.id)))
-            return
+    def GetInvitesData(self):
+        invites = Team.query.filter(Team.status == Team.STATUS_PENDING).\
+            filter((Team.player_one == current_user.id) | (Team.player_two == current_user.id)).all()
 
         retvals = {}
         retvals['invites'] = []
         for invite in invites:
-            p_one_name = self.pd.GetNameByID(invite.player_one)
-            p_two_name = self.pd.GetNameByID(invite.player_two)
+            p_one_name = self.pd._get_name_by_id(invite.player_one)
+            p_two_name = self.pd._get_name_by_id(invite.player_two)
             retvals['invites'].append((invite.player_one, p_one_name, invite.player_two, p_two_name, invite.name, invite.id))
 
-        base_data = self.bd.GetBaseData(current_user, current_view)
+        base_data = BaseData.GetBaseData()
 
         return dict(retvals.items() + base_data.items())
 
     def AcceptInvite(self, invite_id, user_id):
-        try:
-            invite = self.session.query(Team).filter(Team.id == invite_id).filter(Team.status == Team.STATUS_PENDING).one()
-        except Exception, e:
-            log.error('soemthing horrible happened while trying to RSVP to invite id %s' % (str(invite_id)))
+        invite = Team.query.filter(Team.id == invite_id).filter(Team.status == Team.STATUS_PENDING).first()
+
+        if invite is None:
             return
 
         if invite.player_two == user_id:
             invite.status = Team.STATUS_COMPLETE
-            self.session.add(invite)
-            self.session.commit()
+            db.session.add(invite)
+            db.session.commit()
             return True
 
     def DeclineInvite(self, invite_id, user_id):
-        try:
-            invite = self.session.query(Team).filter(Team.id == invite_id).filter(Team.status == Team.STATUS_PENDING).one()
-        except Exception, e:
-            log.error('soemthing horrible happened while trying to RSVP to invite id %s' % (str(invite_id)))
+        invite = Team.query.filter(Team.id == invite_id).filter(Team.status == Team.STATUS_PENDING).first()
+
+        if invite is None:
             return
 
         if invite.player_two == user_id:
             invite.status = Team.STATUS_DECLINED
-            self.session.add(invite)
-            self.session.commit()
+            db.session.add(invite)
+            db.session.commit()
             return True
+
         elif invite.player_one == user_id:
             invite.status = Team.STATUS_CANCELLED
-            self.session.add(invite)
-            self.session.commit()
+            db.session.add(invite)
+            db.session.commit()
             return True

@@ -10,7 +10,7 @@ from foosweb.models import Player
 import logging
 import pdb
 
-log = logging.getLogger('gamewatch')
+log = logging.getLogger(__name__)
 
 class LoginForm(Form):
     email = TextField('Email address', validators = [DataRequired(), Email(message='Please enter a valid email address.')])
