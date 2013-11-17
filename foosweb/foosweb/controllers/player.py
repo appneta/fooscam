@@ -2,6 +2,7 @@ from foosweb.app import db
 from foosweb.models import Player, Game, Team
 from foosweb.controllers.base import BaseData
 from foosweb.forms.player import  SignupForm, SettingsForm
+from foosweb.gamewatch import GameWatch
 
 from flask.ext.login import current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -65,36 +66,23 @@ class PlayerData():
 
         return retvals
 
-    def GetGravatarURLs(self, id):
-        """get url if id=INT, if id is a dict of current players populate with urls"""
-        if type(id) == int:
-            return self._get_gravatar_url_by_id(id)
-        elif type(id) == dict:
-            id['bo'] = self._get_gravatar_url_by_id(id['bo'])
-            id['bd'] = self._get_gravatar_url_by_id(id['bd'])
-            id['ro'] = self._get_gravatar_url_by_id(id['ro'])
-            id['rd'] = self._get_gravatar_url_by_id(id['rd'])
-            return id
+    def GetCurrentPlayerGravatarURLs(self):
+        gw = GameWatch()
+        urls = gw.CurrentPlayerIDs()
+        urls['bo'] = self._get_gravatar_url_by_id(urls['bo'])
+        urls['bd'] = self._get_gravatar_url_by_id(urls['bd'])
+        urls['ro'] = self._get_gravatar_url_by_id(urls['ro'])
+        urls['rd'] = self._get_gravatar_url_by_id(urls['rd'])
+        return urls
 
-    def GetNames(self):
-        #TODO: this is broken and dumb, just have it figure out current players and return a dict
-        """return a dict of current players populate with names"""
-        if id is None:
-            player_names = self.session.query(Player.name).all()
-            return self._tidy_sa_results(player_names)
-
-        if type(id) == int:
-            if id == -1:
-                return 'None'
-            else:
-                return self._get_name_by_id(id)
-
-        if type(id) == dict:
-            id['bo'] = self._get_name_by_id(id['bo'])
-            id['bd'] = self._get_name_by_id(id['bd'])
-            id['ro'] = self._get_name_by_id(id['ro'])
-            id['rd'] = self._get_name_by_id(id['rd'])
-            return id
+    def GetCurrentPlayerNames(self):
+        gw = GameWatch()
+        ids = gw.CurrentPlayerIDs()
+        ids['bo'] = self._get_name_by_id(ids['bo'])
+        ids['bd'] = self._get_name_by_id(ids['bd'])
+        ids['ro'] = self._get_name_by_id(ids['ro'])
+        ids['rd'] = self._get_name_by_id(ids['rd'])
+        return ids
 
     def GetAllPlayersData(self):
         data = {}

@@ -1,7 +1,7 @@
 from foosweb.app import db
+from foosweb.models import GameState, Player, Game
 
 from datetime import datetime
-from foosweb.models import GameState, Player, Game
 import os
 from time import time
 import pdb
@@ -12,38 +12,24 @@ class GameWatch():
     main game logic lives in here
     """
     def __init__(self):
-        self.session = get_db_session()
-
-        #TODO: move this somewhere else and fix it up
-        if not os.path.exists('./foosball.db'):
-            self.InitializeDB(db)
 
         #persist current game state by maintaining only 1 row in there
-        self.game_state = self.session.query(GameState).filter_by(id=1).first()
+        self.game_state = GameState.query.filter_by(id=1).first()
 
         #reset fuzziness between games
         if not self.game_state.game_on:
-            self.game_state.fuzzy = False
-            self.CommitState()
+            if self.game_state.fuzzy:
+                self.game_state.fuzzy = False
+                self.CommitState()
 
         #if a game winner has been decided clear from the game state after a short time
         if self.game_state.game_winner != '':
-            winner_announced_at = self.session.query(Game.ended).order_by(Game.id.desc()).first()
+            winner_announced_at = Game.query.with_entities(Game.ended).order_by(Game.id.desc()).first()
             if len(winner_announced_at) == 1:
                 announce_duration = datetime.fromtimestamp(time()) - datetime.fromtimestamp(winner_announced_at[0])
                 if announce_duration.seconds > 2:
                     self.game_state.game_winner = ''
                     self.CommitState()
-
-    def InitializeDB(self, db_obj):
-        """build default sqlite database"""
-        ORMBase.metadata.create_all(db_obj)
-        init_state = GameState()
-        self.CommitState(init_state)
-        anon_player = Player('Anonymous')
-        anon_player.id = -1
-        self.session.add(anon_player)
-        self.session.commit()
 
     def UpdatePlayers(self, players):
         """
@@ -173,8 +159,8 @@ class GameWatch():
             started=self.game_state.game_started,\
             ended=int(time()))
 
-        self.session.add(foos_log)
-        self.session.commit()
+        db.session.add(foos_log)
+        db.session.commit()
 
         #set a state object to the winner to update web ui with winning team detected
         self.game_state.game_winner = winner
@@ -197,7 +183,7 @@ class GameWatch():
 
     def CommitState(self, state=None):
         if state == None:
-            self.session.add(self.game_state)
+            db.session.add(self.game_state)
         else:
-            self.session.add(state)
-        self.session.commit()
+            db.session.add(state)
+        db.session.commit()

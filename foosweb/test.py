@@ -1,4 +1,5 @@
 import unittest
+import json
 import pdb
 from foosweb.app import app, db
 from foosweb.models import init_db
@@ -120,3 +121,37 @@ class FoosTest(unittest.TestCase):
         self.app.get('/teams/teamup/accept/1', follow_redirects=True)
         rv = self.app.get('/teams/')
         self.assertTrue('TeamName' in rv.data)
+
+    def test_game_status_off(self):
+        rv = self.app.get('/status')
+        rj = json.loads(rv.get_data())
+        self.assertEqual(rj['status'], 'gameoff')
+
+    def test_game_score_nil(self):
+        rv = self.app.get('/score')
+        rj = json.loads(rv.get_data())
+        self.assertEqual(rj['score'], {'red': '', 'blue': ''})
+
+    def test_game_players_nil(self):
+        rv = self.app.get('/current_players')
+        rj = json.loads(rv.get_data())
+        nil_player = {"gravatar": "", "name": "None", "id": -1}
+        self.assertEqual(rj['bo'], nil_player)
+        self.assertEqual(rj['bd'], nil_player)
+        self.assertEqual(rj['ro'], nil_player)
+        self.assertEqual(rj['rd'], nil_player)
+
+    def test_player_update_no_json(self):
+        rv = self.app.post('/current_players', data = 'yodawg')
+        self.assertEqual(rv.status_code, 400)
+        self.assertTrue('data must be posted in json format' in rv.data)
+
+    def test_player_update_bad_json(self):
+        rv = self.app.post('/current_players', data = json.dumps({'thing' : 'stuff'}), content_type = 'application/json')
+        self.assertEqual(rv.status_code, 400)
+        self.assertTrue('no team key in json' in rv.data)
+
+    def test_player_update_no_teams(self):
+        rv = self.app.post('/current_players', data = json.dumps({'team' : 'stuff'}), content_type = 'application/json')
+        self.assertEqual(rv.status_code, 400)
+        self.assertTrue('ONLY two' in rv.data)
