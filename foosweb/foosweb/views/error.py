@@ -3,15 +3,14 @@ from flask import Blueprint, request, flash, session, redirect, url_for, g, json
 from foosweb.controllers.base import BaseData
 from foosweb.utils import render_pretty
 
-mod = Blueprint('readme', __name__)
+mod = Blueprint('error', __name__)
 
 import pdb
 import logging
 
 log = logging.getLogger(__name__)
 
-@mod.route('/readme')
-def show_readme():
-    g.menu_item = 'Readme'
+@mod.app_errorhandler(404)
+def not_found(e):
     data = BaseData.GetBaseData()
-    return render_pretty('readme.html', **data)
+    return render_pretty('404.html', **data)

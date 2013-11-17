@@ -45,6 +45,7 @@ from foosweb.views.foos import mod as foosModule
 from foosweb.views.history import mod as histModule
 from foosweb.views.teams import mod as teamModule
 from foosweb.views.readme import mod as readmeModule
+from foosweb.views.error import mod as errorModule
 from foosweb.models import Player
 
 @lm.user_loader
@@ -57,3 +58,4 @@ app.register_blueprint(foosModule)
 app.register_blueprint(histModule)
 app.register_blueprint(teamModule)
 app.register_blueprint(readmeModule)
+app.register_blueprint(errorModule)
