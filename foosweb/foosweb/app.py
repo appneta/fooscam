@@ -40,6 +40,7 @@ assets.register('players_css', players_css)
 from foosweb.views.player import mod as playersModule
 from foosweb.views.auth import mod as authModule
 from foosweb.views.foos import mod as foosModule
+from foosweb.views.history import mod as histModule
 from foosweb.models import Player
 
 @lm.user_loader
@@ -49,3 +50,4 @@ def user_loader(id):
 app.register_blueprint(playersModule)
 app.register_blueprint(authModule)
 app.register_blueprint(foosModule)
+app.register_blueprint(histModule)

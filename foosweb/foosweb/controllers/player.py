@@ -5,6 +5,7 @@ from foosweb.forms.player import  SignupForm, SettingsForm
 from flask.ext.login import current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from datetime import datetime, timedelta
 from hashlib import md5
 import pdb
 
@@ -121,7 +122,7 @@ class PlayerData():
         profile['profile_name'] = self._get_name_by_id(profile_id)
         profile['profile_id'] = profile_id
         profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id)
-        profile['hist_url'] = '/playerhistjson/' + str(profile_id)
+        profile['hist_url'] = '/history/livehistjson/' + str(profile_id)
         profile['total_games'] = self.GetHistory(id=profile_id, count=True)
         profile['teams'] = self._get_teams_by_player_id(profile_id)
 
