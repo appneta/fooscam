@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 def index():
     g.menu_item = 'History'
     data = BaseData.GetBaseData()
-    return render_pretty('history_view.html', hist_url='/livehistjson', **data)
+    return render_pretty('history_view.html', hist_url='/history/livehistjson', **data)
 
 @mod.route('/livehistjson')
 def live_history():
@@ -28,4 +28,3 @@ def live_history():
 def live_history_id(player_id):
     pd = PlayerData()
     return jsonify(aaData=pd.GetHistory(id=player_id, formatted=True))
-

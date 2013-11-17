@@ -13,6 +13,6 @@ log = logging.getLogger(__name__)
 
 @mod.route('/')
 def index():
-    g.menu_item = '/'
+    g.menu_item = 'Home'
     data = BaseData.GetBaseData()
     return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
