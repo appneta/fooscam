@@ -18,3 +18,11 @@ class Dev(Config):
     MAIL_USE_TLS = bool(os.getenv('MAIL_USE_TLS'))
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+
+class Test(Config):
+    DEBUG = True
+    TESTING = True
+    HOST = '0.0.0.0'
+    PORT = 5000
+    WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///'

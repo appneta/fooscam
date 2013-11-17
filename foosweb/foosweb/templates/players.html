@@ -9,7 +9,7 @@
     {% if all_players|length < 5 %}
         <table class='player-list'><tr>
         {% for id, name, gravatar_url in all_players %}
-            <td class='player-box'><img src='{{ gravatar_url }}'><br><a href='players/{{ id }}'><span class='player-name'>{{ name }}</span></a></td>
+            <td class='player-box'><img src='{{ gravatar_url }}'><br><a href='/players/{{ id }}'><span class='player-name'>{{ name }}</span></a></td>
         {% endfor %}
         </tr></table>
     {% else %}

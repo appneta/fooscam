@@ -110,22 +110,11 @@ class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey(Player.id), nullable=False)
 
-if __name__ == '__main__':
-
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    import pdb
-
-    db = create_engine('sqlite:///foosball.db')
-    db.Model.metadata.create_all(db)
-    Session = sessionmaker()
-    Session.configure(bind=db)
-
-    init_session = Session()
-
+def init_db():
+    db.create_all()
     init_state = GameState()
     anon_player = Player('Anonymous', 'anon@anon.com', '')
-    anon_player.id = -1
-    init_session.add(init_state)
-    init_session.add(anon_player)
-    init_session.commit()
+    anon_player.id = 0
+    db.session.add(init_state)
+    db.session.add(anon_player)
+    db.session.commit()

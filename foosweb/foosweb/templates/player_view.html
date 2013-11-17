@@ -40,7 +40,7 @@
           {% if user_id == p_two_id %}
             <li><a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> has <a href='/teams/teamup/invites'>invited you to join team {{ team_name }}</a>!</li>
           {% elif user_id == p_one_id %}
-            <li><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> hasn't responded to <a href='/teamup/invites'>your invite</a> yet.</li>
+            <li><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> hasn't responded to <a href='/teams/teamup/invites'>your invite</a> yet.</li>
           {% endif %}
         {% endif %}
         {# show accepted team invites to everyone #}

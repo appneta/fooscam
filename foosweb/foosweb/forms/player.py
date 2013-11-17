@@ -18,7 +18,7 @@ class LoginForm(Form):
 
     def validate_login(self):
         email = str(self.email.data).strip().lower()
-        player = Player.query.filter_by(email=email).one()
+        player = Player.query.filter_by(email=email).first()
         if player is not None:
             if check_password_hash(player.password, self.password.data):
                 return True
@@ -57,4 +57,4 @@ class SignupForm(Form):
         check = Player.query.filter(Player.email == email.data.lower()).first()
 
         if check is not None:
-            raise ValidationError('An account with that email address already exists.')
+            raise ValidationError('An player with that email address already exists.')
