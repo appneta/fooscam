@@ -1,5 +1,13 @@
+from flask import current_app
+from flask.ext.login import current_user
+from flask.ext.mail import Message
+from foosweb.models import Player, PasswordReset
 from foosweb.app import db
 
+import os
+from hashlib import md5
+
+import pdb
 import logging
 log = logging.getLogger('gamewatch')
 
@@ -27,20 +35,15 @@ class Auth():
 
         pw_reset = None
 
-        try:
-            pw_reset = self.session.query(PasswordReset).filter_by(player_id = user_id).one()
-        except Exception, e:
-            if type(e) != NoResultFound:
-                log.error('Unable to generate password reset link for %s due to SQLAlchemy exception %s' % (str(user_id), repr(e)))
-                return
+        pw_reset = PasswordReset.query.filter_by(player_id = user_id).first()
 
         if pw_reset is None:
             pw_reset = PasswordReset(user_id, reset_hash)
         else:
             pw_reset.reset_hash = reset_hash
 
-        self.session.add(pw_reset)
-        self.session.commit()
+        db.session.add(pw_reset)
+        db.session.commit()
 
         reset_link = 'http://%s/pw_reset/%s' % (server_name, reset_hash)
         return reset_link
@@ -57,7 +60,10 @@ class Auth():
         db.session.add(current_player)
         db.session.commit()
 
-    def ForgotPassword(self, mail_io, user_email, server_name):
+    def ForgotPassword(self, user_email):
+
+        mail = current_app.extensions['mail']
+        server_name = current_app.config['SERVER_NAME']
 
         player = self.GetPlayerByEmail(user_email)
         if player is not None:
@@ -69,9 +75,9 @@ class Auth():
             body='Your Foosview password reset link is %s' % (reset_link))
 
         try:
-            mail_io.send(msg)
+            mail.send(msg)
         except Exception, e:
-            log.error('Error sending password reset email to %s' % (player.email))
+            log.error('Exception %s sending password reset email to %s' % (repr(e), player.email))
             return
 
         return True
@@ -93,7 +99,7 @@ class Auth():
 
     def GetPlayerByEmail(self, email):
         email = str(email).strip().lower()
-        player = self.session.query(Player).filter_by(email=email).first()
+        player = Player.query.filter_by(email=email).first()
         return player
 
     def GetPlayerByID(self, player_id):

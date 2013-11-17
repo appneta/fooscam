@@ -2,6 +2,7 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager
+from flask.ext.mail import Mail
 
 from foosweb.utils import render_pretty
 
@@ -13,9 +14,11 @@ log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
 
 app = Flask(__name__)
-app.config.from_object('config.Config')
+app.config.from_object('config.Dev')
 
 db = SQLAlchemy(app)
+
+mail = Mail(app)
 
 lm = LoginManager()
 lm.init_app(app)

@@ -49,23 +49,20 @@ def request_password_reset():
     return render_pretty('request_reset.html', request_reset_form = request_reset_form, **data)
 
 @mod.route('/pw_reset/request', methods=['POST'])
-def create_password_reset(self):
+def create_password_reset():
     request_reset_form = RequestResetForm(request.form)
     if request_reset_form.validate():
         auth = Auth()
-        mail = current_app.extensions['mail']
-        if auth.ForgotPassword(mail, request_reset_form.email.data, current_app.config['SERVER_NAME']):
+        if auth.ForgotPassword(request_reset_form.email.data):
             flash('Password reset sent.', 'alert-success')
         else:
             flash('User not found.', 'alert-danger')
     return redirect(url_for('foos.index'))
 
 @mod.route('/pw_reset/<string:reset_hash>', methods=['GET'])
-def new_password_form(self, reset_hash):
-    bd = BaseData()
-    data = bd.GetBaseData(current_user, '/pw_reset')
+def new_password_form(reset_hash):
+    data = BaseData.GetBaseData()
     auth = Auth()
-    pd = PlayerData()
     player = auth.GetPlayerByResetHash(reset_hash)
     if player is not None:
         login_user(player)

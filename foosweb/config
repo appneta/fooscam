@@ -1,0 +1,6 @@
+export MAIL_SERVER='smtp.server.com'
+export MAIL_PORT=25
+export MAIL_USERNAME='username'
+export MAIL_PASSWORD='pass'
+export MAIL_DEFAULT_SENDER='username@server.com'
+export MAIL_USE_TLS='False'
