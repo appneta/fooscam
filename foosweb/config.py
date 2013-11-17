@@ -12,6 +12,7 @@ class Dev(Config):
     DEBUG = True
     HOST = '0.0.0.0'
     PORT = 5000
+    SERVER_NAME= 'localhost:' + str(PORT)
     MAIL_SERVER = os.getenv('MAIL_SERVER')
     MAIL_SERVER = os.getenv('MAIL_SERVER')
     MAIL_PORT = os.getenv('MAIL_PORT')

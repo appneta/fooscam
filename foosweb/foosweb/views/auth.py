@@ -50,6 +50,7 @@ def request_password_reset():
 
 @mod.route('/pw_reset/request', methods=['POST'])
 def create_password_reset():
+    data = BaseData.GetBaseData()
     request_reset_form = RequestResetForm(request.form)
     if request_reset_form.validate():
         auth = Auth()
@@ -57,10 +58,12 @@ def create_password_reset():
             flash('Password reset sent.', 'alert-success')
         else:
             flash('User not found.', 'alert-danger')
+    else:
+        return render_pretty('request_reset.html', request_reset_form = request_reset_form, **data)
     return redirect(url_for('foos.index'))
 
 @mod.route('/pw_reset/<string:reset_hash>', methods=['GET'])
-def new_password_form(reset_hash):
+def do_password_reset(reset_hash):
     data = BaseData.GetBaseData()
     auth = Auth()
     player = auth.GetPlayerByResetHash(reset_hash)

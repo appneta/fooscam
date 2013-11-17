@@ -33,8 +33,6 @@ class Auth():
 
         reset_hash = "%s%s" % (md5(os.urandom(8)).hexdigest(), md5(os.urandom(8)).hexdigest())
 
-        pw_reset = None
-
         pw_reset = PasswordReset.query.filter_by(player_id = user_id).first()
 
         if pw_reset is None:
@@ -61,6 +59,7 @@ class Auth():
         db.session.commit()
 
     def ForgotPassword(self, user_email):
+        pdb.set_trace()
 
         mail = current_app.extensions['mail']
         server_name = current_app.config['SERVER_NAME']
@@ -85,17 +84,14 @@ class Auth():
     def GetPlayerByResetHash(self, reset_hash):
         pass_reset = None
 
-        try:
-            pass_reset = self.session.query(PasswordReset).filter(PasswordReset.reset_hash == reset_hash).one()
-        except NoResultFound:
-            return
+        pass_reset = PasswordReset.query.filter(PasswordReset.reset_hash == reset_hash).first()
 
         if pass_reset is not None:
             return self.GetPlayerByID(pass_reset.player_id)
 
     def InvalidatePasswordResets(self, player_id):
-        self.session.query(PasswordReset).filter(PasswordReset.player_id == player_id).delete()
-        self.session.commit()
+        PasswordReset.query.filter(PasswordReset.player_id == player_id).delete()
+        db.session.commit()
 
     def GetPlayerByEmail(self, email):
         email = str(email).strip().lower()
@@ -108,13 +104,7 @@ class Auth():
         except ValueError, e:
             return
 
-        try:
-            player = self.session.query(Player).filter_by(id=player_id).one()
-        except NoResultFound:
-            return
-        except Exception, e:
-            log.error('Exception thrown trying to get player %s!' % (str(player_id)))
-            return
+        player = Player.query.filter_by(id=player_id).one()
 
         return player
 
