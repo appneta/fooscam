@@ -6,11 +6,8 @@ from foosweb.utils import render_pretty
 mod = Blueprint('error', __name__)
 
 import pdb
-import logging
-
-log = logging.getLogger(__name__)
 
 @mod.app_errorhandler(404)
 def not_found(e):
     data = BaseData.GetBaseData()
-    return render_pretty('404.html', **data)
+    return render_pretty('404.html', **data), 404
