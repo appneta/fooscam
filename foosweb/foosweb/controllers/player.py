@@ -2,6 +2,7 @@ from foosweb.app import db
 from foosweb.models import Player, Game, Team
 from foosweb.controllers.base import BaseData
 from foosweb.forms.player import  SignupForm, SettingsForm
+
 from flask.ext.login import current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 

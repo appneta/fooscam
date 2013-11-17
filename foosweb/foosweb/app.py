@@ -1,7 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager
+
+from foosweb.utils import render_pretty
 
 import logging
 import pdb
@@ -41,6 +43,8 @@ from foosweb.views.player import mod as playersModule
 from foosweb.views.auth import mod as authModule
 from foosweb.views.foos import mod as foosModule
 from foosweb.views.history import mod as histModule
+from foosweb.views.teams import mod as teamModule
+from foosweb.views.readme import mod as readmeModule
 from foosweb.models import Player
 
 @lm.user_loader
@@ -51,3 +55,5 @@ app.register_blueprint(playersModule)
 app.register_blueprint(authModule)
 app.register_blueprint(foosModule)
 app.register_blueprint(histModule)
+app.register_blueprint(teamModule)
+app.register_blueprint(readmeModule)

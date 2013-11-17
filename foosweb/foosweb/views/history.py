@@ -1,5 +1,5 @@
 from flask import Blueprint, request, flash, session, redirect, url_for, g, jsonify
-from flask.ext.login import current_user, logout_user, login_user, login_required
+from flask.ext.login import current_user
 
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData

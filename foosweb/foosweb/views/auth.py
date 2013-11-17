@@ -40,7 +40,7 @@ def logout():
     Auth.Logout(current_user)
     logout_user()
     flash('Logged out', 'alert-info')
-    return redirect(request.referrer or url_for('foos.index'))
+    return redirect(url_for('foos.index'))
 
 @mod.route('/pw_reset')
 def request_password_reset():
