@@ -5,7 +5,7 @@
 <div id='settings' class='container'>
 <h1>Account Settings</h1>
 {% from '_formhelpers.html' import render_field %}
-<form id='settings-form' method='post' action='/settings'>
+<form id='settings-form' method='post' action='/players/me/settings'>
 {{ settings_form.csrf_token }}
 <div class="row"><div class='col-lg-3'>
 {{ render_field(settings_form.email, class='form-control form-settings') }}

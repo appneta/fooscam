@@ -1,7 +1,7 @@
 from flask import Blueprint, request, flash, session, redirect, url_for, g
 from flask.ext.login import current_user, logout_user, login_user, login_required
 
-from foosweb.forms.player import LoginForm, SignupForm
+from foosweb.forms.player import LoginForm, SignupForm, SettingsForm
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
 from foosweb.controllers.auth import Auth
@@ -16,15 +16,16 @@ log = logging.getLogger(__name__)
 
 @mod.route('/')
 def index():
-    g.menu_item = '/players'
-    #data = BaseData.GetBaseData()
+    g.menu_item = 'Players'
     pd = PlayerData()
     data = pd.GetAllPlayersData()
     return render_pretty('players.html', **data)
 
 @mod.route('/me')
 def self_profile():
-    return render_pretty('profile.html')
+    pd = PlayerData()
+    data = pd.GetProfileData(current_user.id)
+    return render_pretty('player_view.html', **data)
 
 @mod.route('/<int:profile_id>')
 def get(profile_id):
@@ -34,10 +35,13 @@ def get(profile_id):
 
 @mod.route('/signup', methods = ['GET'])
 def show_signup():
-    data = PlayerData.GetSignupData()#current_user, '/signup')
+    if not current_user.is_anonymous():
+        flash('Y U NEED TWO ACCOUNTS?', 'alert-warning')
+        return redirect(url_for('foos.index'))
+
+    data = PlayerData.GetSignupData()
     return render_pretty('signup.html', **data)
 
-#TODO: protect this route from logged in users
 @mod.route('/signup', methods = ['POST'])
 def process_signup():
     data = BaseData.GetBaseData()
@@ -48,28 +52,25 @@ def process_signup():
         login_user(new_player)
         Auth.Login(new_player)
         flash('Welcome to FoosView %s!' % (new_player.name), 'alert-success')
-        #return redirect(url_for('FoosView:index'))
         return redirect(url_for('players.index'))
     else:
         return render_pretty('signup.html', signup_form=signup_form, **data)
 
-"""class SettingsView(FlaskView):
-    route_base = '/'
+@mod.route('/me/settings', methods=['GET'])
+@login_required
+def show_settings():
+    g.menu_item = 'Settings'
+    pd = PlayerData()
+    data = pd.GetSettingsData()
+    return render_pretty('player_settings.html',  **data)
 
-    @route('/settings', methods=['GET'])
-    @login_required
-    def show_settings(self):
-        pd = PlayerData()
-        data = pd.GetSettingsData(current_user, '/settings')
-        return render_pretty('player_settings.html',  **data)
-
-    @route('/settings', methods=['POST'])
-    def process_settings(self):
-        pd = PlayerData()
-        settings_form = SettingsForm(request.form)
-        if settings_form.validate():
-            if pd.SetSettingsData(settings_form, current_user):
-                flash('Settings saved', 'alert-success')
-        else:
-            flash('Invalid settings', 'alert-danger')
-        return redirect(url_for('SettingsView:show_settings'))"""
+@mod.route('/me/settings', methods=['POST'])
+def process_settings():
+    pd = PlayerData()
+    settings_form = SettingsForm(request.form)
+    if settings_form.validate():
+        if pd.SetSettingsData(settings_form, current_user):
+            flash('Settings saved', 'alert-success')
+    else:
+        return render_pretty('player_settings.html', settings_form=settings_form)
+    return redirect(url_for('players.show_settings'))

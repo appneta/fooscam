@@ -1,8 +1,9 @@
 from foosweb.app import db
 from foosweb.models import Player, Game, Team
 from foosweb.controllers.base import BaseData
-from foosweb.forms.player import  SignupForm
-from werkzeug.security import generate_password_hash
+from foosweb.forms.player import  SignupForm, SettingsForm
+from flask.ext.login import current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from hashlib import md5
 import pdb
@@ -38,14 +39,6 @@ class PlayerData():
             return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
         else:
              return ''
-
-    def _player_gravatar_url(self, player, size=80):
-        g_hash = md5(player.email).hexdigest()
-        return 'http://gravatar.com/avatar/%s?s=%s' % (g_hash, int(size))
-
-    def _make_gravatar_url(self, email, size=80):
-        if email is not None:
-            return 'http://gravatar.com/avatar/%s?s=%s' % md5(email.strip().lower()).hexdigest(), int(size)
 
     def _get_name_by_id(self, player_id):
         if player_id == -1:
@@ -84,8 +77,9 @@ class PlayerData():
             id['rd'] = self._get_gravatar_url_by_id(id['rd'])
             return id
 
-    def GetNames(self, id=None):
-        """get all names by default (id==None), get one name if id=INT, if id is a dict of current players populate with names"""
+    def GetNames(self):
+        #TODO: this is broken and dumb, just have it figure out current players and return a dict
+        """return a dict of current players populate with names"""
         if id is None:
             player_names = self.session.query(Player.name).all()
             return self._tidy_sa_results(player_names)
@@ -110,7 +104,7 @@ class PlayerData():
 
         for player in all_players:
             if player.id != -1 and player.name != 'Guest':
-                data['all_players'].append((player.id, player.name, self._player_gravatar_url(player, size=200)))
+                data['all_players'].append((player.id, player.name, self._get_gravatar_url_by_id(player.id, size=200)))
 
         base_data = BaseData.GetBaseData()
 
@@ -135,12 +129,12 @@ class PlayerData():
 
         return dict(profile.items() + base_data.items())
 
-    def GetSettingsData(self, current_user, current_view):
+    def GetSettingsData(self):
         settings = {}
         settings['settings_form'] = SettingsForm()
 
         settings['settings_form'].email.data = self._get_email_by_id(current_user.id)
-        base_data = self.bd.GetBaseData(current_user, current_view)
+        base_data = BaseData.GetBaseData()
 
         return dict(settings.items() + base_data.items())
 
@@ -154,13 +148,13 @@ class PlayerData():
 
         if settings_form.password.data != '':
             if settings_form.password.data == settings_form.confirm_pass.data:
-                if not check_hash(settings_form.password.data, current_player.password):
+                if not check_password_hash(settings_form.password.data, current_player.password):
                     changed = True
-                    current_player.password = make_hash(settings_form.password.data)
+                    current_player.password = generate_password_hash(settings_form.password.data, method='pbkdf2:sha256:10000')
 
         if changed:
-            self.session.add(current_player)
-            self.session.commit()
+            db.session.add(current_player)
+            db.session.commit()
 
         return changed
 

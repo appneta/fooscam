@@ -1,5 +1,6 @@
 from flask import flash
 from flask.ext.wtf import Form
+from flask.ext.login import current_user
 from wtforms import TextField, IntegerField, PasswordField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 from werkzeug import check_password_hash
@@ -30,19 +31,12 @@ class SettingsForm(Form):
     password = PasswordField('Password')
     confirm_pass = PasswordField('Confirm password', validators = [ \
         DataRequired('Confirm your new password'),
-        EqualTo('Password', message='Passwords must match')])
+        EqualTo('password', message='Passwords must match')])
 
     def validate_email(self, email):
-
-        self.session = get_db_session()
-        check = None
-        try:
-            check = self.session.query(Player).filter(Player.email == email.data).all()
-        except Exception, e:
-            log.error('Exception %s thrown trying to validate new player email %s' % (repr(e), email.data))
-
+        check = Player.query.filter(Player.email == email.data).first()
         if check is not None:
-            if len(check) > 0:
+            if check.id != current_user.id:
                 raise ValidationError('An account with that email address already exists.')
 
 class SignupForm(Form):
