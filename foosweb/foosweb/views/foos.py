@@ -36,27 +36,26 @@ def get_score():
         red_score, blue_score = gw.GetScore()
         return jsonify(score = {'red': red_score, 'blue': blue_score})
 
-"""@route('/score', methods=['POST'])
-def score_post(self):
-    try:
+@mod.route('/score', methods=['POST'])
+def score_post():
+    if request.json is not None:
         json_dict = request.json
-    except BadRequest, e:
-        log.warn('non-JSON payload posted to score update endpoint!')
-        log.debug('Invalid data: %s' % (request.data))
-        raise
+    else:
+        current_app.logger.warn('non-JSON payload posted to score update endpoint!')
+        current_app.logger.debug('Invalid data: %s' % (request.data))
+        return jsonify(error = 'data must be posted in json format'), 400
 
     try:
         red_score = int(json_dict['score']['red'])
         blue_score = int(json_dict['score']['blue'])
     except (KeyError, ValueError):
-        log.warn('Invalid JSON payload posted to score update endpoint!')
-        log.debug('Invalid JSON: %s' % (request.json))
-        abort(400, 'Invalid JSON Data')
+        current_app.logger.warn('Invalid JSON payload posted to score update endpoint!')
+        current_app.logger.debug('Invalid JSON: %s' % (request.json))
+        return jsonify(error = 'invalid score json data'), 400
 
     gw = GameWatch()
-    #TODO: this method call doesn't need a dict
-    gw.UpdateScore({'red': red_score, 'blue': blue_score})
-    return (json.dumps({'status': 'accepted'}), 201, {'Content-Type': 'application/json'})"""
+    gw.UpdateScore(red_score, blue_score)
+    return jsonify(status = 'accepted'), 201
 
 @mod.route('/current_players', methods = ['GET'])
 def players_get():
@@ -93,5 +92,5 @@ def players_post():
 
         gw = GameWatch()
         gw.UpdatePlayers({'bo': blue_off, 'bd': blue_def, 'ro': red_off, 'rd': red_def})
-        return (json.dumps({'status': 'accepted'}), 201, {'Content-Type': 'application/json'})
+        return jsonify(status = 'accepted'), 201
     return jsonify(error = 'no team key in json'), 400

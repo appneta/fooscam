@@ -1,6 +1,7 @@
 from foosweb.app import db
 from foosweb.models import GameState, Player, Game
 
+from flask import current_app
 from datetime import datetime
 import os
 from time import time
@@ -42,7 +43,7 @@ class GameWatch():
         #same as it ever was
         if new_ids == current_ids:
             if self.game_state.fuzzy:
-                log.debug('got 4 players matching ids for game in progress, reverting fuzzy state')
+                current_app.logger.debug('got 4 players matching ids for fuzzy game in progress, reverting fuzzy state')
                 self.game_state.fuzzy = False
                 self.CommitState()
                 return
@@ -50,12 +51,11 @@ class GameWatch():
         #if there was a game on, there ain't now
         if new_ids == [-1, -1, -1,-1]:
             if self.game_state.game_on:
-                log.debug("got 4 unknown ID's, ending current game")
+                current_app.logger.debug("got 4 unknown ID's, ending current game")
                 self.GameOver()
                 return
             else:
                 #if there isn't a game on, who cares?
-                log.debug("got 4 unknown ID's, no game to end")
                 return
 
         #one or more incoming ID's are unknown (but not all of them)
@@ -64,58 +64,60 @@ class GameWatch():
                 #mark current game fuzzy
                 self.game_state.fuzzy = True
                 self.CommitState()
-                log.debug('fuzzy players detected, ignoring player ids')
+                current_app.logger.debug('fuzzy players detected, ignoring player ids')
                 for pair in zip(current_ids, new_ids):
                     if pair[0] != pair[1] and pair[1] != -1:
                         #game is fuzzy AND a valid player id has changed!
-                        log.debug('fuzzy game with people moving around, assuming game over')
+                        current_app.logger.debug('fuzzy game with people moving around, assuming game over')
                         self.GameOver()
                         return
             else:
-                log.debug('fuzzy players detected but no game is on')
+                #fuzzy players detected but no game is on
                 return
         else:
             #id change detected and all id's are known
-            #TODO: this is ugly flow control
             if not self.game_state.game_on:
-                log.debug('4 new ids locked and no game going ... starting a new game!')
+                current_app.logger.debug('4 new ids locked and no game going ... starting a new game!')
+                self.game_state.blue_off = players['bo']
+                self.game_state.blue_def = players['bd']
+                self.game_state.red_off = players['ro']
+                self.game_state.red_def = players['rd']
+                self.CommitState()
+                self.GameOn()
             else:
                 #TODO: something useful here?
-                log.debug('4 new ids locked but game is already going, throwing away current game state and starting a new game')
+                current_app.logger.debug('4 new ids locked but game is already going, throwing away current game state and starting a new game')
 
-            self.game_state.blue_off = players['bo']
-            self.game_state.blue_def = players['bd']
-            self.game_state.red_off = players['ro']
-            self.game_state.red_def = players['rd']
-            self.CommitState()
-            self.GameOn()
 
-    def UpdateScore(self, score):
+    def UpdateScore(self, red_score, blue_score):
         """
         do something useful with the score
         """
         if not self.game_state.game_on:
-            log.debug('ignoring score update while no game underway')
+            #ignoring score update while no game underway
             return
         else:
-            log.debug('processing score update while game underway')
-            log.debug(str(score['red']) + ' ' + str(self.game_state.red_score) + ' ' + str(score['blue']) + ' ' + str( self.game_state.blue_score))
+            #processing score update while game underway
+            current_app.logger.debug('new red: %s new blue: %s -- old red: %s old blue: %s' % (str(red_score), str(blue_score),\
+                str(self.game_state.red_score), str(self.game_state.blue_score)))
             #end the game when a score goes from >= 8 to 0
-            if (score['red'] == 0 and self.game_state.red_score >=8) or (score['blue'] == 0 and self.game_state.blue_score >=8):
-                log.debug('score went from red: ' + str(self.game_state.red_score) + ' blue: ' + str(self.game_state.blue_score) + ' to red: ' + \
-                    str(score['red']) + ' blue: ' + str(score['blue']))
-                log.debug('assuming game is over and using previous scores to determine winner')
+            if (red_score == 0 and self.game_state.red_score >=8) or (blue_score == 0 and self.game_state.blue_score >=8):
+                current_app.logger.debug('score went from red: ' + str(self.game_state.red_score) + ' blue: ' + str(self.game_state.blue_score) + ' to red: ' + \
+                    str(red_score) + ' blue: ' + str(blue_score))
+                current_app.logger.debug('assuming game is over and using previous scores to determine winner')
                 self.GameOver()
                 return
             else:
                 if self.game_state.fuzzy:
-                    log.debug('minor score change detected and game is fuzzy, ignoring until locked')
+                    current_app.logger.debug('minor score change detected and game is fuzzy, ignoring until locked')
                     return
                 else:
-                    log.debug('minor score change detected and game is locked, updating score')
-                    self.game_state.red_score = score['red']
-                    self.game_state.blue_score = score['blue']
+                    current_app.logger.debug('minor score change detected and game is locked, updating score')
+                    self.game_state.red_score = red_score
+                    self.game_state.blue_score = blue_score
                     self.CommitState()
+                    if red_score == 10 or blue_score == 10:
+                        self.GameOver()
                     return
 
     def CurrentPlayerIDs(self):

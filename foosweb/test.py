@@ -1,6 +1,7 @@
 import unittest
 import json
 import pdb
+from time import sleep
 from foosweb.app import app, db
 from foosweb.models import init_db
 
@@ -142,7 +143,7 @@ class FoosTest(unittest.TestCase):
         self.assertEqual(rj['rd'], nil_player)
 
     def test_player_update_no_json(self):
-        rv = self.app.post('/current_players', data = 'yodawg')
+        rv = self.app.post('/current_players', data = 'invalid player update (no json)')
         self.assertEqual(rv.status_code, 400)
         self.assertTrue('data must be posted in json format' in rv.data)
 
@@ -155,3 +156,58 @@ class FoosTest(unittest.TestCase):
         rv = self.app.post('/current_players', data = json.dumps({'team' : 'stuff'}), content_type = 'application/json')
         self.assertEqual(rv.status_code, 400)
         self.assertTrue('ONLY two' in rv.data)
+
+    def test_valid_player_update(self):
+        self.signup(name='player1', email='player1@foosview.com', password='secret')
+        self.signup(name='player2', email='player2@foosview.com', password='secret')
+        self.signup(name='player3', email='player3@foosview.com', password='secret')
+        self.signup(name='player4', email='player4@foosview.com', password='secret')
+
+        players_json = json.dumps({"team":[{"blue":{"offense":"1","defense":"2"}},{"red":{"offense":"3","defense":"4"}}]})
+        rv = self.app.post('/current_players', data = players_json, content_type = 'application/json')
+        self.assertEqual(rv.status_code, 201)
+        rv = self.app.get('/current_players')
+        self.assertTrue('player1' in rv.data)
+
+    def test_score_update_no_json(self):
+        rv = self.app.post('/score', data = 'invalid score update (no json)')
+        self.assertEqual(rv.status_code, 400)
+        self.assertTrue('data must be posted in json format' in rv.data)
+
+    def test_score_update_bad_json(self):
+        rv = self.app.post('/score', data = json.dumps({'thing' : 'stuff'}), content_type = 'application/json')
+        self.assertEqual(rv.status_code, 400)
+        self.assertTrue('invalid score json data' in rv.data)
+
+    def test_valid_score_update(self):
+        self.signup(name='player1', email='player1@foosview.com', password='secret')
+        self.signup(name='player2', email='player2@foosview.com', password='secret')
+        self.signup(name='player3', email='player3@foosview.com', password='secret')
+        self.signup(name='player4', email='player4@foosview.com', password='secret')
+
+        players_json = json.dumps({"team":[{"blue":{"offense":"1","defense":"2"}},{"red":{"offense":"3","defense":"4"}}]})
+        self.app.post('/current_players', data = players_json, content_type = 'application/json')
+        rv = self.app.post('/score', data = json.dumps({'score' : {'red': 1, 'blue': 2}}), content_type = 'application/json')
+        self.assertEqual(rv.status_code, 201)
+        rv = self.app.get('/score')
+        rj = json.loads(rv.get_data())
+        self.assertEqual(rj['score']['red'], 1)
+        self.assertEqual(rj['score']['blue'], 2)
+
+    def test_game_over_by_score_to_ten(self):
+        self.signup(name='player1', email='player1@foosview.com', password='secret')
+        self.signup(name='player2', email='player2@foosview.com', password='secret')
+        self.signup(name='player3', email='player3@foosview.com', password='secret')
+        self.signup(name='player4', email='player4@foosview.com', password='secret')
+
+        players_json = json.dumps({"team":[{"blue":{"offense":"1","defense":"2"}},{"red":{"offense":"3","defense":"4"}}]})
+        self.app.post('/current_players', data = players_json, content_type = 'application/json')
+        rv = self.app.post('/score', data = json.dumps({'score' : {'red': 10, 'blue': 2}}), content_type = 'application/json')
+        self.assertEqual(rv.status_code, 201)
+        rv = self.app.get('/status')
+        rj = json.loads(rv.get_data())
+        self.assertEqual(rj['status'], 'red')
+        sleep(3)
+        rv = self.app.get('/status')
+        rj = json.loads(rv.get_data())
+        self.assertEqual(rj['status'], 'gameoff')
