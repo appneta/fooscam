@@ -22,6 +22,11 @@ def live_history():
     return jsonify(aaData=pd.GetHistory(formatted=True))
 
 @mod.route('/livehistjson/<int:player_id>')
-def live_history_id(player_id):
+def live_hist_player_id(player_id):
     pd = PlayerData()
-    return jsonify(aaData=pd.GetHistory(id=player_id, formatted=True))
+    return jsonify(aaData=pd.GetHistory(player_id=player_id, formatted=True))
+
+@mod.route('/livehistjson/team/<int:team_id>')
+def live_hist_team_id(team_id):
+    pd = PlayerData()
+    return jsonify(aaData=pd.GetHistory(team_id=team_id, formatted=True))

@@ -52,10 +52,25 @@ class TeamData():
 
         return dict(retvals.items() + base_data.items())
 
-    def GetTeamDataByID(self, team_id):
-        #todo: get both p_ids and query game table for their matches
+    def GetTeamProfileData(self, team_id):
+
+        retvals = {}
+
+        team = Team.query.filter(Team.id == team_id).first()
+        if team is None:
+            return
+
+        retvals['team_name'] = team.name
+        retvals['player_one_id'] = team.player_one
+        retvals['player_two_id'] = team.player_two
+        retvals['player_one_name'] = self.pd._get_name_by_id(team.player_one)
+        retvals['player_two_name'] = self.pd._get_name_by_id(team.player_two)
+        retvals['player_one_gravatar'] = self.pd._get_gravatar_url_by_id(team.player_one, size = 150)
+        retvals['player_two_gravatar'] = self.pd._get_gravatar_url_by_id(team.player_two, size = 150)
+        retvals['hist_url'] = '/history/livehistjson/team/%s' % (str(team_id))
+
         base_data = BaseData.GetBaseData()
-        return base_data
+        return dict(base_data.items() + retvals.items())
 
     def GetTeamupData(self, teamup_with_id):
         retvals = {}

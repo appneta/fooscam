@@ -109,7 +109,7 @@ class PlayerData():
         profile['profile_id'] = profile_id
         profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id, size=250)
         profile['hist_url'] = '/history/livehistjson/' + str(profile_id)
-        profile['total_games'] = self.GetHistory(id=profile_id, count=True)
+        profile['total_games'] = self.GetHistory(player_id=profile_id, count=True)
         profile['teams'] = self._get_teams_by_player_id(profile_id)
 
         base_data = BaseData.GetBaseData()
@@ -158,18 +158,39 @@ class PlayerData():
         db.session.commit()
         return new_player
 
-    def GetHistory(self,id=None, formatted=False, count=False):
+    def GetHistory(self, player_id=None, formatted=False, count=False, team_id=None):
+        #TODO: split collecting games to report and formatting of game history
         game_history = []
-        if id is not None:
+
+        if player_id is not None and team_id is not None:
+            raise ValueError('GetHistory accepts one player or one team, but not both!')
+
+        if player_id is not None:
+            #single player game count
             if count:
                 return Game.query.filter(\
-                        (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
+                        (Game.red_off == player_id) | (Game.red_def == player_id) | (Game.blue_off == player_id) | (Game.blue_def == player_id)).\
                         order_by(Game.id).count()
+            #single player game stats
             else:
                 for game in Game.query.filter(\
-                        (Game.red_off == id) | (Game.red_def == id) | (Game.blue_off == id) | (Game.blue_def == id)).\
+                        (Game.red_off == player_id) | (Game.red_def == player_id) | (Game.blue_off == player_id) | (Game.blue_def == player_id)).\
                         order_by(Game.id):
                     game_history.append(game)
+        elif team_id is not None:
+            #team stats
+            team = Team.query.filter(Team.id == team_id).first()
+            if team is None:
+                return
+
+            team_ids = [team.player_one, team.player_two]
+
+            blue_games = Game.query.filter(Game.blue_off.in_(team_ids)).filter(Game.blue_def.in_(team_ids)).all()
+            red_games = Game.query.filter(Game.red_off.in_(team_ids)).filter(Game.red_def.in_(team_ids)).all()
+            for game in (blue_games +  red_games):
+                game_history.append(game)
+
+        #all players game stats
         else:
             for game in Game.query.order_by(Game.id):
                 game_history.append(game)

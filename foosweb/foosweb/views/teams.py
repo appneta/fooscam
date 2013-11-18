@@ -20,7 +20,7 @@ def index():
 @mod.route('/<int:team_id>')
 def team_by_id(team_id):
     td = TeamData()
-    data = td.GetTeamDataByID(team_id)
+    data = td.GetTeamProfileData(team_id)
     return render_pretty('team_profile.html', **data)
 
 @mod.route('/teamup/<int:teamup_with_id>', methods=['GET'])

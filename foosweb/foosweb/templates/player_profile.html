@@ -3,11 +3,11 @@
 {% block content %}
 <div class='container'>
 <div id='player_info'>
-  <span><h1>{{ profile_name }} has logged {{ total_games }} games!</h1></span>
+  <span><h2>{{ profile_name }} has logged {{ total_games }} games!</h2></span>
   <span class='pull-right'><img src="{{ gravatar_url }}"></span>
 </div>
 <div id='player_stats'>
-  <h2>Stats</h2>
+  <h1>Stats</h1>
   <table id='win-stats' cellpadding='10' cellspacing='2' border='1'>
     <thead>
       <tr>
@@ -30,7 +30,7 @@
   </table>
 </div>
 <div id='player_teams'>
-  <h2><span id='team-title'>Teams</span></h2>
+  <h1><span id='team-title'>Teams</span></h1>
   <ul id='team-list'>
     {% if teams %}
       {% for p_one_id, p_one_name, p_two_id, p_two_name, team_name, team_status in teams %}
@@ -72,7 +72,7 @@
     {% endif %}
   </ul>
 </div>
-<h2>Game History</h2>
+<h1>Game History</h1>
 {% include '_history.html' %}
 </div>
 {% endblock %}

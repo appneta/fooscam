@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %} Title {% endblock %}
+{% block head %} <tags> {% endblock %}
+{% block content %}
+<div class='container'>
+    <div class='panel panel-default'>
+        <div class='panel-heading'><h2>Team: {{ team_name }} </h2></div>
+        <div class='panel-body'>
+            <div class='row'>
+                <div class='col-lg-3 col-lg-offset-2'>
+                    <h3>{{ player_one_name }}</h3>
+                    <img src='{{ player_one_gravatar }}'>
+                </div>
+                <div class='col-lg-3 col-lg-offset-2'>
+                    <h3>{{ player_two_name }}</h3>
+                    <img src='{{ player_two_gravatar }}'>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h1>Game History</h1>
+    {% include '_history.html' %}
+</div>
+{% endblock %}
