@@ -22,7 +22,7 @@ lm.init_app(app)
 assets = Environment(app)
 
 main_js = Bundle('js/jquery-latest.min.js', 'js/jquery-ui.js', 'js/bootstrap.min.js')
-main_css = Bundle('css/bootstrap.min.css', 'css/base.css')
+main_css = Bundle('css/bootstrap.min.css', 'css/bootstrap-glyphicons.css', 'css/base.css')
 players_css = Bundle('css/players.css')
 foos_js = Bundle('js/foosview.js')
 foos_css = Bundle('css/foosview.css')

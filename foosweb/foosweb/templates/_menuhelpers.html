@@ -1,10 +1,9 @@
-{% macro render_menu_item(item_name, item_url, current_view) %}
+{% macro render_menu_item(item_name, item_url, current_view, glyphicon) %}
 {% if item_name == current_view %}
     <li class='active'><a href='{{ item_url }}'>{{ item_name }}</a></li>
 {% else %}
-    {% if item_name == 'Logout' %}
-        {# TODO: tune up the dropdown menu colours #}
-        <li class='dropdown-bright'><a href='{{ item_url }}'>{# TODO: add glyph cds <span class='glyphicon glyphicon-off'></span>#}{{ item_name }}</a></li>
+    {% if glyphicon is defined %}
+        <li class='dropdown-bright'><a href='{{ item_url }}'>{{ item_name }}<span class='glyphicon {{ glyphicon }} pull-right'></span></a></li>
     {% else %}
         <li class='dropdown-bright'><a href='{{ item_url }}'>{{ item_name }}</a></li>
     {% endif %}
