@@ -5,29 +5,31 @@
 {% endblock %}
 {% block content %}
     <div class='container'>
-    <h1>FoosBallas!</a>
+    <div class='panel panel-default'>
+    <div class='panel-heading'><h1>FoosBallas!</h1></div>
+    <div class='panel-body'>
     {% if all_players|length < 5 %}
         <table class='player-list'><tr>
         {% for id, name, gravatar_url in all_players %}
-            <td class='player-box'><img src='{{ gravatar_url }}'><br><a href='/players/{{ id }}'><span class='player-name'>{{ name }}</span></a></td>
+            <td class='player-box'><img src='{{ gravatar_url }}'><br><a href='/players/{{ id }}'><h3>{{ name }}</h3></a></td>
         {% endfor %}
         </tr></table>
     {% else %}
         <table class='player-list'>
         {% for players in all_players|batch(5) %}
-            {#{{ players }}
-            #######<br>#}
             {% for id, name, gravatar_url in players %}
                 {% if loop.first %}
-                <tr><td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
+                <tr><td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><h3>{{ name }}</h3></a></td>
                 {% elif loop.last %}
-                <td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td></tr>
+                <td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><h3>{{ name }}</h3></a></td></tr>
                 {% else %}
-                <td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><span class='player-name'>{{ name }}</span></a></td>
+                <td class='player-box'><a href='/players/{{ id }}'><img src='{{ gravatar_url }}'><br><h3>{{ name }}</h3></a></td>
                 {% endif %}
             {% endfor %}
         {% endfor %}
         </table>
     {% endif %}
+    </div>
+    </div>
     </div>
 {% endblock %}
