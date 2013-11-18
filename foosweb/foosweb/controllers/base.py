@@ -1,4 +1,5 @@
 from flask import g
+from foosweb.controllers.auth import Auth
 from foosweb.forms.player import LoginForm
 from flask.ext.login import current_user
 
@@ -10,10 +11,9 @@ class BaseData():
     #menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('Tournaments', '/tournaments'), ('History', '/history'), ('Readme', '/readme'))
     menu_items = (('Home', '/'), ('Players', '/players'), ('Teams', '/teams'), ('History', '/history'), ('Readme', '/readme'))
 
-    def __init__(self):
-        pass
-        #self.auth = Auth()
+    auth = Auth()
 
+    #TODO: why is this even a class??
     @classmethod
     def GetBaseData(self):
         data = {}
@@ -22,8 +22,8 @@ class BaseData():
             data['user_profile_url'] = '/players/%s' % (str(current_user.id))
             data['user_name'] = current_user.name
             data['user_id'] = current_user.id
-            #if self.auth._is_admin(current_user.id):
-            #data['admin'] = True
+            if self.auth._is_admin(current_user.id):
+                data['admin'] = True
         else:
             data['anonymous'] = True
             data['id'] = -1

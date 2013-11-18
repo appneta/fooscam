@@ -1,7 +1,7 @@
 from flask import current_app
 from flask.ext.login import current_user
 from flask.ext.mail import Message
-from foosweb.models import Player, PasswordReset
+from foosweb.models import Player, PasswordReset, Admin
 from foosweb.app import db
 
 import os
@@ -16,14 +16,7 @@ class Auth():
         except ValueError, e:
             return
 
-        try:
-            admin = self.session.query(Admin).filter_by(player_id=user_id).one()
-        except NoResultFound:
-            return
-        except Exception, e:
-            current_app.logger.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(user_id)))
-            return
-
+        admin = Admin.query.filter_by(player_id=user_id).first()
         if admin is not None:
             return True
 
@@ -113,14 +106,8 @@ class Auth():
         def wrapper(*args, **kwargs):
             db_session = get_db_session()
             if current_user.is_authenticated():
-                try:
-                    admin = db_session.query(Admin).filter_by(player_id = current_user.id).one()
-                except NoResultFound:
-                    return redirect(url_for('FoosView:index'))
-                except Exception, e:
-                    current_app.logger.error('Exception %s thrown checking admin status of %s!' % (repr(e), str(id)))
-                    return redirect(url_for('FoosView:index'))
+                admin = Admin.query.filter_by(player_id = current_user.id).one()
                 if admin is not None:
                     return func(*args, **kwargs)
-            return redirect(url_for('FoosView:index'))
+            return redirect(url_for('foos.index'))
         return wrapper
