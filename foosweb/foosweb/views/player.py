@@ -16,7 +16,7 @@ def index():
     g.menu_item = 'Players'
     pd = PlayerData()
     data = pd.GetAllPlayersData()
-    return render_pretty('players.html', **data)
+    return render_pretty('player_list.html', **data)
 
 @mod.route('/me')
 def self_profile():

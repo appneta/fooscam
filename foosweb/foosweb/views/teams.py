@@ -15,7 +15,7 @@ def index():
     g.menu_item = 'Teams'
     td = TeamData()
     data = td.GetAllTeamsData()
-    return render_pretty('teamlist.html', **data)
+    return render_pretty('team_list.html', **data)
 
 @mod.route('/<int:team_id>')
 def team_by_id(team_id):
