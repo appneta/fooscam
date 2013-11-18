@@ -34,10 +34,9 @@ class TeamData():
 
         return red_games1 + red_games2 + blue_games1 + blue_games2
 
-    def GetTeamsData(self):
+    def GetAllTeamsData(self):
         teams = Team.query.filter(Team.status == Team.STATUS_COMPLETE).all()
 
-        #TODO: add standings data & gravatar for teams
         retvals = {}
         retvals['teams'] = []
         for team in teams:
@@ -52,6 +51,11 @@ class TeamData():
         base_data = BaseData.GetBaseData()
 
         return dict(retvals.items() + base_data.items())
+
+    def GetTeamDataByID(self, team_id):
+        #todo: get both p_ids and query game table for their matches
+        base_data = BaseData.GetBaseData()
+        return base_data
 
     def GetTeamupData(self, teamup_with_id):
         retvals = {}

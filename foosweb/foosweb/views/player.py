@@ -22,13 +22,13 @@ def index():
 def self_profile():
     pd = PlayerData()
     data = pd.GetProfileData(current_user.id)
-    return render_pretty('player_view.html', **data)
+    return render_pretty('player_profile.html', **data)
 
 @mod.route('/<int:profile_id>')
 def get(profile_id):
     pd = PlayerData()
     data = pd.GetProfileData(profile_id)
-    return render_pretty('player_view.html', **data)
+    return render_pretty('player_profile.html', **data)
 
 @mod.route('/signup', methods = ['GET'])
 def show_signup():

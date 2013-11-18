@@ -14,12 +14,14 @@ import pdb
 def index():
     g.menu_item = 'Teams'
     td = TeamData()
-    data = td.GetTeamsData()
+    data = td.GetAllTeamsData()
     return render_pretty('teamlist.html', **data)
 
-#TODO: individual team view
-def team_by_id(self, team_id):
-    return str(team_id)
+@mod.route('/<int:team_id>')
+def team_by_id(team_id):
+    td = TeamData()
+    data = td.GetTeamDataByID(team_id)
+    return render_pretty('team_profile.html', **data)
 
 @mod.route('/teamup/<int:teamup_with_id>', methods=['GET'])
 @login_required
