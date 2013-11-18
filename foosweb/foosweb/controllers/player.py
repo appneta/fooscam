@@ -107,7 +107,7 @@ class PlayerData():
 
         profile['profile_name'] = self._get_name_by_id(profile_id)
         profile['profile_id'] = profile_id
-        profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id)
+        profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id, size=250)
         profile['hist_url'] = '/history/livehistjson/' + str(profile_id)
         profile['total_games'] = self.GetHistory(id=profile_id, count=True)
         profile['teams'] = self._get_teams_by_player_id(profile_id)
