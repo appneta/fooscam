@@ -59,17 +59,17 @@
                 </ul>
             </div>
         </nav>
-        <div id='messages' class='pull-right'>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div id='message' class="alert {{ category }}">
-                        <span class='alert-text'>{{ message }}</span><br>
-                    </div>
-                {% endfor %}
+                <div id='messages' class='pull-right'>
+                    {% for category, message in messages %}
+                        <div id='message' class="alert {{ category }}">
+                            <span class='alert-text'>{{ message }}</span><br>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
-        </div>
         <div id='content'>{% block content %}{% endblock %}</div>
     </body>
 </html>
