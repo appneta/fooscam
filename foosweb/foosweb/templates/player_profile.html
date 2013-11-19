@@ -51,7 +51,8 @@
           {% elif profile_id == p_two_id %}
             <li> {{ profile_name }} &amp; <a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> are team: {{ team_name }}</li>
           {% else %}
-            <b>some sort of error ocurred gathering team data</b>
+            <b>Some sort of error ocurred gathering team data.</b>
+            <p>Please screenshot and <a href='https://github.com/appneta/fooscam/issues'>report this.</a></p>
             profile_id {{ profile_id }}
             p_one_id {{ p_one_id }}
             p_two_id {{ p_two_id }}
@@ -61,7 +62,7 @@
       {% endfor %}
     {% else %}
       {% if profile_id == user_id %}
-        <li> You are not on any teams! Ask someone to <a href='/players'>team up?</a></li>
+        <li> You are not on any teams, you could ask someone to <a href='/players'>team up.</a></li>
       {% else %}
         {% if anonymous %}
             <li> {{ profile_name }} is not on any teams.
