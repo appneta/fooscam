@@ -12,13 +12,11 @@ import pdb
 app = Flask(__name__)
 app.config.from_object('config.Dev')
 
+app.jinja_env.globals['foosview_version'] = app.config['FOOSVIEW_VERSION']
 db = SQLAlchemy(app)
-
 mail = Mail(app)
-
 lm = LoginManager()
 lm.init_app(app)
-
 assets = Environment(app)
 
 main_js = Bundle('js/jquery-latest.min.js', 'js/jquery-ui.js', 'js/bootstrap.min.js')
