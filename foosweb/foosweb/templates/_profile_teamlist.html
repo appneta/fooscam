@@ -5,9 +5,9 @@
       {# put the current profile's player name first in the team list #}
       {% if profile_id == p_one_id %}
         {#TODO: link to team page from here #}
-        <li> {{ profile_name }} &amp; <a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> are team: <a href='/teams/{{ team_id }}'>{{ team_name }}</li>
+        <li> {{ profile_name }} &amp; <a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> are team: <a href='/teams/{{ team_id }}'>{{ team_name }}</a></li>
       {% elif profile_id == p_two_id %}
-        <li> {{ profile_name }} &amp; <a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> are team: <a href='/teams/{{ team_id }}'>{{ team_name }}</li>
+        <li> {{ profile_name }} &amp; <a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> are team: <a href='/teams/{{ team_id }}'>{{ team_name }}</a></li>
       {% endif %}
   {% endfor %}
 {% else %}

@@ -4,7 +4,11 @@
 <div class='container'>
     <div class='panel panel-default'>
         <div class='panel-heading'>
+            {% if my_profile %}
+            <h2>You have logged {{ total_games }} games!</h2>
+            {% else %}
             <h2>{{ profile_name }} has logged {{ total_games }} games!</h2>
+            {% endif %}
         </div>
         <div class='panel-body'>
         <div class='row'>
@@ -36,6 +40,9 @@
             </div>
             <div class='col-lg-4'>
             {% include '_profile_teamlist.html' %}
+            {% if my_profile %}
+                {% include '_invited_teamlist.html' %}
+            {% endif %}
             </div>
         </div>
         <h1>Game History</h1>

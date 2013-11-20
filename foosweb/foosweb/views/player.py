@@ -27,7 +27,7 @@ def self_profile():
     invite_data = td.GetInvitesData()
     data = dict(public_data.items() + invite_data.items())
     #pdb.set_trace()
-    return render_pretty('my_profile.html', **data)
+    return render_pretty('player_profile.html', my_profile = True, **data)
 
 @mod.route('/<int:profile_id>')
 def get(profile_id):
