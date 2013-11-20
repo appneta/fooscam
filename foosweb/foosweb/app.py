@@ -1,12 +1,8 @@
-from flask import Flask
+from flask import Flask, flash, redirect, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.assets import Environment, Bundle
 from flask.ext.login import LoginManager
 from flask.ext.mail import Mail
-
-from foosweb.utils import render_pretty
-
-import logging
 import pdb
 
 app = Flask(__name__)
@@ -43,11 +39,6 @@ from foosweb.views.history import mod as histModule
 from foosweb.views.teams import mod as teamModule
 from foosweb.views.readme import mod as readmeModule
 from foosweb.views.error import mod as errorModule
-from foosweb.models import Player
-
-@lm.user_loader
-def user_loader(id):
-    return Player.query.filter_by(id=id).first()
 
 app.register_blueprint(playersModule)
 app.register_blueprint(authModule)
@@ -56,3 +47,7 @@ app.register_blueprint(histModule)
 app.register_blueprint(teamModule)
 app.register_blueprint(readmeModule)
 app.register_blueprint(errorModule)
+
+from foosweb.utils import  user_loader, unauthorized
+lm.user_loader(user_loader)
+lm.unauthorized_handler(unauthorized)

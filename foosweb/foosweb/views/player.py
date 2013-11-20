@@ -20,6 +20,7 @@ def index():
     return render_pretty('player_list.html', **data)
 
 @mod.route('/me')
+@login_required
 def self_profile():
     pd = PlayerData()
     td = TeamData()
@@ -67,6 +68,7 @@ def show_settings():
     return render_pretty('player_settings.html',  **data)
 
 @mod.route('/me/settings', methods=['POST'])
+@login_required
 def process_settings():
     pd = PlayerData()
     settings_form = SettingsForm(request.form)

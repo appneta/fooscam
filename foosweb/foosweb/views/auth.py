@@ -4,6 +4,7 @@ from BeautifulSoup import BeautifulSoup as bs
 
 from flask.ext.login import current_user, logout_user, login_user, login_required
 
+from foosweb.utils import render_pretty
 from foosweb.app import db
 from foosweb.forms.player import LoginForm, SignupForm, RequestResetForm
 from foosweb.models import Player
@@ -13,10 +14,6 @@ from foosweb.controllers.auth import Auth
 mod = Blueprint('auth', __name__)
 
 import pdb
-
-def render_pretty(template_name, **kwargs):
-    soup = bs(render_template(template_name, **kwargs)).prettify()
-    return soup
 
 @mod.route('/login', methods = ['POST'])
 def login():
