@@ -53,16 +53,16 @@ class PlayerData():
         return player_name
 
 
-    def _get_teams_by_player_id(self, id):
+    def _get_current_teams_by_player_id(self, id):
         teams = Team.query.filter((Team.player_one == id) | (Team.player_two == id)).\
-            filter(Team.status < Team.STATUS_DECLINED).all()
+            filter(Team.status == Team.STATUS_COMPLETE).all()
 
         retvals = []
 
         for team in teams:
             p_one_name = self._get_name_by_id(team.player_one)
             p_two_name = self._get_name_by_id(team.player_two)
-            retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.name, team.status))
+            retvals.append((team.player_one, p_one_name, team.player_two, p_two_name, team.name, team.id))
 
         return retvals
 
@@ -97,7 +97,7 @@ class PlayerData():
 
         return dict(data.items() + base_data.items())
 
-    def GetProfileData(self, profile_id):
+    def GetPublicProfileData(self, profile_id):
         """Get profile data for id and show it to user_id"""
         profile = {}
         profile['ro_wins'] = Game.query.filter(Game.red_off == profile_id).filter(Game.winner == 'red').count()
@@ -110,11 +110,19 @@ class PlayerData():
         profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id, size=250)
         profile['hist_url'] = '/history/livehistjson/' + str(profile_id)
         profile['total_games'] = self.GetHistory(player_id=profile_id, count=True)
-        profile['teams'] = self._get_teams_by_player_id(profile_id)
+        profile['teams'] = self._get_current_teams_by_player_id(profile_id)
 
         base_data = BaseData.GetBaseData()
 
         return dict(profile.items() + base_data.items())
+
+
+    """def GetMyProfileData(self, profile_id):
+        profile = self.GetPublicProfileData(profile_id)
+        td = TeamData()
+        invites_dict = TeamData.GetInvitesData()
+
+        return dict(profile.items() + invites_dict())"""
 
     def GetSettingsData(self):
         settings = {}

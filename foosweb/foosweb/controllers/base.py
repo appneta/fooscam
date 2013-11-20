@@ -28,7 +28,7 @@ class BaseData():
             data['anonymous'] = True
             data['id'] = -1
             data['loginform'] = LoginForm()
-        #TODO: fix this and templates to be consistent (menu_item > current_view)
-        data['current_view'] = g.get('menu_item', None)
+        #when g['menu_item'] matches an item from menu_items it is highlited
+        data['selected_menu_item'] = g.get('menu_item', None)
 
         return data

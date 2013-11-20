@@ -4,6 +4,7 @@ from flask.ext.login import current_user, logout_user, login_user, login_require
 from foosweb.forms.player import LoginForm, SignupForm, SettingsForm
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
+from foosweb.controllers.team import TeamData
 from foosweb.controllers.auth import Auth
 from foosweb.utils import render_pretty
 
@@ -21,13 +22,17 @@ def index():
 @mod.route('/me')
 def self_profile():
     pd = PlayerData()
-    data = pd.GetProfileData(current_user.id)
-    return render_pretty('player_profile.html', **data)
+    td = TeamData()
+    public_data = pd.GetPublicProfileData(current_user.id)
+    invite_data = td.GetInvitesData()
+    data = dict(public_data.items() + invite_data.items())
+    #pdb.set_trace()
+    return render_pretty('my_profile.html', **data)
 
 @mod.route('/<int:profile_id>')
 def get(profile_id):
     pd = PlayerData()
-    data = pd.GetProfileData(profile_id)
+    data = pd.GetPublicProfileData(profile_id)
     return render_pretty('player_profile.html', **data)
 
 @mod.route('/signup', methods = ['GET'])

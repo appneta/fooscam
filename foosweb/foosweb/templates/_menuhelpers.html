@@ -1,5 +1,5 @@
-{% macro render_menu_item(item_name, item_url, current_view, glyphicon) %}
-{% if item_name == current_view %}
+{% macro render_menu_item(item_name, item_url, selected_menu_item, glyphicon) %}
+{% if item_name == selected_menu_item %}
     <li class='active'><a href='{{ item_url }}'>{{ item_name }}</a></li>
 {% else %}
     {% if glyphicon is defined %}

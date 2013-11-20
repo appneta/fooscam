@@ -1,0 +1,15 @@
+<h1>Teamup Invites</h1>
+<ul id='invite-list'>
+{% if invites %}
+    {% for p_one_id, p_one_name, p_two_id, p_two_name, team_name, invite_id in invites %}
+        {# invites are sent by player_one to player_two -- show invitees their invite #}
+        {% if user_id == p_two_id %}
+            <li><a href='/players/{{ p_one_id }}'>{{ p_one_name }}</a> has <a href='/teams/teamup/invites'>invited you to join team {{ team_name }}</a>!</li>
+        {% elif user_id == p_one_id %}
+            <li><a href='/players/{{ p_two_id }}'>{{ p_two_name }}</a> hasn't responded to <a href='/teams/teamup/invites'>your invite</a> yet.</li>
+    {% endif %}
+{% endfor %}
+{% else %}
+    <li> You are not on any teams, you could ask someone to <a href='/players'>team up.</a></li>
+{% endif %}
+</ul>

@@ -22,10 +22,10 @@
                 <ul class='nav navbar-nav navbar-left'>
                     {% from "_menuhelpers.html" import render_menu_item %}
                     {% if admin %}
-                        {{ render_menu_item('Admin', '/admin', current_view) }}
+                        {{ render_menu_item('Admin', '/admin', selected_menu_item) }}
                     {% endif %}
                     {% for text, url in menu %}
-                        {{ render_menu_item(text, url, current_view) }}
+                        {{ render_menu_item(text, url, selected_menu_item) }}
                     {% endfor %}
                 </ul>
                 <ul class='nav navbar-nav navbar-right'>
@@ -51,9 +51,9 @@
                         <li class='dropdown'>
                         <a href='#' class='dropdown-toggle' data-toggle='dropdown'>Account<b class='caret'></b></a>
                         <ul class='dropdown-menu dropdown-inverse dropdown-bright'>
-                        {{ render_menu_item(user_name, '/players/me', current_view, glyphicon = 'glyphicon-user') }}
-                        {{ render_menu_item('Settings', '/players/me/settings', current_view, glyphicon = 'glyphicon-cog') }}
-                        {{ render_menu_item('Logout', '/logout', current_view, glyphicon = 'glyphicon-off') }}
+                        {{ render_menu_item(user_name, '/players/me', glyphicon = 'glyphicon-user') }}
+                        {{ render_menu_item('Settings', '/players/me/settings', glyphicon = 'glyphicon-cog') }}
+                        {{ render_menu_item('Logout', '/logout', glyphicon = 'glyphicon-off') }}
                     {% endif %}
                     </ul>
                 </ul>
