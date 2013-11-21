@@ -16,7 +16,8 @@ function getplayers() {
                 data['rd']['id'] == -1 &&
                 data['bo']['id'] == -1 &&
                 data['bd']['id'] == -1) {
-                $('#teams, .tag').fadeTo(fade_time, 0);
+                //$('#teams, .tag').fadeTo(fade_time, 0);
+                $('.tag').fadeTo(fade_time, 0);
             } else {
                 $('#off-red-a').attr('href', '/players/' + data['ro']['id']).text(data['ro']['name']);
                 $('#def-red-a').attr('href', '/players/' + data['rd']['id']).text(data['rd']['name']);
@@ -26,7 +27,17 @@ function getplayers() {
                 $('#def-red-g').attr('src', data['rd']['gravatar']);
                 $('#off-blue-g').attr('src', data['bo']['gravatar']);
                 $('#def-blue-g').attr('src', data['bd']['gravatar']);
-                $('#teams, .tag').fadeTo(fade_time, 1);
+                //$('#teams, .tag').fadeTo(fade_time, 1);
+                $('.tag').fadeTo(fade_time, 1);
+            }
+            //alert(data['red_team']);
+            if (data['red_team'] != '') {
+                $('#team-red-name').text('Team: ' + data['red_team']);
+                $('#teams').fadeTo(fade_time, 1);
+            }
+            if (data['blue_team'] != '') {
+                $('#team-blue-name').text('Team: ' + data['blue_team']);
+                $('#teams').fadeTo(fade_time, 1);
             }
         }
     });
@@ -53,6 +64,10 @@ function getstatus() {
                 $('#game-info').fadeTo(fade_time, 0);
                 $('#teams, .tag').fadeTo(fade_time, 0);
                 settext('.status', 'Table Open!');
+            //anything else is the name of the winning team
+            } else if (data['status'] != '') {
+                settext('.status', data['status'] + ' Wins!');
+                pulse('green');
             }
         }
     });

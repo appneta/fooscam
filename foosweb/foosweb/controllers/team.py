@@ -4,7 +4,7 @@ from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
 from foosweb.forms.team import TeamupForm
 
-from flask import current_app
+from flask import current_app, g
 from flask.ext.login import current_user
 import pdb
 
@@ -59,6 +59,15 @@ class TeamData():
         base_data = BaseData.GetBaseData()
 
         return dict(retvals.items() + base_data.items())
+
+    def GetCurrentTeamNames(self):
+        blue_team = self._get_team_name_by_ids(g.current_players['bo'], g.current_players['bd'])
+        red_team = self._get_team_name_by_ids(g.current_players['ro'], g.current_players['rd'])
+        if blue_team is None:
+            blue_team = ''
+        if red_team is None:
+            red_team = ''
+        return red_team, blue_team
 
     def GetTeamProfileData(self, team_id):
 

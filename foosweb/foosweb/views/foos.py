@@ -4,6 +4,7 @@ from foosweb.utils import render_pretty
 from foosweb.gamewatch import GameWatch
 from foosweb.controllers.base import BaseData
 from foosweb.controllers.player import PlayerData
+from foosweb.controllers.team import TeamData
 
 mod = Blueprint('foos', __name__)
 
@@ -61,13 +62,16 @@ def score_post():
 def players_get():
     gw = GameWatch()
     pd = PlayerData()
+    td = TeamData()
     ids = gw.CurrentPlayerIDs()
     names = pd.GetCurrentPlayerNames()
     gravatars = pd.GetCurrentPlayerGravatarURLs()
+    red_team, blue_team = td.GetCurrentTeamNames()
     return  json.dumps({'bo': {'name': names['bo'], 'id': ids['bo'], 'gravatar': gravatars['bo']},\
         'bd': {'name': names['bd'], 'id': ids['bd'], 'gravatar': gravatars['bd']},\
         'ro': {'name': names['ro'], 'id': ids['ro'], 'gravatar': gravatars['ro']},\
-        'rd': {'name': names['rd'], 'id': ids['rd'], 'gravatar': gravatars['rd']}}), 200, {'Content-Type': 'application/json'}
+        'rd': {'name': names['rd'], 'id': ids['rd'], 'gravatar': gravatars['rd']},\
+        'red_team': red_team, 'blue_team': blue_team}), 200, {'Content-Type': 'application/json'}
 
 @mod.route('/current_players', methods = ['POST'])
 def players_post():

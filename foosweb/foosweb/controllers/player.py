@@ -59,7 +59,7 @@ class PlayerData():
         return player_name
 
 
-    def _get_current_teams_by_player_id(self, id):
+    def _get_complete_teams_by_player_id(self, id):
         teams = Team.query.filter((Team.player_one == id) | (Team.player_two == id)).\
             filter(Team.status == Team.STATUS_COMPLETE).all()
 
@@ -114,7 +114,7 @@ class PlayerData():
         profile['gravatar_url'] = self._get_gravatar_url_by_id(profile_id, size=250)
         profile['hist_url'] = '/history/livehistjson/' + str(profile_id)
         profile['total_games'] = self.GetHistory(player_id=profile_id, count=True)
-        profile['teams'] = self._get_current_teams_by_player_id(profile_id)
+        profile['teams'] = self._get_complete_teams_by_player_id(profile_id)
 
         base_data = BaseData.GetBaseData()
 

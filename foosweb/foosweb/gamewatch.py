@@ -23,6 +23,12 @@ class GameWatch():
             if self.game_state.fuzzy:
                 self.game_state.fuzzy = False
                 self.CommitState()
+        else:
+            #if a game is on place the current players on the g object
+            g.current_players = {'bo': self.game_state.blue_off,\
+                'bd': self.game_state.blue_def,\
+                'ro': self.game_state.red_off,\
+                'rd': self.game_state.red_def}
 
         #if a game winner has been decided clear from the game state after a short time
         if self.game_state.game_winner != '':
@@ -32,6 +38,7 @@ class GameWatch():
                 if announce_duration.seconds > 2:
                     self.game_state.game_winner = ''
                     self.CommitState()
+
 
     def UpdatePlayers(self, players):
         """
@@ -87,8 +94,8 @@ class GameWatch():
                 self.game_state.red_def = players['rd']
 
                 td = TeamData()
-                red_team = td._get_team_name_by_ids(players['ro'], players['rd'])
-                blue_team = td._get_team_name_by_ids(players['bo'], players['bd'])
+                self.game_state.red_team = td._get_team_name_by_ids(players['ro'], players['rd'])
+                self.game_state.blue_team = td._get_team_name_by_ids(players['bo'], players['bd'])
 
                 self.CommitState()
                 self.GameOn()
@@ -150,11 +157,21 @@ class GameWatch():
 
         #decide who won and compensate for players not actually sliding the 10th cube into place
         if self.game_state.red_score > self.game_state.blue_score:
-            winner = 'red'
+            if self.game_state.red_team == '':
+                winner = 'red'
+            else:
+                winner = self.game_state.red_team
+
             self.game_state.red_score = 10
+
         elif self.game_state.blue_score > self.game_state.red_score:
-            winner = 'blue'
+            if self.game_state.blue_team == '':
+                winner = 'blue'
+            else:
+                winner = self.game_state.blue_team
+
             self.game_state.blue_score = 10
+
         elif self.game_state.blue_score == self.game_state.red_score:
             winner = 'tie'
 
@@ -180,6 +197,8 @@ class GameWatch():
         self.game_state.blue_def = -1
         self.game_state.red_off = -1
         self.game_state.red_def = -1
+        self.game_state.red_team = ''
+        self.game_state.blue_team = ''
         self.CommitState()
 
     def GameOn(self):
