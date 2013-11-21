@@ -2,8 +2,8 @@ from foosweb.app import db
 from foosweb.models import Player, Game, Team
 from foosweb.controllers.base import BaseData
 from foosweb.forms.player import  SignupForm, SettingsForm
-from foosweb.gamewatch import GameWatch
 
+from flask import g
 from flask.ext.login import current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -14,6 +14,12 @@ import pdb
 #TODO: game state controller
 
 class PlayerData():
+
+    def __init__(self):
+        #if current_players global is not set during this request, fill it in with -1 (anon/none player)
+        if g.get('current_players', None) is None:
+            g.current_players = {'bo': -1, 'bd': -1, 'ro': -1, 'rd': -1}
+
     def _tidy_sa_results(self, result):
         retvals = []
         for item in result:
@@ -67,22 +73,20 @@ class PlayerData():
         return retvals
 
     def GetCurrentPlayerGravatarURLs(self):
-        gw = GameWatch()
-        urls = gw.CurrentPlayerIDs()
-        urls['bo'] = self._get_gravatar_url_by_id(urls['bo'])
-        urls['bd'] = self._get_gravatar_url_by_id(urls['bd'])
-        urls['ro'] = self._get_gravatar_url_by_id(urls['ro'])
-        urls['rd'] = self._get_gravatar_url_by_id(urls['rd'])
+        urls = {}
+        urls['bo'] = self._get_gravatar_url_by_id(g.current_players['bo'])
+        urls['bd'] = self._get_gravatar_url_by_id(g.current_players['bd'])
+        urls['ro'] = self._get_gravatar_url_by_id(g.current_players['ro'])
+        urls['rd'] = self._get_gravatar_url_by_id(g.current_players['rd'])
         return urls
 
     def GetCurrentPlayerNames(self):
-        gw = GameWatch()
-        ids = gw.CurrentPlayerIDs()
-        ids['bo'] = self._get_name_by_id(ids['bo'])
-        ids['bd'] = self._get_name_by_id(ids['bd'])
-        ids['ro'] = self._get_name_by_id(ids['ro'])
-        ids['rd'] = self._get_name_by_id(ids['rd'])
-        return ids
+        names = {}
+        names['bo'] = self._get_name_by_id(g.current_players['bo'])
+        names['bd'] = self._get_name_by_id(g.current_players['bd'])
+        names['ro'] = self._get_name_by_id(g.current_players['ro'])
+        names['rd'] = self._get_name_by_id(g.current_players['rd'])
+        return names
 
     def GetAllPlayersData(self):
         data = {}

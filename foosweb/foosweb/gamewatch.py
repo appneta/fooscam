@@ -1,7 +1,8 @@
 from foosweb.app import db
 from foosweb.models import GameState, Player, Game
+from foosweb.controllers.team import TeamData
 
-from flask import current_app
+from flask import current_app, g
 from datetime import datetime
 import os
 from time import time
@@ -78,10 +79,15 @@ class GameWatch():
             #id change detected and all id's are known
             if not self.game_state.game_on:
                 current_app.logger.debug('4 new ids locked and no game going ... starting a new game!')
+                g.current_players = players
+
                 self.game_state.blue_off = players['bo']
                 self.game_state.blue_def = players['bd']
                 self.game_state.red_off = players['ro']
                 self.game_state.red_def = players['rd']
+
+                td = TeamData()
+
                 self.CommitState()
                 self.GameOn()
             else:

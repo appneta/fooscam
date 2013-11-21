@@ -34,6 +34,15 @@ class TeamData():
 
         return red_games1 + red_games2 + blue_games1 + blue_games2
 
+    def _get_team_name_by_ids(self, player_one, player_two):
+        team_name = Team.query.with_entities(Team.name).\
+            filter(Team.player_one.in_(player_one, player_two)).\
+            filter(Team.player_two.in_(player_one, player_two)).first()
+
+        pdb.set_trace()
+
+        return team_name
+
     def GetAllTeamsData(self):
         teams = Team.query.filter(Team.status == Team.STATUS_COMPLETE).all()
 
