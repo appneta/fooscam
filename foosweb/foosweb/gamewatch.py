@@ -154,10 +154,9 @@ class GameWatch():
         """
         determine the winner and record that along with the current game state
         """
-
         #decide who won and compensate for players not actually sliding the 10th cube into place
         if self.game_state.red_score > self.game_state.blue_score:
-            if self.game_state.red_team == '':
+            if self.game_state.red_team is None:
                 winner = 'red'
             else:
                 winner = self.game_state.red_team
@@ -165,7 +164,7 @@ class GameWatch():
             self.game_state.red_score = 10
 
         elif self.game_state.blue_score > self.game_state.red_score:
-            if self.game_state.blue_team == '':
+            if self.game_state.blue_team is None:
                 winner = 'blue'
             else:
                 winner = self.game_state.blue_team
