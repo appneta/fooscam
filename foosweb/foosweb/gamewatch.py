@@ -87,6 +87,8 @@ class GameWatch():
                 self.game_state.red_def = players['rd']
 
                 td = TeamData()
+                red_team = td._get_team_name_by_ids(players['ro'], players['rd'])
+                blue_team = td._get_team_name_by_ids(players['bo'], players['bd'])
 
                 self.CommitState()
                 self.GameOn()

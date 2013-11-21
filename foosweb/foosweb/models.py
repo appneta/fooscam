@@ -40,6 +40,8 @@ class GameState(db.Model):
     game_started = db.Column(db.Integer)
     fuzzy = db.Column(db.Boolean)
     game_winner = db.Column(db.String)
+    red_team = db.Column(db.String)
+    blue_team = db.Column(db.String)
 
     def __init__(self):
         self.id = 1
@@ -51,6 +53,8 @@ class GameState(db.Model):
         self.fuzzy = 0
         self.game_started = 0
         self.game_winner = ''
+        self.red_team = ''
+        self.blue_team = ''
 
 class Game(db.Model):
     __tablename__ = 'games'
