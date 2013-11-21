@@ -55,6 +55,10 @@ class Auth():
         mail = current_app.extensions['mail']
         server_name = current_app.config['SERVER_NAME']
 
+        #for testing
+        if server_name == '':
+            server_name = 'localhost'
+
         player = self.GetPlayerByEmail(user_email)
         if player is not None:
             reset_link = self._make_pw_reset_link(player.id, server_name)
