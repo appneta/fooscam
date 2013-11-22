@@ -3,7 +3,7 @@ FoosView
 
 the spit and bailing wire which holds the foosball monitoring system together
 
-![screenshot](https://raw.github.com/appneta/fooscam/master/fooscam-v0.2.1.png)
+![screenshot](https://raw.github.com/appneta/fooscam/master/foosview-v0.2.2a.png)
 
 foostools - the opencv tools to analyze video stream and update foosweb
 
