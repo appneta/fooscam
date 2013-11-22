@@ -15,7 +15,8 @@ import pdb
 def index():
     g.menu_item = 'Home'
     data = BaseData.GetBaseData()
-    return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
+    #return render_pretty('foosview.html', debug_image='static/img/table.png', **data)
+    return render_pretty('foosview.html', **data)
 
 @mod.route('/status')
 def get_status():
