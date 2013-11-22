@@ -14,6 +14,8 @@ class Player(db.Model):
         self.name = name
         self.email = email
         self.password = password
+        self.challonge_id = ''
+        self.authenticated = False
 
     def is_active(self):
         return True
